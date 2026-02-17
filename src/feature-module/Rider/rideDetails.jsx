@@ -1,0 +1,558 @@
+// import React from "react";
+// import "bootstrap/dist/css/bootstrap.min.css";
+
+// const ViewRideDetails = () => {
+//   return (
+//     <div className="page-wrapper">
+//       <div className="container-fluid py-4" style={{ background: "#f4f6f9" }}>
+//         <div className="container">
+//           {/* ================= HEADER ================= */}
+//           <div className="mb-4">
+//             <h4 className="fw-bold">Ride Details</h4>
+//             {/* <small className="text-muted">
+//             Created 12 February 2026, 04:01 PM
+//           </small> */}
+//           </div>
+
+//           <div className="row g-4">
+//             {/* ================= LEFT COLUMN ================= */}
+//             <div className="col-lg-6">
+//               {/* -------- General Details -------- */}
+//               <div className="card border-0 shadow-sm rounded-4 mb-4">
+//                 <div className="card-body p-4">
+//                   <h5 className="fw-bold mb-4">General Details</h5>
+
+//                   {[
+//                     ["Ride Number", ""],
+//                     ["Start Date & Time", ""],
+//                     ["Ride Status", ""],
+//                     ["Payment Status", ""],
+//                     ["Service", ""],
+//                     ["Service Category", ""],
+//                     ["Start Ride OTP", ""],
+//                     ["Total Distance", ""],
+//                     ["Waiting Time", ""],
+//                     ["Payment Method", <span><img src="/src/assets/img/cod.png" alt="payment-method" width={100} />                <div className="d-flex align-items-center mb-4">
+//                                       <div
+//                                         className="rounded-circle d-flex align-items-center justify-content-center me-3"
+//                                         style={{
+//                                           width: "70px",
+//                                           height: "70px",
+//                                           background: "linear-gradient(135deg, #e6f4f1, #cdebe3)",
+//                                           fontSize: "28px",
+//                                           color: "#198754",
+//                                           fontWeight: "600",
+//                                         }}
+//                                       >
+//                                         R
+//                                       </div>
+
+//                                       <div>
+
+//                                         <h5 className="mb-1" style={{fontSize: "24px"}}>Sharath Kumar</h5>
+//                                         <div className="text-warning">
+//                                           Rating
+//                                           {[...Array(5)].map((_, i) => (
+//                                             <FaStar key={i} className="ms-1" />
+//                                           ))}
+//                                         </div>
+//                                       </div>
+//                                     </div></span>],
+//                   ].map((item, index) => (
+//                     <div
+//                       key={index}
+//                       className="d-flex justify-content-between border-bottom py-2"
+//                     >
+//                       <span className="text-muted">{item[0]}</span>
+//                       <span className="fw-semibold">{item[1]}</span>
+//                     </div>
+//                   ))}
+//                 </div>
+//               </div>
+
+//               {/* -------- Price Details -------- */}
+//               <div className="card border-0 shadow-sm rounded-4">
+//                 <div className="card-body p-4">
+//                   <div className="d-flex justify-content-between align-items-center mb-4">
+//                     <h5 className="fw-bold">Price Details</h5>
+//                     <div>
+//                       <button className="btn btn-success btn-sm me-2"><i className="ti ti-download"/>
+//                         Rider Invoice
+//                       </button>
+//                       <button className="btn btn-success btn-sm">
+//                         Driver Invoice
+//                       </button>
+//                     </div>
+//                   </div>
+
+//                   {[
+//                     ["Ride Fare", ""],
+//                     ["Platform Fee", ""],
+//                     ["Tax", ""],
+//                     ["Admin Commission", ""],
+//                   ].map((item, index) => (
+//                     <div
+//                       key={index}
+//                       className="d-flex justify-content-between border-bottom py-2"
+//                     >
+//                       <span className="text-muted">{item[0]}</span>
+//                       <span>{item[1]}</span>
+//                     </div>
+//                   ))}
+
+//                   <div className="d-flex justify-content-between mt-3 p-3 rounded-3 bg-success text-white fw-bold">
+//                     <span>Total</span>
+//                     {/* <span>$75.97</span> */}
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* ================= RIGHT COLUMN ================= */}
+//             <div className="col-lg-6">
+//               {/* -------- Driver Details -------- */}
+//               <div className="card border-0 shadow-sm rounded-4 mb-4">
+//                 <div className="card-body p-4">
+//                   <h5 className="fw-bold mb-4">Driver Details</h5>
+
+//                   <div className="d-flex align-items-center mb-3">
+//                     <div
+//                       className="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
+//                       style={{ width: 60, height: 60 }}
+//                     >
+//                       H
+//                     </div>
+//                     <div>
+//                       <h6 className="fw-bold mb-1">Haneef</h6>
+//                       <small className="text-warning">★★★★★</small>
+//                     </div>
+//                   </div>
+
+//                   <div className="border-top pt-3">
+//                     <p className="mb-1">
+//                       <strong>Email:</strong> codewithhaneef@gmail.com
+//                     </p>
+//                     <p className="mb-1">
+//                       <strong>Phone:</strong> +91 7006505391
+//                     </p>
+//                     <p className="mb-1">
+//                       <strong>Vehicle:</strong> JK01AK4743 (Car)
+//                     </p>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* -------- Rider Details -------- */}
+//               <div className="card border-0 shadow-sm rounded-4 mb-4">
+//                 <div className="card-body p-4">
+//                   <h5 className="fw-bold mb-4">Rider Details</h5>
+
+//                   <div className="d-flex align-items-center mb-3">
+//                     <div
+//                       className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+//                       style={{ width: 60, height: 60 }}
+//                     >
+//                       H
+//                     </div>
+//                     <div>
+//                       <h6 className="fw-bold mb-1">Haneef Rather</h6>
+//                       <small className="text-warning">★★★★★</small>
+//                     </div>
+//                   </div>
+
+//                   <div className="border-top pt-3">
+//                     <p className="mb-1">
+//                       <strong>Email:</strong> haneefrather12@gmail.com
+//                     </p>
+//                     <p className="mb-0">
+//                       <strong>Contact:</strong> +91 7006505391
+//                     </p>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* -------- Map View -------- */}
+//               <div className="card border-0 shadow-sm rounded-4 mb-4">
+//                 <div className="card-body p-4">
+//                   <h5 className="fw-bold mb-3">Map View</h5>
+//                   <div
+//                     className="rounded-3"
+//                     style={{
+//                       height: "350px",
+//                       background:
+//                         "linear-gradient(135deg, #dfe9f3 0%, #ffffff 100%)",
+//                     }}
+//                   >
+//                     <iframe
+//                       class="embed-map-frame"
+//                       frameborder="0"
+//                       scrolling="no"
+//                       marginheight="0"
+//                       marginwidth="0"
+//                       width={550}
+//                       height={350}
+//                       src="https://maps.google.com/maps?width=600&height=400&hl=en&q=Hyderabad&t=&z=14&ie=UTF8&iwloc=B&output=embed"
+//                     ></iframe>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* ================= TIMELINE ================= */}
+//           <div className="card border-0 shadow-sm rounded-4 mt-4">
+//             <div className="card-body p-4">
+//               <h5 className="fw-bold mb-4">Ride Timeline</h5>
+
+//               {[
+//                 ["Accepted", "The driver accepted the ride."],
+//                 ["Arrived", "Driver arrived at pickup location."],
+//                 ["Started", "Ride started successfully."],
+//                 ["Completed", "Ride completed successfully."],
+//               ].map((item, index) => (
+//                 <div key={index} className="d-flex mb-4">
+//                   <div
+//                     className="bg-success rounded-circle me-3"
+//                     style={{ width: 12, height: 12, marginTop: 6 }}
+//                   ></div>
+//                   <div>
+//                     <h6 className="fw-bold mb-1">{item[0]}</h6>
+//                     <small className="text-muted">{item[1]}</small>
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ViewRideDetails;
+
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { FaStar } from "react-icons/fa";
+
+const ViewRideDetails = () => {
+  const generalDetails = [
+    ["Ride Number", "#10032"],
+    ["Start Date & Time", "26-FEB-2026 02:30:45 PM"],
+    ["End Date & Time", "26-FEB-2026 03:00:35 PM"],
+    ["Ride Status", "Completed"],
+    ["Payment Status", "Cash"],
+    ["Service", "Cab"],
+    ["Service Category", "Rental"],
+    ["Start Ride OTP", "2222"],
+    ["Total Distance", "10KM"],
+    ["Waiting Time", ""],
+  ];
+
+  const priceDetails = [
+    ["Ride Fare", "250"],
+    ["Platform Fee", "20"],
+    ["Tax", "5%"],
+    ["Admin Commission", "2%"],
+  ];
+
+  const timeline = [
+    ["Accepted", "The driver accepted the ride."],
+    ["Arrived", "Driver arrived at pickup location."],
+    ["Started", "Ride started successfully."],
+    ["Completed", "Ride completed successfully."],
+  ];
+
+  return (
+    <div className="page-wrapper">
+      <div className="container-fluid py-4" style={{ background: "#f4f6f9" }}>
+        <div className="container">
+          {/* HEADER */}
+          <h4 className="fw-bold mb-4">Ride Details</h4>
+
+          <div className="row g-4">
+            {/* LEFT SIDE */}
+            <div className="col-lg-6">
+              {/* GENERAL DETAILS */}
+              <div className="card shadow-sm border-0 rounded-4 mb-4">
+                <div className="card-body p-4">
+                  <h5 className="fw-bold mb-4">General Details</h5>
+
+                  {generalDetails.map((item, index) => (
+                    <div
+                      key={index}
+                      className="d-flex justify-content-between border-bottom py-2"
+                    >
+                      <span className="text-muted">{item[0]}</span>
+                      <span className="fw-semibold">{item[1]}</span>
+                    </div>
+                  ))}
+
+                  {/* Payment Method Row Separate */}
+                  <div className="d-flex justify-content-between py-2">
+                    <span className="text-muted">Payment Method</span>
+                    <img
+                      src="/src/assets/img/cod.png"
+                      alt="payment"
+                      width={60}
+                    />
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center py-3 border-top">
+                    <div>
+                      <h6 className="mb-1">Total Bidding</h6>
+                    </div>
+
+                    <button
+                      className="btn btn-success px-4"
+                      data-bs-toggle="modal"
+                      data-bs-target="#biddingModal"
+                    >
+                      Bidding
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* PRICE DETAILS */}
+              <div className="card shadow-sm border-0 rounded-4">
+                <div className="card-body p-4">
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h5 className="fw-bold mb-0">Price Details</h5>
+
+                    <div>
+                      <button className="btn btn-outline-success btn-sm me-2">
+                        <i className="ti ti-download me-1" />
+                        Rider Invoice
+                      </button>
+                      <button className="btn btn-success btn-sm">
+                        <i className="ti ti-download me-1" />
+                        Driver Invoice
+                      </button>
+                    </div>
+                  </div>
+
+                  {priceDetails.map((item, index) => (
+                    <div
+                      key={index}
+                      className="d-flex justify-content-between border-bottom py-2"
+                    >
+                      <span className="text-muted">{item[0]}</span>
+                      <span>{item[1]}</span>
+                    </div>
+                  ))}
+
+                  <div className="d-flex justify-content-between mt-3 p-3 rounded-3 bg-success text-white fw-bold">
+                    <span>Total</span>
+
+                    <span></span>
+                    <span>450.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT SIDE */}
+            <div className="col-lg-6">
+              {/* DRIVER DETAILS */}
+              <div className="card shadow-sm border-0 rounded-4 mb-4">
+                <div
+                  className="card-body p-4"
+                  // style={{
+                  //   backgroundImage: "url('/src/assets/img/bg-img-000.png')",
+                  //   backgroundSize: "cover",
+                  //   backgroundPosition: "left",
+                  //   backgroundColor: "#f8f9fa",
+                  // }}
+                >
+                  <div
+                    className="personal-information"
+                    style={{
+                      backgroundImage: "url('/src/assets/img/bg-img-000.png')",
+                      backgroundSize: "cover",
+                      backgroundPosition: "left",
+                      backgroundColor: "#f8f9fa",
+                      padding: "23px 29px",
+                    }}
+                  >
+                    <h5 className="fw-bold mb-4">Driver Details</h5>
+
+                    <div className="row align-items-center">
+                      {/* Left Side */}
+                      <div className="col-md-5 d-flex align-items-center">
+                        <div
+                          className="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
+                          style={{ width: 80, height: 80, fontSize: "28px" }}
+                        >
+                          H
+                        </div>
+
+                        <div>
+                          <h5 className="fw-bold mb-1">Haneef</h5>
+                          <div className="d-flex align-items-center">
+                            <span className="me-2 text-muted">Rating</span>
+                            <div className="text-warning">
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar key={i} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="col-md-1 d-none d-md-flex justify-content-center">
+                        <div
+                          style={{
+                            width: "1px",
+                            height: "120px",
+                            backgroundColor: "#dee2e6",
+                          }}
+                        ></div>
+                      </div>
+
+                      {/* Right Side */}
+                      <div className="col-md-6">
+                        <p className="mb-2">
+                          <strong>Email :</strong> codewithhaneef@gmail.com
+                        </p>
+                        <p className="mb-2">
+                          <strong>Phone :</strong> +91 7006505391
+                        </p>
+                        <p className="mb-1">
+                          <strong>Vehicle Number :</strong> JK01AK4743
+                        </p>
+                        <p className="mb-0">
+                          <strong>Vehicle Type :</strong> Prime Car
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIDER DETAILS */}
+              <div className="card shadow-sm border-0 rounded-4 mb-4">
+                <div
+                  className="card-body p-4"
+                  // style={{
+                  //   backgroundImage: "url('/src/assets/img/bg-img-000.png')",
+                  //   backgroundSize: "cover",
+                  //   backgroundPosition: "left",
+                  //   backgroundColor: "#f8f9fa",
+                  //   padding:"23px 29px",
+                  // }}
+                >
+                  <div
+                    className="personal-information"
+                    style={{
+                      backgroundImage: "url('/src/assets/img/bg-img-000.png')",
+                      backgroundSize: "cover",
+                      backgroundPosition: "left",
+                      backgroundColor: "#f8f9fa",
+                      padding: "23px 29px",
+                    }}
+                  >
+                    <h5 className="fw-bold mb-4">Rider Details</h5>
+
+                    <div className="row align-items-center">
+                      {/* Left Side */}
+                      <div className="col-md-5 d-flex align-items-center">
+                        <div
+                          className="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
+                          style={{ width: 80, height: 80, fontSize: "28px" }}
+                        >
+                          H
+                        </div>
+
+                        <div>
+                          <h5 className="fw-bold mb-1">Sharath Kumar</h5>
+                          <div className="d-flex align-items-center">
+                            <span className="me-2 text-muted">Rating</span>
+                            <div className="text-warning">
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar key={i} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="col-md-1 d-none d-md-flex justify-content-center">
+                        <div
+                          style={{
+                            width: "1px",
+                            height: "120px",
+                            backgroundColor: "#dee2e6",
+                          }}
+                        ></div>
+                      </div>
+
+                      {/* Right Side */}
+                      <div className="col-md-6">
+                        <p className="mb-2">
+                          <strong>Email :</strong> rideexample@gmail.com
+                        </p>
+                        <p className="mb-2">
+                          <strong>Phone :</strong> +91 7006505391
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* -------- Map View -------- */}
+              <div className="card border-0 shadow-sm rounded-4 mb-4">
+                <div className="card-body p-4">
+                  <h5 className="fw-bold mb-3">Map View</h5>
+                  <div
+                    className="rounded-3"
+                    style={{
+                      height: "350px",
+                      background:
+                        "linear-gradient(135deg, #dfe9f3 0%, #ffffff 100%)",
+                    }}
+                  >
+                    <iframe
+                      class="embed-map-frame"
+                      frameborder="0"
+                      scrolling="no"
+                      marginheight="0"
+                      marginwidth="0"
+                      width={550}
+                      height={350}
+                      src="https://maps.google.com/maps?width=600&height=400&hl=en&q=Hyderabad&t=&z=14&ie=UTF8&iwloc=B&output=embed"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* TIMELINE */}
+          <div className="card shadow-sm border-0 rounded-4 mt-4">
+            <div className="card-body p-4">
+              <h5 className="fw-bold mb-4">Ride Timeline</h5>
+
+              {timeline.map((item, index) => (
+                <div key={index} className="d-flex mb-4">
+                  <div
+                    className="bg-success rounded-circle me-3"
+                    style={{ width: 12, height: 12, marginTop: 6 }}
+                  ></div>
+                  <div>
+                    <h6 className="fw-bold mb-1">{item[0]}</h6>
+                    <small className="text-muted">{item[1]}</small>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ViewRideDetails;
