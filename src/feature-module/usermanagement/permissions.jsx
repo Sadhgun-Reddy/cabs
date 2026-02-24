@@ -5,6 +5,7 @@ import SearchFromApi from "../../components/data-table/search";
 import PrimeDataTable from "../../components/data-table";
 import { permissionsData } from "../../core/json/permission-data";
 import { all_routes } from "../../routes/all_routes";
+import CommonFooter from "../../components/footer/commonFooter";
 
 const Permissions = () => {
   const [listData, _setListData] = useState(permissionsData);
@@ -210,7 +211,7 @@ const Permissions = () => {
         </div>
         {/* /product list */}
       </div>
-      <div className="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3">
+      {/* <div className="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3">
         <p className="mb-0">2014 - 2026 © Gk Cabs. All Right Reserved</p>
         <p>
           Designed &amp; Developed by{" "}
@@ -218,7 +219,9 @@ const Permissions = () => {
             Dreams
           </Link>
         </p>
-      </div>
+      </div> */}
+
+      <CommonFooter />
     </div>
   );
 };

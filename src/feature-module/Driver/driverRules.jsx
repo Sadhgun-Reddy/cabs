@@ -11,7 +11,7 @@ import { Search } from "react-feather";
 export default function DriverRules() {
   /* ===================== STATE ===================== */
   const [searchQuery, setSearchQuery] = useState("");
-  const [rows, setRows] = useState(10);
+  const [rows, setRows] = useState(5);
   const [tableData, setTableData] = useState(CouponData);
   const [selectedRows, setSelectedRows] = useState([]);
 
@@ -38,13 +38,14 @@ export default function DriverRules() {
       ),
     );
   };
-//   const toggleVerified = (id) => {
-//     setTableData((prev) =>
-//       prev.map((item) =>
-//         item.id === id ? { ...item, Verified: !item.Verified } : item,
-//       ),
-//     );
-//   };
+
+  // const toggleVerified = (id) => {
+  //   setTableData((prev) =>
+  //     prev.map((item) =>
+  //       item.id === id ? { ...item, Verified: !item.Verified } : item,
+  //     ),
+  //   );
+  // };
 
   /* ===================== COLUMNS ===================== */
 
@@ -100,6 +101,10 @@ export default function DriverRules() {
       field: "vechicletype",
     },
     {
+      header: "Priority",
+      field: "priority",
+    },
+    {
       header: "Status",
       body: (row) => (
         <div className="form-check form-switch">
@@ -135,9 +140,9 @@ export default function DriverRules() {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
@@ -157,8 +162,7 @@ export default function DriverRules() {
             className="me-2 p-2"
             to="/editdriverRules"
             title="Edit Rule"
-            // data-bs-toggle="modal"
-            // data-bs-target="#edit-units"
+
           >
             <i className="ti ti-edit" />
           </Link>

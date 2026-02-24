@@ -1,77 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/coupons";
-import EditZones from "../../core/modals/coupons/editcoupons";
 import CommonFooter from "../../components/footer/commonFooter";
-import DeleteModal from "../../components/delete-modal";
 import SearchFromApi from "../../components/data-table/search";
+import { URLS } from "../../url";
+import axios from "axios";
 
-export default function Peakzones() {
-  const [_searchQuery, setSearchQuery] = useState("");
-  const [rows, setRows] = useState(5);
+export default function PeakZones() {
+  const [rows, setRows] = useState(10);
+  const [currentPage, setCurrentPage] = useState();
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [tableData, setTableData] = useState(
-    CouponData.map((item) => ({
-      ...item,
-      Status: item.Status ?? true,
-    }))
-  );
-
-  /* ===================== HANDLERS ===================== */
-
-  const handleSearch = (value) => setSearchQuery(value);
-
-  const toggleStatus = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: !item.Status } : item
-      )
-    );
+  // Handlers
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+    setCurrentPage();
   };
 
-    /* ===================== ROW SELECTION ===================== */
+  // Helper: convert boolean to API status string
+  const boolToStatus = (bool) => (bool ? "active" : "inactive");
 
+  // API call to update status
+  const updateZoneStatus = async (ids, newStatus) => {
+    try {
+      setUpdateLoading(true);
+      const token = localStorage.getItem("token");
+      await axios.put(
+        URLS.UpdatePeakZoneStatus,
+        {
+          ids,
+          status: boolToStatus(newStatus),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      await fetchZones();
+    } catch (err) {
+      console.error("Status update failed:", err);
+      setError("Failed to update status");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  // Individual toggle
+  const toggleStatus = (id) => {
+    const item = tableData.find((item) => item.id === id);
+    if (!item) return;
+    const newStatus = !item.Status;
+    updateZoneStatus([id], newStatus);
+  };
+
+  // Bulk actions
+  const handleBulkStatus = (status) => {
+    if (!selectedRows.length) return;
+    updateZoneStatus(selectedRows, status);
+    setSelectedRows([]);
+  };
+
+  // Row selection
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id)
-        ? prev.filter((rowId) => rowId !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
   const handleSelectAll = (checked) => {
-    setSelectedRows(checked ? tableData.map((row) => row.id) : []);
+    setSelectedRows(checked ? filteredData.map((row) => row.id) : []);
   };
 
-    /* ===================== BULK ACTIONS ===================== */
-
-  const handleBulkStatus = (status) => {
-    if (!selectedRows.length) return;
-
-    setTableData((prev) =>
-      prev.map((item) =>
-        selectedRows.includes(item.id)
-          ? { ...item, Status: status }
-          : item
-      )
+  // Filter data based on search query
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return tableData;
+    return tableData.filter((item) =>
+      item.Name?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-    setSelectedRows([]);
-  };
+  }, [tableData, searchQuery]);
 
-  const dataSource = CouponData;
-
-   /* ===================== COLUMNS ===================== */
-
+  // Columns definition
   const columns = [
     {
       header: (
         <input
           type="checkbox"
           checked={
-            tableData.length > 0 &&
-            selectedRows.length === tableData.length
+            filteredData.length > 0 &&
+            selectedRows.length === filteredData.length
           }
           onChange={(e) => handleSelectAll(e.target.checked)}
         />
@@ -93,81 +116,110 @@ export default function Peakzones() {
       field: "Name",
     },
     {
+      header: "Priority",
+      field: "priority",
+    },
+    {
       header: "Status",
       body: (row) => (
         <div className="form-check form-switch">
           <input
-          type="checkbox"
-          className={`form-check-input ${
-              row.Status ? "bg-success" : "bg-danger"
-            }`}
+            type="checkbox"
+            className={`form-check-input ${row.Status ? "bg-success" : "bg-danger"}`}
             checked={row.Status}
             onChange={() => toggleStatus(row.id)}
+            disabled={updateLoading}
           />
         </div>
       ),
     },
     {
       header: "Created Date",
-
       body: (row) =>
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
     {
       header: "Actions",
-      body: () => (
-        <div className="action-table-data">
-          <div className="edit-delete-action">
-            <Link
-              className="me-2 p-2"
-              to="#"
-              title="Edit Zone"
-              data-bs-toggle="modal"
-              data-bs-target="#edit-units"
-            >
-              <i className="ti ti-edit" />
-            </Link>
-            <Link
-              data-bs-toggle="modal"
-              data-bs-target="#delete-modal"
-              className="p-2"
-              to="#"
-              title="Delete"
-            >
-              <i className="ti ti-trash" />
-            </Link>
-          </div>
+      body: (row) => (
+        <div className="edit-delete-action">
+          <Link className="me-2 p-2" to={`/Edit-Peak-Zones/${row.id}`}>
+            <i className="ti ti-edit" />
+          </Link>
+          {/* <Link
+            to="#"
+            className="p-2"
+            title="Delete"
+          >
+            <i className="ti ti-trash" />
+          </Link> */}
         </div>
       ),
     },
   ];
 
+  // Fetch zones
+  const fetchZones = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.post(
+        URLS.GetAllPeakZones,
+        { zoneType: "peak" },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      const zones = res.data?.zones || [];
+      const formattedData = zones.map((zone) => ({
+        id: zone._id,
+        Name: zone.name,
+        priority: zone.priority,
+        Status: zone.status === "active",
+        date: zone.logCreatedDate,
+      }));
+
+      setTableData(formattedData);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch zones");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchZones();
+  }, []);
+
   return (
-    <div>
-      <div className="page-wrapper">
-        <div className="content">
-          <div className="page-header">
-            <div className="add-item d-flex">
-              <div className="page-title">
-                <h4>Peak Zones</h4>
-                <h6>Manage Your Peak Zones</h6>
-              </div>
+    <div className="page-wrapper">
+      <div className="content">
+        <div className="page-header">
+          <div className="add-item d-flex">
+            <div className="page-title">
+              <h4>Peak Zones</h4>
             </div>
-             <Link to="/addpeakZones" className="btn btn-primary">
-              <i className="ti ti-circle-plus me-1" />Add Peak Zones</Link>
           </div>
-          {/* /product list */}
-          <div className="card table-list-card">
-            <div className="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-              <div className="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-              <div className="dropdown me-2">
+          <Link to="/addpeakZones" className="btn btn-primary">
+            <i className="ti ti-circle-plus me-1" /> Add Peak Zone
+          </Link>
+        </div>
+
+        <div className="card table-list-card">
+          <div className="card-header d-flex justify-content-between flex-wrap gap-2">
+            <div className="d-flex gap-2 flex-wrap">
+              {/* Rows dropdown */}
+              <div className="dropdown">
                 <Link
                   to="#"
                   className="btn btn-white dropdown-toggle"
@@ -190,7 +242,8 @@ export default function Peakzones() {
                 </ul>
               </div>
 
-              <div className="dropdown me-2">
+              {/* Bulk actions */}
+              <div className="dropdown">
                 <Link
                   to="#"
                   className="btn btn-white dropdown-toggle"
@@ -219,37 +272,28 @@ export default function Peakzones() {
                   </li>
                 </ul>
               </div>
-
-                <button className="btn btn-outline-success">Apply</button>
-              </div>
-
-              <SearchFromApi
-                callback={handleSearch}
-                rows={rows}
-                setRows={setRows}
-              />
             </div>
 
-            <div className="card-body">
-              <div className="table-responsive">
-                <PrimeDataTable
-                  column={columns}
-                  data={dataSource}
-                  totalRecords={5}
-                  rows={10}
-                  setRows={() => {}}
-                  currentPage={2}
-                  setCurrentPage={() => {}}
-                />
-              </div>
-            </div>
+            <SearchFromApi
+              callback={handleSearch}
+              rows={rows}
+              setRows={setRows}
+            />
+          </div>
+
+          <div className="card-body">
+            <PrimeDataTable
+              column={columns}
+              data={filteredData}
+              totalRecords={filteredData.length}
+              rows={rows}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
           </div>
         </div>
-        <CommonFooter />
       </div>
-
-      <EditZones />
-      <DeleteModal />
+      <CommonFooter />
     </div>
   );
 }

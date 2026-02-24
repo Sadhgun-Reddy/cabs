@@ -7,54 +7,10 @@ import CommonFooter from "../../components/footer/commonFooter";
 import DeleteModal from "../../components/delete-modal";
 import SearchFromApi from "../../components/data-table/search";
 
-// const PaymentStatus = ({ status }) => {
-//   const config = {
-//     Pending: {
-//       className: "btn-warning",
-//       icon: "ti ti-clock-hour-4",
-//     },
-//     Completed: {
-//       className: "btn-primary",
-//       icon: "ti ti-check",
-//     },
-//     Failed: {
-//       className: "btn-danger",
-//       icon: "ti ti-cancel",
-//     },
-//   };
-
-//   if (!config[status]) return null;
-
-//     return (
-//     <span className={`btn btn-sm ${config[status].className}`}>
-//       <i className={`${config[status].icon} me-1`} />
-//       {status}
-//     </span>
-//   );
-// };
-
-// const RideStatus = ({ status }) => {
-//   const statusConfig = {
-//     Accepted: { className: "btn-info", icon: "ti ti-checks" },
-//     Completed: { className: "btn-primary", icon: "ti ti-circle-check" },
-//     Scheduled: { className: "btn-primary", icon: "ti ti-calendar-time" },
-//     Cancelled: { className: "btn-danger", icon: "ti ti-x" },
-//   };
-
-//   const config = statusConfig[status];
-//   if (!config) return null;
-
-//     return (
-//     <span className={`btn btn-sm ${config.className}`}>
-//       <i className={`${config.icon} me-1`} />
-//       {status}
-//     </span>
-//   );
-// };
 
 export default function AllRides() {
   /* ===================== STATE ===================== */
-  const [rows, setRows] = useState(0);
+  const [rows, setRows] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
 
@@ -166,9 +122,9 @@ export default function AllRides() {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },

@@ -1,27 +1,128 @@
-
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/Coupons";
 import CommonFooter from "../../components/footer/commonFooter";
-import SearchFromApi from "../../components/data-table/search";
+import { URLS } from "../../url";
+import axios from "axios";
 
 export default function FarePlans() {
-  /* ===================== STATE ===================== */
-  const [rows, setRows] = useState(5);
+  const [rows, setRows] = useState(10);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false); 
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [tableData, setTableData] = useState([]);
 
-  const [tableData, setTableData] = useState(
-    CouponData.map((item) => ({
-      ...item,
-      Status: item.Status
-        ? item.Status.charAt(0).toUpperCase() +
-          item.Status.slice(1).toLowerCase()
-        : "Pending",
-    }))
-  );
+  // ===================== CLIENT‑SIDE SEARCH =====================
+  // (like Zones – filter already fetched data)
+  const filteredData = useMemo(() => {
+    if (!searchTerm.trim()) return tableData;
+    const lowerSearch = searchTerm.toLowerCase();
+    return tableData.filter(
+      (item) =>
+        item.serviceName?.toLowerCase().includes(lowerSearch) ||
+        item.planName?.toLowerCase().includes(lowerSearch)
+    );
+  }, [tableData, searchTerm]);
 
-  /* ===================== ROW SELECTION ===================== */
+  // ===================== FETCH DATA (ONCE) =====================
+  const fetchFairPlans = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await axios.post(
+        URLS.GetAllFairPlans,
+        {}, 
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      // Adjust extraction based on your actual API response
+      const fairPlans = res.data?.fairPlans || res.data?.data || res.data || [];
+      const formattedData = fairPlans.map((plan) => ({
+        id: plan._id,
+        serviceName: plan.serviceName,
+        planName: plan.planName,
+        priority: plan.priority,
+        status: plan.status, 
+        createdAt: plan.logCreatedDate || plan.createdAt,
+      }));
+
+      setTableData(formattedData);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError("Failed to fetch fare plans");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFairPlans();
+  }, []);
+
+  // ===================== STATUS UPDATE HELPERS =====================
+  // Convert boolean (for internal use) to API string
+  const boolToStatus = (bool) => (bool ? "active" : "inactive");
+
+  // Single status update (used by action buttons)
+  const updateSingleStatus = async (id, newStatus) => {
+    setUpdateLoading(true);
+    try {
+      await axios.put(
+        `${URLS.EditFairPlan}/${id}`,
+        { status: newStatus },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      // Refresh data
+      await fetchFairPlans();
+    } catch (err) {
+      console.error("Single update error:", err);
+      setError(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  // Bulk status update – expects a boolean (true = active, false = inactive)
+  const updateBulkStatus = async (newStatusBool) => {
+    if (!selectedRows.length) return;
+    setUpdateLoading(true);
+    try {
+      
+      const statusString = boolToStatus(newStatusBool);
+
+      // Call your bulk endpoint – make sure URLS.UpdateFairPlanBulk is defined
+      await axios.post(
+        URLS.UpdateFairPlanBulk,
+        { ids: selectedRows, status: statusString },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      await fetchFairPlans();
+      setSelectedRows([]);
+    } catch (err) {
+      console.error("Bulk update error:", err);
+      setError(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  // ===================== ROW SELECTION =====================
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
@@ -29,54 +130,18 @@ export default function FarePlans() {
   };
 
   const handleSelectAll = (checked) => {
-    setSelectedRows(checked ? visibleData.map((row) => row.id) : []);
+    setSelectedRows(checked ? filteredData.map((row) => row.id) : []);
   };
 
-  /* ===================== STATUS ACTIONS ===================== */
-  const activeVehicle = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: "Active" } : item
-      )
-    );
-  };
-
-  const inactiveVehicle = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: "Inactive" } : item
-      )
-    );
-  };
-
-  /* ===================== BULK MOVE TO TRASH ===================== */
-  const handleBulkTrash = () => {
-    if (!selectedRows.length) return;
-
-    setTableData((prev) =>
-      prev.map((item) =>
-        selectedRows.includes(item.id)
-          ? { ...item, Status: "Trash" }
-          : item
-      )
-    );
-    setSelectedRows([]);
-  };
-
-  /* ===================== FILTER DATA ===================== */
-  const visibleData = tableData.filter((item) => item.Status !== "Trash");
-
-  /* ===================== COLUMNS ===================== */
+  // ===================== COLUMNS =====================
   const columns = [
     {
       header: (
         <input
           type="checkbox"
-          checked={
-            visibleData.length > 0 &&
-            selectedRows.length === visibleData.length
-          }
+          checked={filteredData.length > 0 && selectedRows.length === filteredData.length}
           onChange={(e) => handleSelectAll(e.target.checked)}
+          disabled={loading || updateLoading}
         />
       ),
       body: (row) => (
@@ -84,6 +149,7 @@ export default function FarePlans() {
           type="checkbox"
           checked={selectedRows.includes(row.id)}
           onChange={() => handleRowSelect(row.id)}
+          disabled={loading || updateLoading}
         />
       ),
     },
@@ -91,65 +157,51 @@ export default function FarePlans() {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,
     },
-    // {
-    //   header: "ID",
-    //   field: "id",
-    // },
     {
       header: "Service Name",
-      field: "name",
+      body: (row) => row.serviceName,
     },
     {
       header: "Plan Name",
-      field: "planname",
+      body: (row) => row.planName,
     },
-    // {
-    //   header: "Down Grade",
-    //   field: "downgrade",
-    // },
     {
       header: "Priority",
-      field: "priority",
-    },  
+      body: (row) => row.priority,
+    },
     {
       header: "Status",
       body: (row) => {
         let badgeClass = "bg-warning text-dark";
-        if (row.Status === "Active") badgeClass = "bg-success";
-        if (row.Status === "Inactive") badgeClass = "bg-danger";
-
-        return <span className={`badge ${badgeClass}`}>{row.Status}</span>;
+        if (row.status === "active") badgeClass = "bg-success";
+        if (row.status === "inactive") badgeClass = "bg-danger";
+        return (
+          <span className={`badge ${badgeClass}`}>
+            {row.status === "active" ? "Active" : "Inactive"}
+          </span>
+        );
       },
     },
     {
       header: "Actions",
       body: (row) => (
         <div className="edit-delete-action d-flex align-items-center">
-          {/* VIEW */}
-          <Link className="me-2 p-2" to="/editfareplan" title="Edit">
+          <Link className="me-2 p-2" to={`/editfareplan/${row.id}`} title="Edit">
             <i className="ti ti-edit" />
           </Link>
-{/* 
-          <Link className="me-2 p-2" to="#" title="Delete">
-            <i className="ti ti-trash" />
-          </Link> */}
-
-          {/* APPROVE */}
           <button
             className="btn p-2 text-success"
-            title="Active"
-            onClick={() => activeVehicle(row.id)}
-            disabled={row.Status === "Active"}
+            title="Set Active"
+            onClick={() => updateSingleStatus(row.id, "active")}
+            disabled={row.status === "active" || updateLoading}
           >
             <i className="ti ti-check" />
           </button>
-
-          {/* REJECT */}
           <button
             className="btn p-2 text-danger"
-            title="Inactive"
-            onClick={() => inactiveVehicle(row.id)}
-            disabled={row.Status === "Inactive"}
+            title="Set Inactive"
+            onClick={() => updateSingleStatus(row.id, "inactive")}
+            disabled={row.status === "inactive" || updateLoading}
           >
             <i className="ti ti-x" />
           </button>
@@ -158,92 +210,98 @@ export default function FarePlans() {
     },
   ];
 
-  /* ===================== JSX ===================== */
+  // ===================== JSX =====================
   return (
     <div className="page-wrapper">
       <div className="content">
         <div className="page-header d-flex justify-content-between align-items-center">
           <h4>Fare Plan List</h4>
           <Link to="/addfareplan" className="btn btn-outline-success">
-          <i className="ti ti-circle-plus me-1"/>
-          Add New Plan </Link>
+            <i className="ti ti-circle-plus me-1" />
+            Add New Plan
+          </Link>
         </div>
 
         <div className="card table-list-card">
           <div className="card-header d-flex justify-content-between flex-wrap gap-2">
             <div className="d-flex gap-2 flex-wrap">
-              {/* Rows */}
+              {/* Rows per page dropdown */}
               <div className="dropdown">
-                <Link
-                  to="#"
+                <button
                   className="btn btn-white dropdown-toggle"
+                  type="button"
                   data-bs-toggle="dropdown"
                 >
                   {rows}
-                </Link>
+                </button>
                 <ul className="dropdown-menu">
                   {[5, 10, 15, 20, 25].map((num) => (
                     <li key={num}>
-                      <Link
-                        to="#"
-                        className="dropdown-item"
-                        onClick={() => setRows(num)}
-                      >
+                      <button className="dropdown-item" onClick={() => setRows(num)}>
                         {num}
-                      </Link>
+                      </button>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Bulk */}
+              {/* Bulk Actions – now using boolean true/false like Zones */}
               <div className="dropdown">
-                <Link
-                  to="#"
+                <button
                   className="btn btn-white dropdown-toggle"
+                  type="button"
                   data-bs-toggle="dropdown"
+                  disabled={!selectedRows.length || updateLoading}
                 >
                   Bulk Actions
-                </Link>
+                </button>
                 <ul className="dropdown-menu">
                   <li>
-                    <Link
-                      to="#"
-                      className="dropdown-item text-danger"
-                      onClick={handleBulkTrash}
+                    <button
+                      className="dropdown-item text-success"
+                      onClick={() => updateBulkStatus(true)} // true = active
                     >
-                      <i className="ti ti-trash me-2" />
-                      Move to Trash
-                    </Link>
+                      Set Active
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className="dropdown-item text-danger"
+                      onClick={() => updateBulkStatus(false)} // false = inactive
+                    >
+                      Set Inactive
+                    </button>
                   </li>
                 </ul>
               </div>
-
-              <button
-                className="btn btn-outline-success"
-                onClick={handleBulkTrash}
-                disabled={!selectedRows.length}
-              >
-                Apply
-              </button>
             </div>
 
-            <SearchFromApi rows={rows} setRows={setRows} />
-          </div>
-
-          <div className="card-body">
-            <div className="table-responsive">
-              <PrimeDataTable
-                column={columns}
-                data={visibleData}
-                totalRecords={visibleData.length}
-                rows={rows}
+            {/* Search Input – client‑side filter */}
+            <div className="search-input">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search by service or plan name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
+
+          <div className="card-body">
+            {loading && <div className="text-center py-3">Loading...</div>}
+            {error && <div className="alert alert-danger">{error}</div>}
+            {!loading && !error && (
+              <PrimeDataTable
+                column={columns}
+                data={filteredData}           // use filtered data
+                totalRecords={filteredData.length}
+                rows={rows}
+              />
+            )}
+          </div>
         </div>
       </div>
-
       <CommonFooter />
     </div>
   );

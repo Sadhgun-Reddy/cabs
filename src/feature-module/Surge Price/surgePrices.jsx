@@ -116,9 +116,9 @@ export default function SurgePrices() {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
@@ -130,8 +130,7 @@ export default function SurgePrices() {
             className="me-2 p-2"
             to="/editSurgePrice"
             title="Day Details"
-            // data-bs-toggle="modal"
-            // data-bs-target="#edit-units"
+
           >
             <i className="ti ti-edit" />
           </Link>
@@ -139,8 +138,7 @@ export default function SurgePrices() {
             to="#"
             className="p-2"
             title="Delete"
-            // data-bs-toggle="modal"
-            // data-bs-target="#delete-modal"
+
           >
             <i className="ti ti-trash" />
           </Link>

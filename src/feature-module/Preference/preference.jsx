@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
@@ -10,7 +9,7 @@ import SearchFromApi from "../../components/data-table/search";
 
 export default function Preferences() {
   /* ===================== STATE ===================== */
-  const [rows, setRows] = useState(10);
+  const [rows, setRows] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
 
@@ -18,7 +17,7 @@ export default function Preferences() {
     CouponData.map((item) => ({
       ...item,
       Status: item.Status ?? true, // default Active
-    }))
+    })),
   );
 
   /* ===================== HANDLERS ===================== */
@@ -28,8 +27,8 @@ export default function Preferences() {
   const toggleStatus = (id) => {
     setTableData((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, Status: !item.Status } : item
-      )
+        item.id === id ? { ...item, Status: !item.Status } : item,
+      ),
     );
   };
 
@@ -37,9 +36,7 @@ export default function Preferences() {
 
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id)
-        ? prev.filter((rowId) => rowId !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -54,10 +51,8 @@ export default function Preferences() {
 
     setTableData((prev) =>
       prev.map((item) =>
-        selectedRows.includes(item.id)
-          ? { ...item, Status: status }
-          : item
-      )
+        selectedRows.includes(item.id) ? { ...item, Status: status } : item,
+      ),
     );
     setSelectedRows([]);
   };
@@ -70,8 +65,7 @@ export default function Preferences() {
         <input
           type="checkbox"
           checked={
-            tableData.length > 0 &&
-            selectedRows.length === tableData.length
+            tableData.length > 0 && selectedRows.length === tableData.length
           }
           onChange={(e) => handleSelectAll(e.target.checked)}
         />
@@ -91,6 +85,10 @@ export default function Preferences() {
     {
       header: "Name",
       field: "Name",
+    },
+    {
+      header: "Priority",
+      field: "priority",
     },
     {
       header: "Status",
@@ -113,35 +111,30 @@ export default function Preferences() {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
-    // {
-    //   header: "Actions",
-    //   body: () => (
-    //     <div className="edit-delete-action">
-    //       <Link
-    //         className="me-2 p-2"
-    //         to="/editZones"
-    //         // data-bs-toggle="modal"
-    //         // data-bs-target="#edit-units"
-    //       >
-    //         <i className="ti ti-edit" />
-    //       </Link>
-    //       <Link
-    //         to="#"
-    //         className="p-2"
-    //         data-bs-toggle="modal"
-    //         data-bs-target="#delete-modal"
-    //       >
-    //         <i className="ti ti-trash" />
-    //       </Link>
-    //     </div>
-    //   ),
-    // },
+    {
+      header: "Actions",
+      body: () => (
+        <div className="edit-delete-action">
+          <Link className="me-2 p-2" to="/Edit-Preference">
+            <i className="ti ti-edit" />
+          </Link>
+          <Link
+            to="#"
+            className="p-2"
+            data-bs-toggle="modal"
+            data-bs-target="#delete-modal"
+          >
+            <i className="ti ti-trash" />
+          </Link>
+        </div>
+      ),
+    },
   ];
 
   /* ===================== JSX ===================== */

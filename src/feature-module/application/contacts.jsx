@@ -6,6 +6,7 @@ import TableTopHead from "../../components/table-top-head";
 import SearchFromApi from "../../components/data-table/search";
 import CommonSelect from "../../components/select/common-select";
 import DeleteModal from "../../components/delete-modal";
+import CommonFooter from "../../components/footer/commonFooter";
 
 const Contacts = () => {
   const data = contact_data;
@@ -203,7 +204,7 @@ const Contacts = () => {
           </div>
           {/* /product list */}
         </div>
-        <div className="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3">
+        {/* <div className="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3">
           <p className="mb-0 text-gray-9">
             2014 - 2026 © Gk Cabs. All Right Reserved
           </p>
@@ -213,7 +214,9 @@ const Contacts = () => {
               Dreams
             </Link>
           </p>
-        </div>
+        </div> */}
+
+        <CommonFooter />
       </div>
       <>
         {/* Add Customer */}

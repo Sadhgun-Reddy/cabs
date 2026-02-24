@@ -1,18 +1,24 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { all_routes } from "../../../../routes/all_routes";
-import { appleLogo, facebookLogo, googleLogo, logo, logoWhite } from "../../../../utils/imagepath";
+import {
+  appleLogo,
+  facebookLogo,
+  googleLogo,
+  logo,
+  logoWhite,
+} from "../../../../utils/imagepath";
 
 const Register = () => {
   const [passwordVisibility, setPasswordVisibility] = useState({
     password: false,
-    confirmPassword: false
+    confirmPassword: false,
   });
 
   const togglePasswordVisibility = (field) => {
     setPasswordVisibility((prevState) => ({
       ...prevState,
-      [field]: !prevState[field]
+      [field]: !prevState[field],
     }));
   };
 
@@ -36,6 +42,9 @@ const Register = () => {
                     <h3>Register</h3>
                     <h4>Create New Gk Cabs Account</h4>
                   </div>
+
+                  {/*==========Name==========*/}
+
                   <div className="mb-3">
                     <label className="form-label">
                       Name <span className="text-danger"> *</span>
@@ -44,13 +53,16 @@ const Register = () => {
                       <input
                         type="text"
                         defaultValue=""
-                        className="form-control border-end-0" />
-                      
+                        className="form-control border-end-0"
+                      />
+
                       <span className="input-group-text border-start-0">
                         <i className="ti ti-user" />
                       </span>
                     </div>
                   </div>
+
+                  {/*==========Email==========*/}
                   <div className="mb-3">
                     <label className="form-label">
                       Email <span className="text-danger"> *</span>
@@ -59,13 +71,79 @@ const Register = () => {
                       <input
                         type="text"
                         defaultValue=""
-                        className="form-control border-end-0" />
-                      
+                        className="form-control border-end-0"
+                      />
+
                       <span className="input-group-text border-start-0">
                         <i className="ti ti-mail" />
                       </span>
                     </div>
                   </div>
+
+                  {/*==========Mobile Number==========*/}
+                  {/* <div className="mb-3">
+                    <label className="form-label">
+                      Mobile Number <span className="text-danger"> *</span>
+                    </label>
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        defaultValue=""
+                        className="form-control border-end-0"
+                        required
+                      />
+
+                      <span className="input-group-text border-start-0">
+                        <i className="ti ti-phone" />
+                      </span>
+                    </div>
+                  </div> */}
+
+                  {/*==========Emergancy Mobile Number==========*/}
+                  {/* <div className="mb-3">
+                    <label className="form-label">
+                      Emergancy Mobile Number{" "}
+                      <span className="text-danger"> *</span>
+                    </label>
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        defaultValue=""
+                        className="form-control border-end-0"
+                        required
+                      />
+
+                      <span className="input-group-text border-start-0">
+                        <i className="ti ti-phone" />
+                      </span>
+                    </div>
+                  </div> */}
+
+                  {/*==========Gender==========*/}
+                  {/* <div className="mb-3">
+                    <label className="form-label">
+                      Gender <span className="text-danger"> *</span>
+                    </label>
+                    <div className="input-group">
+                      <select
+                        type="text"
+                        defaultValue=""
+                        className="form-select border-end-0"
+                        required
+                      >
+                        <option value="select">Select</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+
+                      <span className="input-group-text border-start-0">
+                        <i className="ti ti-gender-bigender" />
+                      </span>
+                    </div>
+                  </div> */}
+
+                  {/*==========Password==========*/}
                   <div className="mb-3">
                     <label className="form-label">
                       Password <span className="text-danger"> *</span>
@@ -73,16 +151,19 @@ const Register = () => {
                     <div className="pass-group">
                       <input
                         type={passwordVisibility.password ? "text" : "password"}
-                        className="pass-input form-control" />
-                      
+                        className="pass-input form-control"
+                      />
+
                       <span
                         className={`ti toggle-password text-gray-9 ${
-                        passwordVisibility.password ? "ti-eye" : "ti-eye-off"}`
-                        }
-                        onClick={() => togglePasswordVisibility("password")}>
-                      </span>
+                          passwordVisibility.password ? "ti-eye" : "ti-eye-off"
+                        }`}
+                        onClick={() => togglePasswordVisibility("password")}
+                      ></span>
                     </div>
                   </div>
+
+                  {/*==========COnfirm Password==========*/}
                   <div className="mb-3">
                     <label className="form-label">
                       Confirm Password <span className="text-danger"> *</span>
@@ -108,18 +189,23 @@ const Register = () => {
                         ></span> */}
                       <input
                         type={
-                        passwordVisibility.confirmPassword ?
-                        "text" :
-                        "password"
+                          passwordVisibility.confirmPassword
+                            ? "text"
+                            : "password"
                         }
-                        className="pass-inputs form-control" />
-                      
+                        className="pass-inputs form-control"
+                      />
+
                       <span
                         className={`ti toggle-passwords text-gray-9 ${
-                        passwordVisibility.confirmPassword ? "ti-eye" : "ti-eye-off"}`
+                          passwordVisibility.confirmPassword
+                            ? "ti-eye"
+                            : "ti-eye-off"
+                        }`}
+                        onClick={() =>
+                          togglePasswordVisibility("confirmPassword")
                         }
-                        onClick={() => togglePasswordVisibility("confirmPassword")} />
-                      
+                      />
                     </div>
                   </div>
                   <div className="form-login authentication-check">
@@ -205,8 +291,8 @@ const Register = () => {
         </div>
       </div>
       {/* /Main Wrapper */}
-    </>);
-
+    </>
+  );
 };
 
 export default Register;

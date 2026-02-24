@@ -47,9 +47,9 @@ const ViewRiderDetails = () => {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
@@ -74,7 +74,7 @@ const ViewRiderDetails = () => {
           <div className="col-lg-6">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
-                <h5 className="fw-bold mb-4">Personal Information</h5>
+                <h5 className="fw-bold mb-4">Rider Information</h5>
 
                 <div
                   className="d-flex align-items-center mb-4"
@@ -116,10 +116,16 @@ const ViewRiderDetails = () => {
                 <div className="row">
                   <div className="col-6">
                     <p>
+                      <strong>Email :</strong> rider@example.com
+                    </p>
+                    <p>
                       <strong>Contact :</strong> +93 123456789
                     </p>
                     <p>
-                      <strong>Email :</strong> rider@example.com
+                      <strong>Emergancy Contact :</strong> +93 123456788
+                    </p>
+                    <p>
+                      <strong>Gender :</strong> Male
                     </p>
                   </div>
                   <div className="col-6 border-start">

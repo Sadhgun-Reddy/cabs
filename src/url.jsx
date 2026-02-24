@@ -1,0 +1,74 @@
+import { Edit, Search } from "react-feather"
+import AddVehicleGroup from "./feature-module/Service/addvehicleGroup"
+
+const base_url = "http://88.222.213.67:5090/"
+
+
+export const URLS = {
+
+    GoogleMapsKey: "AIzaSyDOesNrafsTY5VzVYdMelzdFRPxLPMwh-I",
+
+    Base: base_url,
+    ImageUrl: base_url,
+
+    AdminLogin: base_url + "v1/gkcabs/admin/auth/authLogin",
+    GetProfile: base_url + "v1/gkcabs/admin/auth/getprofile",
+    UpdateProfile: base_url + "v1/gkcabs/admin/auth/updateAdminProfile",
+
+    // Zones 
+
+    GetAllZones: base_url + "v1/gkcabs/admin/zone/getallzones",
+    AddZone: base_url + "v1/gkcabs/admin/zone/addzone",
+    EditZone: base_url + "v1/gkcabs/admin/zone/updatezone",
+    GetZoneById: base_url + "v1/gkcabs/admin/zone/getzonebyid/",
+    UpdateZoneStatus: base_url + "v1/gkcabs/admin/zone/updatezonestatus",
+
+    // Airport Zones
+
+    GetAllAirportZones: base_url + "v1/gkcabs/admin/zone/getallzones",
+    AddAirportZone: base_url + "v1/gkcabs/admin/zone/addzone",
+    EditAirportZone: base_url + "v1/gkcabs/admin/zone/updatezone",
+    GetAirportZoneById: base_url + "v1/gkcabs/admin/zone/getzonebyid/",
+    UpdateAirportZoneStatus: base_url + "v1/gkcabs/admin/zone/updatezonestatus",
+
+
+    // Peak Zones
+
+    GetAllPeakZones: base_url + "v1/gkcabs/admin/zone/getallzones",
+    AddPeakZone: base_url + "v1/gkcabs/admin/zone/addzone",
+    EditPeakZone: base_url + "v1/gkcabs/admin/zone/updatezone",
+    GetPeakZoneById: base_url + "v1/gkcabs/admin/zone/getzonebyid/",
+    UpdatePeakZoneStatus: base_url + "v1/gkcabs/admin/zone/updatezonestatus",
+
+    // Service Categories
+
+    GetAllServiceCategories: base_url + "v1/gkcabs/admin/servicetype/getallservicetypes",
+    EditServiceCategory: base_url + "v1/gkcabs/admin/servicetype/editservicetype",
+    UpdateServiceCategoryStatus: base_url + "v1/gkcabs/admin/servicetype/updateservicestatus",
+    SearchServiceCategories: base_url + "v1/gkcabs/admin/servicetype/getallservicetypes?searchQuery=",
+
+    // Vehicle Groups
+
+    GetAllVehicleGroup: base_url + "v1/gkcabs/admin/vechilegroup/getallvechilegroups",
+    UpdateVehicleGroupStatus: base_url + "v1/gkcabs/admin/vechilegroup/updatestatus",
+    AddVehicleGroup: base_url + "v1/gkcabs/admin/vechilegroup/addvechilegroup",
+    EditVehicleGroup: base_url + "v1/gkcabs/admin/vechilegroup/editvechilegroup",
+    GetVehicleGroupById: base_url + "v1/gkcabs/admin/vechilegroup/getvechilegroupbyid/",
+
+    //Vehicle Model
+
+    GetAllVehicleModel: base_url + "v1/gkcabs/admin/vechilemodel/getallvechilemodels",
+    UpdateVehicleModelStatus: base_url + "v1/gkcabs/admin/vechilemodel/updatestatus",
+    AddVehicleModel: base_url + "v1/gkcabs/admin/vechilemodel/addvechilemodel",
+    EditVehicleModel: base_url + "v1/gkcabs/admin/vechilemodel/editvechilemodel",
+    GetVehicleModelById: base_url + "v1/gkcabs/admin/vechilemodel/getvehiclebyid",
+
+    // Fair Plans
+
+    GetAllFairPlans: base_url + "v1/gkcabs/admin/fairplan/getallfairplans",
+    AddFaiPlan: base_url + "v1/gkcabs/admin/fairplan/addfairplan",
+    EditFarePlan: base_url + "v1/gkcabs/admin/fairplan/editfairplan",
+    UpdateFarePlanStatus: base_url + "v1/gkcabs/admin/fairplan/updatestatus",
+}
+
+

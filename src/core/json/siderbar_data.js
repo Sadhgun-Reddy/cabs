@@ -35,7 +35,7 @@ export const SidebarData = [
         submenu: true,
         showSubRoute: false,
         submenuItems: [
-          { label: "All Airport Zones", link: "/Airportzones"},
+          { label: "All Airport Zones", link: "/airportzones"},
           { label: "Add Airportzones", link: "/addairportzones"}
         ]
       },
@@ -47,6 +47,7 @@ export const SidebarData = [
         submenuItems: [
           { label: "All Peak Zones", link: "/peakzones"},
           { label: "Add Peak Zones", link: "/addpeakZones"},
+          { label: "Peak Zone Map", link : "/PeakZoneMap"},
         ]
       },
       {
@@ -56,7 +57,7 @@ export const SidebarData = [
         showSubRoute: false,
         submenuItems: [
           { label: "All Riders", link: "/riders"},
-          { label: "Wallet", link: "/riderWallet"},
+          { label: "Rider Wallet", link: "/riderWallet"},
         ]
       },
       {
@@ -71,7 +72,7 @@ export const SidebarData = [
           { label: "Driver Location", link: "/driverLocation"},
           { label: "Driver Documents", link: "/driverDocument"},
           { label: "Withdraw Requests", link: "/withdrawRequest"},
-          { label: "Wallet", link: "/driverWallet"},
+          { label: "Driver Wallet", link: "/driverWallet"},
           { label: "Commission Histories", link: "/commissionHistories"},
         ]
       },
@@ -98,7 +99,7 @@ export const SidebarData = [
         showSubRoute: false,
         submenuItems:[
           { label: "Serivce Categories", link: "/serviceCategorie"},
-          { label: "Vehicles Group", link: "/vehicleType"},
+          { label: "Vehicles Group", link: "/Vehicle-Group"},
           { label: "Vehicle Model", link: "/vehicleModel"},
         ]
       },
@@ -120,9 +121,9 @@ export const SidebarData = [
         showSubRoute: false,
       },
       {
-        label: "Popular Destinations",
-        icon: "ti ti-map-pin-star",
-        link: "/popularDestionation",
+        label: "Advertising Banners",
+        icon: "ti ti-ad",
+        link: "/Advertising-Banner",
         submenu: false,
         showSubRoute: false,
       },
@@ -146,9 +147,6 @@ export const SidebarData = [
         link: "/coupons",
         submenu: false,
         showSubRoute: false,
-        // submenuItems:[
-        //   { label: "Add Coupons" , link: "/addcoupons"}
-        // ]
       },
       {
         label: "Preference",
@@ -163,6 +161,65 @@ export const SidebarData = [
         link: "/Chat",
         submenu: false,
         showSubRoute: false,
+      },
+      {
+        label: "Reviews",
+        icon: "ti ti-star",
+        submenu: true,
+        showSubRoute: false,
+        submenuItems:[
+          { label: "Rider Reviews", link: "/Rider-Reviews"},
+          { label: "Driver Reviews", link: "/Driver-Reviews"},
+        ]
+      },
+      {
+        label: "Refferrals",
+        icon: "ti ti-link",
+        link: "/Refferral",
+        submenu: false,
+        showSubRoute: false,
+      },
+     {
+        label: "Reports",
+        icon: "ti ti-report",
+        submenu: true,
+        showSubRoute: false,
+        submenuItems:[
+          { label: "Transction Reports", link: "#"},
+          { label: "Ride Reports", link: "#"},
+          { label: "Driver Reports", link: "#"},
+          { label: "Coupon Reports", link: "#"},
+          { label: "Zone Reports", link: "#"},
+          { label: "Incentive Reports", link: "#"},
+        ]
+      },
+      {
+        label: "Heat Map",
+        icon: "ti ti-map",
+        link: "/Heat-Map",
+        submenu: false,
+        showSubRoute: false,
+      },
+      {
+        label: "SOS",
+        icon: "ti ti-help-circle",
+        submenu: true,
+        showSubRoute: false,
+        submenuItems:[
+          { label: "SOS", link: "/SOS"},
+          { label: "SOS Alerts", link: "/Sos-Alerts"},
+        ]
+      },
+      {
+        label: "Manage Admin",
+        icon: "ti ti-user",
+        submenu: true,
+        showSubRoute: false,
+        submenuItems:[
+          { label: "User", link: "/User"},
+          { label: "Add User", link: "/AddUser"},
+          { label: "Role And Permission", link: "/Role-Permission"},
+        ]
       },
     ],
   },

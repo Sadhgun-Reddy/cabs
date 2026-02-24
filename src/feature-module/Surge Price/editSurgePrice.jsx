@@ -145,7 +145,7 @@ const EditSurgePrice = () => {
             <h4>Edit Surge Price</h4>
             <h6 className="text-muted">Update surge pricing details</h6>
           </div>
-          <Link to="/surgePrices" className="btn btn-light">
+          <Link to="/surgePrices" className="btn btn-secondary">
             <i className="ti ti-arrow-left me-1" /> Back to Surge Prices
           </Link>
         </div>

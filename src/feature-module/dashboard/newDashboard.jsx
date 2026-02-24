@@ -17,6 +17,7 @@ import {
 } from "chart.js";
 import { all_routes } from "../../routes/all_routes";
 import CommonDateRangePicker from "../../components/date-range-picker/common-date-range-picker";
+import CommonFooter from "../../components/footer/commonFooter";
 
 ChartJS.register(
   CategoryScale,
@@ -35,11 +36,11 @@ const NewDashboard = () => {
 
   const dashboardCards = [
     {
-      count: 3,
-      title: "All Rides",
+      count: 0,
+      title: "Ride Requests",
       iconClass: "fa-solid fa-car fs-18",
       iconBg: "bg-cyan-transparent text-cyan",
-      link: "profit-and-loss.html",
+      link: route.riderequests,
       showStats: false,
     },
     {
@@ -47,7 +48,7 @@ const NewDashboard = () => {
       title: "Scheduled Rides",
       iconClass: "fa-solid fa-calendar-check fs-18",
       iconBg: "bg-teal-transparent text-teal",
-      link: route.invoicereport,
+      link: route.scheduledrides,
       showStats: false,
     },
     {
@@ -55,135 +56,127 @@ const NewDashboard = () => {
       title: "Accepted Rides",
       iconClass: "fa-solid fa-thumbs-up fs-18",
       iconBg: "bg-orange-transparent text-orange",
-      link: route.expenselist,
+      link: route.accpetedrides,
       showStats: false,
     },
     {
       count: 0,
-      title: "On the way rides",
-      iconClass: "fa-solid fa-route fs-18",
-      iconBg: "bg-indigo-transparent text-indigo",
-      link: route.salesreport,
-      showStats: false,
-    },
-    {
-      count: 0,
-      title: "Client Location",
+      title: "Arrived Rides",
       iconClass: "fa-solid fa-location-dot fs-18",
-      iconBg: "bg-cyan-transparent text-cyan",
-      link: "profit-and-loss.html",
-      showStats: false,
-    },
-    {
-      count: 1,
-      title: "Start Rides",
-      iconClass: "fa-solid fa-play-circle fs-18",
-      iconBg: "bg-teal-transparent text-teal",
-      link: route.invoicereport,
-      showStats: false,
-    },
-    {
-      count: 0,
-      title: "Cancelled Rides",
-      iconClass: "fa-solid fa-xmark-circle fs-18",
-      iconBg: "bg-orange-transparent text-orange",
-      link: route.expenselist,
-      showStats: false,
-    },
-    {
-      count: 1,
-      title: "Completed Rides",
-      iconClass: "fa-solid fa-circle-check fs-18",
       iconBg: "bg-indigo-transparent text-indigo",
-      link: route.salesreport,
+      link: route.arrivedrides,
       showStats: false,
     },
     {
       count: 0,
-      title: "Cancelled Rides(Passenger)",
-      iconClass: "fa-solid fa-user-xmark fs-18",
+      title: "Started Rides",
+      iconClass: "fa-solid fa-play fs-18",
       iconBg: "bg-cyan-transparent text-cyan",
-      link: "profit-and-loss.html",
+      link: route.startedrides,
+      showStats: false,
+    },
+    {
+      count: 1,
+      title: "Cancelled Rides",
+      iconClass: "fa-solid fa-circle-xmark fs-18",
+      iconBg: "bg-teal-transparent text-teal",
+      link: route.cancelledrides,
       showStats: false,
     },
     {
       count: 0,
-      title: "Cancelled Rides(Driver)",
-      iconClass: "fa-solid fa-car-burst fs-18",
-      iconBg: "bg-teal-transparent text-teal",
-      link: route.invoicereport,
+      title: "Completed Rides",
+      iconClass: "fa-solid fa-flag-checkered fs-18",
+      iconBg: "bg-orange-transparent text-orange",
+      link: route.completedrides,
+      showStats: false,
+    },
+    {
+      count: 1,
+      title: "All Rides",
+      iconClass: "fa-solid fa-list fs-18",
+      iconBg: "bg-indigo-transparent text-indigo",
+      link: route.allrides,
       showStats: false,
     },
     {
       count: 0,
       title: "User Wallet Report",
       iconClass: "fa-solid fa-wallet fs-18",
-      iconBg: "bg-orange-transparent text-orange",
-      link: route.expenselist,
-      showStats: false,
-    },
-    {
-      count: 5273,
-      title: "Driver Wallet Report",
-      iconClass: "fa-solid fa-wallet fs-18",
-      iconBg: "bg-indigo-transparent text-indigo",
-      link: route.salesreport,
+      iconBg: "bg-cyan-transparent text-cyan",
+      link: route.riderwallet,
       showStats: false,
     },
     {
       count: 0,
-      title: "Card Payment",
-      iconClass: "fa-solid fa-credit-card fs-18",
+      title: "Driver Wallet Report",
+      iconClass: "fa-solid fa-money-bill-transfer fs-18",
+      iconBg: "bg-teal-transparent text-teal",
+      link: route.driverWallet,
+      showStats: false,
+    },
+    {
+      count: 0,
+      title: "Verified Drivers",
+      iconClass: "fa-solid fa-user-check fs-18",
+      iconBg: "bg-orange-transparent text-orange",
+      link: route.Verifieddriver,
+      showStats: false,
+    },
+    {
+      count: 5,
+      title: "Unverified Drivers",
+      iconClass: "fa-solid fa-user-xmark fs-18",
       iconBg: "bg-indigo-transparent text-indigo",
-      link: route.salesreport,
+      link: route.UnverifiedDriver,
+      showStats: false,
+    },
+    {
+      count: 0,
+      title: "Zones",
+      iconClass: "fa-solid fa-map fs-18",
+      iconBg: "bg-indigo-transparent text-indigo",
+      link: route.zones,
       showStats: false,
     },
     {
       count: 3,
-      title: "Cash Payment",
-      iconClass: "fa-solid fa-money-bill-wave fs-18",
+      title: "Airport Zones",
+      iconClass: "fa-solid fa-plane fs-18",
       iconBg: "bg-cyan-transparent text-cyan",
-      link: "profit-and-loss.html",
-      showStats: false,
-    },
-    {
-      count: 1325,
-      title: "Revenue",
-      iconClass: "fa-solid fa-chart-line fs-18",
-      iconBg: "bg-teal-transparent text-teal",
-      link: route.invoicereport,
-      showStats: false,
-    },
-    {
-      count: 1466,
-      title: "Total Verified Drivers",
-      iconClass: "fa-solid fa-user-check fs-18",
-      iconBg: "bg-orange-transparent text-orange",
-      link: route.expenselist,
-      showStats: false,
-    },
-    {
-      count: 1466,
-      title: "Total not Verified Drivers",
-      iconClass: "fa-solid fa-user-xmark fs-18",
-      iconBg: "bg-indigo-transparent text-indigo",
-      link: route.salesreport,
+      link: route.Airportzones,
       showStats: false,
     },
     {
       count: 0,
-      title: "Active Peak Zone",
-      iconClass: "fa-solid fa-bolt fs-18",
-      iconBg: "bg-indigo-transparent text-indigo",
-      link: route.salesreport,
+      title: "Peak Zones",
+      iconClass: "fa-solid fa-fire fs-18",
+      iconBg: "bg-teal-transparent text-teal",
+      link: route.Peakzones,
       showStats: false,
     },
+    // {
+    //   count: 0,
+    //   title: "Verified Drivers",
+    //   iconClass: "fa-solid fa-user-check fs-18",
+    //   iconBg: "bg-orange-transparent text-orange",
+    //   link: route.Verifieddriver,
+    //   showStats: false,
+    // },
+    // {
+    //   count: 0,
+    //   title: "Unverified Drivers",
+    //   iconClass: "fa-solid fa-user-xmark fs-18",
+    //   iconBg: "bg-indigo-transparent text-indigo",
+    //   link: route.UnverifiedDriver,
+    //   showStats: false,
+    // },
     {
       count: 32,
       title: "Rides",
       iconClass: "fa-solid fa-taxi fs-18",
       iconBg: "bg-indigo-transparent text-indigo",
-      link: route.salesreport,
+      link: route.allrides,
       showStats: false,
     },
   ];
@@ -544,7 +537,7 @@ const NewDashboard = () => {
             <div className="card flex-fill shadow-sm rounded-2 p-4">
               <div className="d-flex justify-content-between mb-3">
                 <h6 className="fw-semibold mb-0">Top Drivers</h6>
-                <button className="text-muted small">View All</button>
+                <button className="btn btn-sm btn-outline-success">View All</button>
               </div>
 
               <table className="table align-middle mb-0">
@@ -592,11 +585,11 @@ const NewDashboard = () => {
           </div>
 
           {/* Recent Rides */}
-          <div className="col-xl-6 col-lg-6 col-md-12 d-flex">
-            <div className="card shadow-sm rounded-4 p-4 ">
+          <div className="col-xl-6 col-lg-6">
+            <div className="card shadow-sm rounded-2 p-4 ">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h6 className="fw-semibold mb-0">Recent Rides</h6>
-                <button className="text-success fw-medium">View All</button>
+                <button className="btn btn-sm btn-outline-success">View All</button>
               </div>
 
               <ul className="nav border-bottom mb-3">
@@ -658,18 +651,7 @@ const NewDashboard = () => {
           </div>
         </div>
       </div>
-
-      <div className="copyright-footer d-flex align-items-center justify-content-between border-top bg-white gap-3 flex-wrap">
-        <p className="fs-13 text-gray-9 mb-0">
-          2014-2026 © Gk Cabs. All Right Reserved
-        </p>
-        <p>
-          Designed &amp; Developed By{" "}
-          <Link to="#" className="link-primary">
-            Gk Cabs
-          </Link>
-        </p>
-      </div>
+      <CommonFooter />
     </section>
   );
 };

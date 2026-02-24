@@ -1,0 +1,267 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import PrimeDataTable from "../../components/data-table";
+import { CouponData } from "../../core/json/Coupons";
+import EditZones from "../../core/modals/coupons/editcoupons";
+import CommonFooter from "../../components/footer/commonFooter";
+import DeleteModal from "../../components/delete-modal";
+import SearchFromApi from "../../components/data-table/search";
+
+export default function Refferrals() {
+  /* ===================== STATE ===================== */
+  const [rows, setRows] = useState(5);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
+
+  const [tableData, setTableData] = useState(
+    CouponData.map((item) => ({
+      ...item,
+      Status: item.Status ?? true, // default Active
+    })),
+  );
+
+  /* ===================== HANDLERS ===================== */
+
+  const handleSearch = (value) => setSearchQuery(value);
+
+  const toggleStatus = (id) => {
+    setTableData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, Status: !item.Status } : item,
+      ),
+    );
+  };
+
+  /* ===================== ROW SELECTION ===================== */
+
+  const handleRowSelect = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
+    );
+  };
+
+  const handleSelectAll = (checked) => {
+    setSelectedRows(checked ? tableData.map((row) => row.id) : []);
+  };
+
+  /* ===================== BULK ACTIONS ===================== */
+
+  const handleBulkStatus = (status) => {
+    if (!selectedRows.length) return;
+
+    setTableData((prev) =>
+      prev.map((item) =>
+        selectedRows.includes(item.id) ? { ...item, Status: status } : item,
+      ),
+    );
+    setSelectedRows([]);
+  };
+
+  /* ===================== COLUMNS ===================== */
+
+  const columns = [
+    {
+      header: (
+        <input
+          type="checkbox"
+          checked={
+            tableData.length > 0 && selectedRows.length === tableData.length
+          }
+          onChange={(e) => handleSelectAll(e.target.checked)}
+        />
+      ),
+      body: (row) => (
+        <input
+          type="checkbox"
+          checked={selectedRows.includes(row.id)}
+          onChange={() => handleRowSelect(row.id)}
+        />
+      ),
+    },
+    {
+      header: "Sl.No",
+      body: (_row, options) => options.rowIndex + 1,
+    },
+    {
+      header: "Referrer",
+      field: "referrer",
+    },
+    {
+      header: "Referred",
+      field: "driver",
+    },
+    {
+      header: "Ride Amount",
+      field: "rating",
+    },
+    {
+      header: "Referrer Bonus",
+      field: "service",
+    },
+    {
+      header: "Referred Bonus",
+      field: "message",
+    },
+    {
+      header: "Status",
+      body: (row) => (
+        <div className="form-check form-switch">
+          <input
+            type="checkbox"
+            className={`form-check-input ${
+              row.Status ? "bg-success" : "bg-danger"
+            }`}
+            checked={row.Status}
+            onChange={() => toggleStatus(row.id)}
+          />
+        </div>
+      ),
+    },
+    {
+      header: "Credited Date",
+      body: (row) =>
+        row?.date
+          ? new Date(row.date).toLocaleString("en-IN", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+            })
+          : "--",
+    },
+    {
+      header: "Created Date",
+      body: (row) =>
+        row?.date
+          ? new Date(row.date).toLocaleString("en-IN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              // hour: "2-digit",
+            })
+          : "--",
+    },
+    // {
+    //   header: "Actions",
+    //   body: () => (
+    //     <div className="edit-delete-action">
+    //       <Link
+    //         className="me-2 p-2"
+    //         to="#"
+    //       >
+    //         <i className="ti ti-edit" />
+    //       </Link>
+    //       <Link
+    //         to="#"
+    //         className="p-2"
+    //         data-bs-toggle="modal"
+    //         data-bs-target="#delete-modal"
+    //       >
+    //         <i className="ti ti-trash" />
+    //       </Link>
+    //     </div>
+    //   ),
+    // },
+  ];
+
+  /* ===================== JSX ===================== */
+
+  return (
+    <div className="page-wrapper">
+      <div className="content">
+        <div className="page-header d-flex justify-content-between">
+          <div>
+            <h4>Refferral</h4>
+          </div>
+        </div>
+
+        <div className="card table-list-card">
+          <div className="card-header d-flex justify-content-between flex-wrap gap-2">
+            <div className="d-flex gap-2 flex-wrap">
+              {/* Rows Dropdown */}
+              {/* <div className="dropdown">
+                <Link
+                  to="#"
+                  className="btn btn-white dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                >
+                  {rows}
+                </Link>
+                <ul className="dropdown-menu">
+                  {[5, 10, 15, 20, 25].map((num) => (
+                    <li key={num}>
+                      <Link
+                        to="#"
+                        className="dropdown-item"
+                        onClick={() => setRows(num)}
+                      >
+                        {num}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div> */}
+
+              {/* Bulk Actions */}
+              {/* <div className="dropdown">
+                <Link
+                  to="#"
+                  className="btn btn-white dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                >
+                  Bulk Actions
+                </Link>
+                <ul className="dropdown-menu">
+                  <li>
+                    <Link
+                      to="#"
+                      className="dropdown-item text-success"
+                      onClick={() => handleBulkStatus(true)}
+                    >
+                      Active
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="#"
+                      className="dropdown-item text-danger"
+                      onClick={() => handleBulkStatus(false)}
+                    >
+                      Inactive
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                className="btn btn-outline-success"
+                disabled={!selectedRows.length}
+              >
+                Apply
+              </button> */}
+            </div>
+
+            <SearchFromApi
+              callback={handleSearch}
+              rows={rows}
+              setRows={setRows}
+            />
+          </div>
+
+          <div className="card-body">
+            <PrimeDataTable
+              column={columns}
+              data={tableData}
+              totalRecords={tableData.length}
+              rows={rows}
+            />
+          </div>
+        </div>
+      </div>
+
+      <CommonFooter />
+      <EditZones />
+      <DeleteModal />
+    </div>
+  );
+}

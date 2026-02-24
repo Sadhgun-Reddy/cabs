@@ -11,7 +11,7 @@ import { Search } from "react-feather";
 export default function UnverifiedDriver() {
   /* ===================== STATE ===================== */
   const [searchQuery, setSearchQuery] = useState("");
-  const [rows, setRows] = useState(10);
+  const [rows, setRows] = useState(5);
   const [tableData, setTableData] = useState(CouponData);
   const [selectedRows, setSelectedRows] = useState([]);
 
@@ -104,6 +104,10 @@ export default function UnverifiedDriver() {
       field: "Email",
     },
     {
+      header: "Zone",
+      field: "zone",
+    },
+    {
       header: "Status",
       body: (row) => (
         <div className="form-check form-switch">
@@ -139,9 +143,9 @@ export default function UnverifiedDriver() {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
@@ -269,8 +273,8 @@ export default function UnverifiedDriver() {
               <div className="table-responsive">
                 <PrimeDataTable
                   column={columns}
-                //   data={tableData}
-                //   totalRecords={tableData.length}
+                  data={tableData}
+                  totalRecords={tableData.length}
                   rows={rows}
                 />
               </div>

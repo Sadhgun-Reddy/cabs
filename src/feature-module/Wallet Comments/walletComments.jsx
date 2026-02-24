@@ -91,10 +91,10 @@ export default function WalletComments() {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,
     },
-    {
-      header: "ID",
-      field: "id",
-    },
+    // {
+    //   header: "ID",
+    //   field: "id",
+    // },
     {
       header: "Name",
       field: "name",
@@ -118,7 +118,7 @@ export default function WalletComments() {
       body: (row) => (
         <div className="edit-delete-action d-flex align-items-center">
           {/* VIEW */}
-          <Link className="me-2 p-2" to="#" title="Edit">
+          <Link className="me-2 p-2" to="/EditComments" title="Edit">
             <i className="ti ti-edit" />
           </Link>
 {/* 

@@ -7,8 +7,8 @@ const AddPreference = () => {
   const route = all_routes;
 
   const [formData, setFormData] = useState({
-    documentImage: null,
     name: "",
+    priority: "",
     status: "pending",
   });
 
@@ -55,7 +55,7 @@ const AddPreference = () => {
               <div className="row">
 
                 {/* DOCUMENT IMAGE */}
-                <div className="col-md-4 mb-3">
+                {/* <div className="col-md-4 mb-3">
                   <label className="form-label">Image</label>
                   <div className="upload-box">
                     <input
@@ -70,7 +70,7 @@ const AddPreference = () => {
                       <i className="feather icon-plus"></i>
                     </label>
                   </div>
-                </div>
+                </div> */}
 
                 {/* DRIVER */}
                 <div className="col-md-4 mb-3">
@@ -80,27 +80,24 @@ const AddPreference = () => {
                     className="form-control"
                     value={formData.name}
                     onChange={handleChange}
+                    placeholder="Enter Name"
                     required
                   />
 
                 </div>
 
-                {/* DOCUMENT */}
-                {/* <div className="col-md-4 mb-3">
-                  <label className="form-label">Document</label>
-                  <select
-                    name="document"
-                    className="form-select"
-                    value={formData.document}
+                {/* Priority */}
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Priority</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={formData.priority}
                     onChange={handleChange}
+                    placeholder="Enter Priority"
                     required
-                  >
-                    <option value="">Select Document</option>
-                    <option value="license">Driving License</option>
-                    <option value="rc">RC</option>
-                    <option value="insurance">Insurance</option>
-                  </select>
-                </div> */}
+                  />
+                </div>
 
                 {/* EXPIRY DATE */}
                 {/* <div className="col-md-4 mb-3">
@@ -124,9 +121,9 @@ const AddPreference = () => {
                     value={formData.status}
                     onChange={handleChange}
                   >
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
+                    <option value="select">Select Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
                   </select>
                 </div>
 
@@ -134,39 +131,13 @@ const AddPreference = () => {
 
               <div className="text-end mt-3">
                 <button type="submit" className="btn btn-outline-success">
-                  Save and Exit
+                  Add and Exit
                 </button>
               </div>
             </div>
           </div>
         </form>
       </div>
-
-      {/* IMAGE UPLOAD STYLES */}
-      <style>{`
-        .upload-box {
-          width: 150px;
-          height: 150px;
-          border: 2px dashed #dee2e6;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        }
-
-        .upload-label {
-          font-size: 28px;
-          color: #6c757d;
-          animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.6; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 };

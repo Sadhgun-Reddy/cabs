@@ -10821,7 +10821,7 @@ body {
         input{
             font-size: variables.$font-size-13;
             border: 1px solid #1F2228;
-            background-color: #0D0D0D;
+            background-color: #0984E3;
             color: #C8D2E0;
             &::placeholder{
                 color: variables.$gray-500;
@@ -10868,7 +10868,7 @@ body {
 
     .dropzone {
         border: 2px dashed #1F2228;
-        background: #0D0D0D;
+        background: #0984E3;
     }
 
     .transaction-tab {
@@ -11948,7 +11948,7 @@ body.layout-mode-rtl {
 
 [data-theme="dark"][data-layout="horizontal"] {
     body {
-        background-color: #0D0D0D;
+        background-color: #0984E3;
     }
 }
 

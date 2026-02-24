@@ -1,42 +1,114 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { all_routes } from "../../routes/all_routes";
+import { URLS } from "../../url";
 
 const EditServiceCategory = () => {
   const route = all_routes;
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    language: "",
-    image: null,
     name: "",
-    description: "",
-    service: "",
-    status: "true",
+    priority: "",
+    status: true,
   });
+  const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // COMMON HANDLER
+  // Fetch existing data on mount
+  useEffect(() => {
+    const fetchServiceType = async () => {
+      setFetchLoading(true);
+      setError("");
+      try {
+        const response = await axios.post(
+          URLS.GetAllServiceCategories,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
+        );
+
+        const serviceTypes = response.data?.serviceTypes || [];
+        const current = serviceTypes.find((item) => item._id === id);
+
+        if (current) {
+          setFormData({
+            name: current.name || "",
+            priority: current.priority || "",
+            status: current.status === "active",
+          });
+        } else {
+          setError("Service category not found");
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError("Failed to load service category");
+      } finally {
+        setFetchLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchServiceType();
+    } else {
+      setFetchLoading(false);
+      setError("No service category ID provided");
+    }
+  }, [id]);
+
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData({
-        ...formData,
-        image: file,
+  // Handle form submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      // Build payload based on API expectations
+      const payload = {
+        name: formData.name,
+        priority: formData.priority,
+        status: formData.status ? "active" : "inactive",
+      };
+
+      await axios.put(`${URLS.EditServiceCategory}/${id}`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
+
+      // Success – navigate back to list
+      navigate(route.serviceCategorie);
+    } catch (err) {
+      console.error("Update error:", err);
+      setError("Failed to update service category");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Submitted Data:", formData);
-  };
+  if (fetchLoading) {
+    return (
+      <div className="page-wrapper">
+        <div className="content text-center py-5">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-wrapper">
@@ -51,41 +123,16 @@ const EditServiceCategory = () => {
           </Link>
         </div>
 
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="accordion-item border mb-4">
             <div className="accordion-body">
               <div className="row">
-                {/* Language */}
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">Language</label>
-
-                  <input
-                    type="text"
-                    name="language"
-                    value={formData.language}
-                    onChange={handleImageChange}
-                    placeholder="Enter Language"
-                    className="form-control"
-                  />
-                </div>
-
-                {/* DOCUMENT IMAGE */}
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">Image</label>
-                  <div className="upload-box">
-                    <input
-                      type="file"
-                      id="documentImage"
-                      accept="image/*"
-                      hidden
-                      onChange={handleImageChange}
-                    />
-                    <label htmlFor="documentImage" className="upload-label">
-                      <i className="feather icon-plus fs-20"></i>
-                    </label>
-                  </div>
-                </div>
-
                 {/* Name */}
                 <div className="col-md-4 mb-3">
                   <label className="form-label">Name</label>
@@ -99,38 +146,20 @@ const EditServiceCategory = () => {
                   />
                 </div>
 
-                {/* Description */}
+                {/* PRIORITY */}
                 <div className="col-md-4 mb-3">
-                  <label className="form-label">Description</label>
+                  <label className="form-label">Priority</label>
                   <input
                     type="text"
                     className="form-control"
-                    name="description"
-                    value={formData.description}
+                    name="priority"
+                    value={formData.priority}
                     onChange={handleChange}
                     required
                   />
                 </div>
 
-                {/* EXPIRY DATE */}
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">Service</label>
-                  <select
-                    type="text"
-                    className="form-control"
-                    name="service"
-                    value={formData.service}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option>Select</option>
-                    <option>Cab</option>
-                    <option>Parcel</option>
-                    <option>Ambulance</option>
-                  </select>
-                </div>
-
-                {/* STATUS */}
+                {/* Status */}
                 <div className="col-md-4 mb-3">
                   <label className="form-label">Status</label>
                   <div className="form-check form-switch d-flex align-items-center gap-2">
@@ -140,13 +169,12 @@ const EditServiceCategory = () => {
                       id="statusSwitch"
                       checked={formData.status}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
+                        setFormData((prev) => ({
+                          ...prev,
                           status: e.target.checked,
-                        })
+                        }))
                       }
                     />
-
                     <label
                       className={`form-check-label fw-medium ${
                         formData.status ? "text-success" : "text-muted"
@@ -160,40 +188,18 @@ const EditServiceCategory = () => {
               </div>
 
               <div className="text-end mt-3">
-                <button type="submit" className="btn btn-outline-success">
-                  Save and Exit
+                <button
+                  type="submit"
+                  className="btn btn-outline-success"
+                  disabled={loading}
+                >
+                  {loading ? "Updating..." : "Update and Exit"}
                 </button>
               </div>
             </div>
           </div>
         </form>
       </div>
-
-      {/* IMAGE UPLOAD STYLES */}
-      <style>{`
-        .upload-box {
-          width: 150px;
-          height: 150px;
-          border: 2px dashed #dee2e6;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        }
-
-        .upload-label {
-          font-size: 28px;
-          color: #6c757d;
-          animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.6; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 };

@@ -1,39 +1,113 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { all_routes } from "../../routes/all_routes";
-//
+import { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import CommonFooter from "../../components/footer/commonFooter";
+import { useJsApiLoader, Autocomplete } from "@react-google-maps/api";
+import axios from "axios";
+import ZoneMap from "../Zones/Google-Map";
+import { URLS } from "../../url";
 
-const Addzones = () => {
-  const route = all_routes;
-  const [Addzones, setAddzones] = useState(false);
-  const [Addzones2, setAddzones2] = useState(true);
-  const [date1, setDate1] = useState(new Date());
-  const [date2, setDate2] = useState(new Date());
-  const [selectedStore, setSelectedStore] = useState(null);
-  const [selectedWarehouse, setSelectedWarehouse] = useState(null);
-  const [selectedSellingType, setSelectedSellingType] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
-  const [selectedBrand, setSelectedBrand] = useState(null);
-  const [selectedUnit, setSelectedUnit] = useState(null);
-  const [selectedBarcodeSymbol, setSelectedBarcodeSymbol] = useState(null);
-  const [selectedTaxType, setSelectedTaxType] = useState(null);
-  const [selectedDiscountType, setSelectedDiscountType] = useState(null);
-  const [selectedWarranty, setSelectedWarranty] = useState(null);
-  const [text, setText] = useState("");
+const LIBRARIES = ["places", "drawing"];
+const DEFAULT_CENTER = { lat: 17.385044, lng: 78.486671 };
+
+const AddAirportZones = () => {
+  const navigate = useNavigate();
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: URLS.GoogleMapsKey,
+    libraries: LIBRARIES,
+  });
+
   const [status, setStatus] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [polygonCoordinates, setPolygonCoordinates] = useState([]);
+  const [mapCenter, setMapCenter] = useState({
+    lat: 17.385044,
+    lng: 78.486671,
+  }); // Default center
+  const [formData, setFormData] = useState({
+    name: "",
+    place: "",
+    priority: "",
+    zoneType: "airpot",
+  });
 
+  const autocompleteRef = useRef(null);
 
-  const [isImageVisible, setIsImageVisible] = useState(true);
-
-  const handleRemoveAddzones = () => {
-    setIsImageVisible(false);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
-  const [isImageVisible1, setIsImageVisible1] = useState(true);
 
-  const handleRemoveAddzones1 = () => {
-    setIsImageVisible1(false);
+  const handlePolygonComplete = (coordinates) => {
+    setPolygonCoordinates(coordinates);
   };
+
+  // Called when user selects a place from autocomplete dropdown
+  const onPlaceChanged = () => {
+    if (autocompleteRef.current) {
+      const place = autocompleteRef.current.getPlace();
+      if (place.geometry) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        setMapCenter({ lat, lng });
+        setFormData((prev) => ({
+          ...prev,
+          place: place.formatted_address || place.name,
+        }));
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (polygonCoordinates.length < 3) {
+      alert("Please draw a polygon with at least 3 points on the map.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const locations = polygonCoordinates.map((point) => ({
+        latitude: point.lat,
+        longitude: point.lng,
+      }));
+
+      const payload = {
+        name: formData.name,
+        place: formData.place,
+        priority: formData.priority,
+        locations: locations,
+        zoneType: formData.zoneType,
+        status: status ? "active" : "inactive",
+      };
+
+      await axios.post(URLS.AddAirportZone, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      alert("Airport Zone Added Successfully");
+      navigate("/airportzones");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to Add airport zone");
+      alert("Error adding airport zone. Check console.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate("/airportzones");
+  };
+
   return (
     <>
       <div className="page-wrapper">
@@ -42,7 +116,6 @@ const Addzones = () => {
             <div className="add-item d-flex">
               <div className="page-title">
                 <h4>Create Airportzones</h4>
-
               </div>
             </div>
             <ul className="table-top-head">
@@ -56,105 +129,149 @@ const Addzones = () => {
               </li>
             </ul>
           </div>
-          {/* /add */}
+
+          {/* Error display */}
+          {error && (
+            <div
+              className="alert alert-danger alert-dismissible fade show"
+              role="alert"
+            >
+              {error}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setError("")}
+                aria-label="Close"
+              />
+            </div>
+          )}
+
           <div className="row">
             <div className="col-lg-6 col-md-6 col-12">
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="add-Addzones">
-                  <div className="">
-                    <div className="accordion-item border mb-4">
-                      <h2 className="accordion-header" id="headingSpacingOne">
-                        <div className="accordion-button collapsed bg-white">
-                          <div className="d-flex align-items-center justify-content-between flex-fill">
-                            <h5 className="d-flex align-items-center">
-                              <i className="feather icon-info text-primary me-2" />
-                              <span>Airportzones Information</span>
-                            </h5>
-                          </div>
-                        </div>
-                      </h2>
+                  <div className="card border mb-4">
+                    <h2 className="card-header" id="headingSpacingOne">
+                      <div className="d-flex align-items-center justify-content-between flex-fill">
+                        <h5 className="d-flex align-items-center">
+                          <i className="feather icon-info text-primary me-2" />
+                          <span>Airportzones Information</span>
+                        </h5>
+                      </div>
+                    </h2>
 
-                      <div className="accordion-body border-top">
-                        <div className="row">
-                          <div className="col-sm-6 col-12 w-100">
-                            <div className="mb-3">
-                              <label className="form-label">
-                                Zone Name
-                                <span className="text-danger ms-1">*</span>
-                              </label>
-                              <input type="text" className="form-control" />
-                            </div>
+                    <div className="accordion-body border-top">
+                      <div className="row">
+                        <div className="col-sm-6 col-12 w-100">
+                          <div className="mb-3">
+                            <label className="form-label">Zone Name</label>
+                            <input
+                              type="text"
+                              name="name"
+                              className="form-control"
+                              value={formData.name}
+                              onChange={handleChange}
+                              placeholder="Enter Zone Name"
+                              required
+                            />
                           </div>
                         </div>
-                        <div className="row">
-                          <div className="col-sm-6 col-12 w-100">
-                            <div className="mb-3">
-                              <label className="form-label">
-                                Place Points
-                                <span className="text-danger ms-1">*</span>
-                              </label>
-                              <input type="text" className="form-control" />
-                            </div>
+                      </div>
+
+                      
+                      {/* Priority */}
+                      <div className="row">
+                        <div className="col-sm-6 col-12 w-100">
+                          <div className="mb-3 list position-relative">
+                            <label className="form-label">Priority</label>
+                            <input
+                              type="number"
+                              name="priority"
+                              className="form-control"
+                              value={formData.priority}
+                              onChange={handleChange}
+                              placeholder="Enter Priority"
+                              required
+                            />
                           </div>
                         </div>
-                        <div className="row">
-                          <div className="col-sm-6 col-12 w-100">
-                            <div className="mb-3 list position-relative">
-                              <label className="form-label">
-                                Search Location
-                                <span className="text-danger ms-1">*</span>
-                              </label>
+                      </div>
+
+                      {/* Search Autocomplete */}
+                      <div className="row">
+                        <div className="col-sm-6 col-12 w-100">
+                          <div className="mb-3 list position-relative">
+                            <label className="form-label">
+                              Search Location
+                            </label>
+                            {isLoaded ? (
+                              <Autocomplete
+                                onLoad={(autocomplete) => {
+                                  autocompleteRef.current = autocomplete;
+                                }}
+                                onPlaceChanged={onPlaceChanged}
+                              >
+                                <input
+                                  type="text"
+                                  name="place"
+                                  className="form-control"
+                                  value={formData.place}
+                                  onChange={handleChange}
+                                  placeholder="Enter a location to center the map"
+                                  required
+                                />
+                              </Autocomplete>
+                            ) : (
                               <input
                                 type="text"
-                                className="form-control list"
+                                className="form-control"
+                                disabled
+                                placeholder="Loading maps..."
                               />
-                            </div>
+                            )}
+                            <small className="text-muted">
+                              Type a location and select from the dropdown to
+                              center the map.
+                            </small>
                           </div>
                         </div>
+                      </div>
 
-                        <div className="row">
-                          <div className="col-sm-6 col-12">
-                            <div className="mb-3 list position-relative">
-                              <label className="form-label">Map</label>
-                            </div>
-                            <iframe
-                              class="embed-map-frame"
-                              frameborder="0"
-                              scrolling="no"
-                              marginheight="0"
-                              marginwidth="0"
-                              width={550}
-                              height={400}
-                              src="https://maps.google.com/maps?width=600&height=400&hl=en&q=Hyderabad&t=&z=14&ie=UTF8&iwloc=B&output=embed"
-                            ></iframe>
-                          </div>
+
+
+                      {/* Map */}
+                      <div className="row">
+                        <div className="mb-3 list position-relative">
+                          <label className="form-label">Draw Zone on Map</label>
                         </div>
+                        <ZoneMap
+                          isLoaded={isLoaded}
+                          onPolygonComplete={handlePolygonComplete}
+                          center={mapCenter}
+                        />
+                      </div>
 
-                        <div className="row">
-                          <div className="col-lg-6 col-sm-6 col-12">
-                            <div className="row">
-                              <div className="col-lg-6 col-sm-6 col-12">
-                                <div className="mb-3">
-                                  <label className="form-label">
-                                    Status{" "}
-                                    <span className="text-danger ms-1">*</span>
+                      {/* Status Toggle */}
+                      <div className="row">
+                        <div className="col-lg-6 col-sm-6 col-12">
+                          <div className="row">
+                            <div className="col-lg-6 col-sm-6 col-12">
+                              <div className="mb-3">
+                                <label className="form-label">Status</label>
+                                <div className="form-check form-switch">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id="zoneStatus"
+                                    checked={status}
+                                    onChange={() => setStatus(!status)}
+                                  />
+                                  <label
+                                    className="form-check-label ms-2"
+                                    htmlFor="zoneStatus"
+                                  >
+                                    {status ? "Active" : "Inactive"}
                                   </label>
-
-                                  <div className="form-check form-switch">
-                                    <input
-                                      className="form-check-input"
-                                      type="checkbox"
-                                      id="zoneStatus"
-                                      checked={status}
-                                      onChange={() => setStatus(!status)}
-                                    />
-                                    <label
-                                      className="form-check-label ms-2"
-                                      htmlFor="zoneStatus"
-                                    >
-                                      {status ? "Active" : "Inactive"}
-                                    </label>
-                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -164,13 +281,23 @@ const Addzones = () => {
                     </div>
                   </div>
                 </div>
-                <div className="col-lg-6">
+
+                {/* Form Actions */}
+                <div className="col-lg-12">
                   <div className="d-flex align-items-center justify-content-end mb-4">
-                    <button type="button" className="btn btn-secondary me-2">
+                    <button
+                      type="button"
+                      className="btn btn-secondary me-2"
+                      onClick={handleCancel}
+                    >
                       Cancel
                     </button>
-                    <button type="submit" className="btn btn-primary">
-                      Add Airportzone
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={loading}
+                    >
+                      {loading ? "Adding..." : "Add Airportzone"}
                     </button>
                   </div>
                 </div>
@@ -191,7 +318,11 @@ const Addzones = () => {
                       You need at least three points to create a zone.
                     </li>
                     <li className="mb-2">
-                      Start adding pins to the map to outline a zone.
+                      Use the drawing tool to outline the zone.
+                    </li>
+                    <li className="mb-2">
+                      Use the search field to center the map on a specific
+                      place.
                     </li>
                   </ul>
                   <img
@@ -203,22 +334,12 @@ const Addzones = () => {
               </div>
             </div>
           </div>
-          {/* /add */}
         </div>
-        <div className="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3">
-          <p className="mb-0 text-gray-9">
-            2014 - 2026 © Gk Cabs. All Right Reserved
-          </p>
-          <p>
-            Designed &amp; Developed by{" "}
-            <Link to="#" className="text-primary">
-              Gk Cabs
-            </Link>
-          </p>
-        </div>
+
+        <CommonFooter />
       </div>
     </>
   );
 };
 
-export default Addzones;
+export default AddAirportZones;

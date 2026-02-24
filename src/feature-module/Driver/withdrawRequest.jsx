@@ -11,7 +11,7 @@ export default function WithdrawRequest() {
   /* ===================== STATE ===================== */
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [rows, setRows] = useState(10);
+  const [rows, setRows] = useState(5);
 
   const [tableData, setTableData] = useState(
     CouponData.map((item) => ({
@@ -45,21 +45,21 @@ export default function WithdrawRequest() {
 
   /* ===================== APPROVE / REJECT ===================== */
 
-  const approveDocument = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: "Approved" } : item
-      )
-    );
-  };
+  // const approveDocument = (id) => {
+  //   setTableData((prev) =>
+  //     prev.map((item) =>
+  //       item.id === id ? { ...item, Status: "Approved" } : item
+  //     )
+  //   );
+  // };
 
-  const rejectDocument = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: "Rejected" } : item
-      )
-    );
-  };
+  // const rejectDocument = (id) => {
+  //   setTableData((prev) =>
+  //     prev.map((item) =>
+  //       item.id === id ? { ...item, Status: "Rejected" } : item
+  //     )
+  //   );
+  // };
 
   /* ===================== COLUMNS ===================== */
 
@@ -114,9 +114,9 @@ export default function WithdrawRequest() {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
@@ -125,29 +125,29 @@ export default function WithdrawRequest() {
       body: (row) => (
         <div className="edit-delete-action d-flex align-items-center">
           {/* VIEW */}
-          <Link className="me-2 p-2" to="#" title="View">
+          <Link className="me-2 p-2" to="/View-Withdraw-Request-Details" title="View">
             <i className="ti ti-eye" />
           </Link>
 
           {/* APPROVE */}
-          <button
+          {/* <button
             className="btn p-2 text-success"
             title="Approve"
             onClick={() => approveDocument(row.id)}
             disabled={row.Status === "Approved"}
           >
             <i className="ti ti-check" />
-          </button>
+          </button> */}
 
           {/* REJECT */}
-          <button
+          {/* <button
             className="btn p-2 text-danger"
             title="Reject"
             onClick={() => rejectDocument(row.id)}
             disabled={row.Status === "Rejected"}
           >
             <i className="ti ti-x" />
-          </button>
+          </button> */}
         </div>
       ),
     },

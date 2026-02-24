@@ -1,45 +1,51 @@
-
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/Coupons";
-import EditZones from "../../core/modals/coupons/editcoupons";
 import CommonFooter from "../../components/footer/commonFooter";
-import DeleteModal from "../../components/delete-modal";
 import SearchFromApi from "../../components/data-table/search";
+import { URLS } from "../../url";
+import { debounce } from "../../utils/debounce";
 
-export default function SerivceCategorie() {
-  /* ===================== STATE ===================== */
-  const [rows, setRows] = useState(4);
+
+export default function ServiceCategorie() {
+  //  STATE
+  const [rows, setRows] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [tableData, setTableData] = useState(
-    CouponData.map((item) => ({
-      ...item,
-      Status: item.Status ?? true,
-    }))
+
+  // Debounced search update
+  const debouncedSetSearchTerm = useCallback(
+    debounce((value) => setSearchTerm(value), 500),
+    []
   );
 
-  /* ===================== HANDLERS ===================== */
+  // Handle search input change
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+    debouncedSetSearchTerm(value);
+  };
 
-  const handleSearch = (value) => setSearchQuery(value);
+  // Handlers
 
   const toggleStatus = (id) => {
     setTableData((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, Status: !item.Status } : item
-      )
+        item.id === id ? { ...item, Status: !item.Status } : item,
+      ),
     );
   };
 
-  /* ===================== ROW SELECTION ===================== */
-
+  // Row selection
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id)
-        ? prev.filter((rowId) => rowId !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -47,33 +53,95 @@ export default function SerivceCategorie() {
     setSelectedRows(checked ? tableData.map((row) => row.id) : []);
   };
 
-  /* ===================== BULK ACTIONS ===================== */
-
-  const handleBulkStatus = (status) => {
+  // Bulk status update API call
+  const handleBulkStatus = async (status) => {
     if (!selectedRows.length) return;
 
-    setTableData((prev) =>
-      prev.map((item) =>
-        selectedRows.includes(item.id)
-          ? { ...item, Status: status }
-          : item
-      )
-    );
-    setSelectedRows([]);
+    setBulkLoading(true);
+    setError("");
+
+    try {
+      const payload = {
+        ids: selectedRows,
+        status: status ? "active" : "inactive",
+      };
+
+      await axios.put(URLS.UpdateServiceCategoryStatus, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      // Success – refresh the list
+      await fetchServiceCategories();
+      setSelectedRows([]);
+    } catch (err) {
+      console.error("Bulk update error:", err);
+      setError("Failed to update status for selected items");
+    } finally {
+      setBulkLoading(false);
+    }
   };
 
-  /* ===================== COLUMNS ===================== */
+  //  FETCH DATA
 
+  const fetchServiceCategories = async (search = "") => {
+    setLoading(true);
+    setError("");
+    try {
+
+      const url = search
+        ? `${URLS.GetAllServiceCategories}?searchQuery=${encodeURIComponent(search)}`
+        : URLS.GetAllServiceCategories;
+
+      const response = await axios.post(
+        url,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      const serviceTypes = response.data?.serviceTypes || [];
+      const formattedData = serviceTypes.map((item) => ({
+        id: item._id,
+        name: item.name,
+        priority: item.priority,
+        Status: item.status === "active",
+        date: item.logCreatedDate,
+      }));
+
+      setTableData(formattedData);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError("Failed to fetch service categories");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchServiceCategories(searchTerm);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    fetchServiceCategories();
+  }, []);
+
+  /* ===================== COLUMNS ===================== */
   const columns = [
     {
       header: (
         <input
           type="checkbox"
           checked={
-            tableData.length > 0 &&
-            selectedRows.length === tableData.length
+            tableData.length > 0 && selectedRows.length === tableData.length
           }
           onChange={(e) => handleSelectAll(e.target.checked)}
+          disabled={bulkLoading}
         />
       ),
       body: (row) => (
@@ -81,6 +149,7 @@ export default function SerivceCategorie() {
           type="checkbox"
           checked={selectedRows.includes(row.id)}
           onChange={() => handleRowSelect(row.id)}
+          disabled={bulkLoading || loading}
         />
       ),
     },
@@ -102,11 +171,11 @@ export default function SerivceCategorie() {
         <div className="form-check form-switch">
           <input
             type="checkbox"
-            className={`form-check-input ${
-              row.Status ? "bg-success" : "bg-danger"
-            }`}
+            className={`form-check-input ${row.Status ? "bg-success" : "bg-danger"
+              }`}
             checked={row.Status}
             onChange={() => toggleStatus(row.id)}
+            disabled={bulkLoading || loading}
           />
         </div>
       ),
@@ -116,23 +185,19 @@ export default function SerivceCategorie() {
       body: (row) =>
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-            })
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            // hour: "2-digit",
+            // minute: "2-digit",
+          })
           : "--",
     },
     {
       header: "Actions",
-      body: () => (
+      body: (row) => (
         <div className="edit-delete-action">
-          <Link
-            className="me-2 p-2"
-            to="/editServices"
-            // data-bs-toggle="modal"
-            // data-bs-target="#edit-units"
-          >
+          <Link className="me-2 p-2" to={`/editServices/${row.id}`}>
             <i className="ti ti-edit" />
           </Link>
         </div>
@@ -140,14 +205,13 @@ export default function SerivceCategorie() {
     },
   ];
 
-  /* ===================== JSX ===================== */
-
+  // UI
   return (
     <div className="page-wrapper">
       <div className="content">
         <div className="page-header d-flex justify-content-between">
           <div>
-            <h4>Service Categorie</h4>
+            <h4>Service Categories</h4>
           </div>
         </div>
 
@@ -189,32 +253,45 @@ export default function SerivceCategorie() {
                 </Link>
                 <ul className="dropdown-menu">
                   <li>
-                    <Link
-                      to="#"
+                    <button
                       className="dropdown-item text-success"
                       onClick={() => handleBulkStatus(true)}
+                      disabled={!selectedRows.length || bulkLoading}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        width: "100%",
+                        textAlign: "left",
+                      }}
                     >
-                      Active
-                    </Link>
+                      {bulkLoading ? "Processing..." : "Active"}
+                    </button>
                   </li>
                   <li>
-                    <Link
-                      to="#"
+                    <button
                       className="dropdown-item text-danger"
                       onClick={() => handleBulkStatus(false)}
+                      disabled={!selectedRows.length || bulkLoading}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        width: "100%",
+                        textAlign: "left",
+                      }}
                     >
-                      Inactive
-                    </Link>
+                      {bulkLoading ? "Processing..." : "Inactive"}
+                    </button>
                   </li>
                 </ul>
               </div>
 
-              <button
+              {/* Optional Apply button – kept for UI consistency */}
+              {/* <button
                 className="btn btn-outline-success"
-                disabled={!selectedRows.length}
+                disabled={!selectedRows.length || bulkLoading}
               >
                 Apply
-              </button>
+              </button> */}
             </div>
 
             <SearchFromApi
@@ -225,19 +302,21 @@ export default function SerivceCategorie() {
           </div>
 
           <div className="card-body">
-            <PrimeDataTable
-              column={columns}
-              data={tableData}
-              totalRecords={tableData.length}
-              rows={rows}
-            />
+            {loading && <div className="text-center py-3">Loading...</div>}
+            {error && <div className="alert alert-danger">{error}</div>}
+            {!loading && !error && (
+              <PrimeDataTable
+                column={columns}
+                data={tableData}
+                totalRecords={tableData.length}
+                rows={rows}
+              />
+            )}
           </div>
         </div>
       </div>
 
       <CommonFooter />
-      <EditZones />
-      <DeleteModal />
     </div>
   );
 }

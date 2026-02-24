@@ -48,9 +48,9 @@ const ViewDriverDetails = () => {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
@@ -117,10 +117,16 @@ const ViewDriverDetails = () => {
                 <div className="row">
                   <div className="col-6">
                     <p>
+                      <strong>Email :</strong> rider@example.com
+                    </p>
+                    <p>
                       <strong>Contact :</strong> +93 123456789
                     </p>
                     <p>
-                      <strong>Email :</strong> rider@example.com
+                      <strong>Emergancy Contact :</strong> +93 123456787
+                    </p>
+                    <p>
+                      <strong>Gender :</strong> Male
                     </p>
                   </div>
                   <div className="col-6 border-start">
@@ -224,7 +230,7 @@ const ViewDriverDetails = () => {
           </div>
 
           {/* Driver Location */}
-          
+
           <div className="col-lg-6">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">

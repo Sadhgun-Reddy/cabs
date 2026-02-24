@@ -8,8 +8,8 @@ const CommonFooter = () => {
         <p className="mb-0">2014 - 2026 © Gk Cabs. All Right Reserved</p>
         <p>
           Designed &amp; Developed by{" "}
-          <Link to="#" className="text-primary">
-            Gk Cabs
+          <Link to="https://moironix.com" className="text-primary">
+            Moironix
           </Link>
         </p>
       </div>

@@ -3,6 +3,7 @@ import SearchFromApi from "../../components/data-table/search";
 import TableTopHead from "../../components/table-top-head";
 import DeleteModal from "../../components/delete-modal";
 import { Link } from "react-router";
+import CommonFooter from "../../components/footer/commonFooter";
 
 const PagesList = () => {
   const [rows, setRows] = useState(10);
@@ -597,7 +598,7 @@ const PagesList = () => {
           </div>
           {/* /product list */}
         </div>
-        <div className="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3">
+        {/* <div className="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3">
           <p className="mb-0">2014-2026 © Gk Cabs. All Right Reserved</p>
           <p>
             Designed &amp; Developed By{" "}
@@ -605,7 +606,9 @@ const PagesList = () => {
               Dreams
             </Link>
           </p>
-        </div>
+        </div> */}
+
+        <CommonFooter />
       </div>
       <>
         {/* Add Testimonial */}

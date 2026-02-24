@@ -1,233 +1,90 @@
-// import { useState } from "react";
-// import { Link } from "react-router-dom";
-// import { all_routes } from "../../routes/all_routes";
-
-// const AddFarePlan = () => {
-//   const route = all_routes;
-
-//   const [formData, setFormData] = useState({
-//     image: null,
-//     groupname: "",
-//     description: "",
-//     priority: "",
-//     grade: "",
-//   });
-
-//   // COMMON HANDLER
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData({
-//       ...formData,
-//       [name]: value,
-//     });
-//   };
-
-//   const handleImageChange = (e) => {
-//     const file = e.target.files[0];
-//     if (file) {
-//       setFormData((prev) => ({
-//         ...prev,
-//         image: file,
-//       }));
-//     }
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     console.log("Destionation Data:", formData);
-//   };
-
-//   return (
-//     <div className="page-wrapper">
-//       <div className="content">
-//         <div className="page-header">
-//           <div className="page-title">
-//             <h4>Add Fare Plan</h4>
-//           </div>
-//           <Link to="/fareplan" className="btn btn-secondary">
-//             <i className="feather icon-arrow-left me-2" />
-//             Back to Fare Plan 
-//           </Link>
-//         </div>
-
-//         <form onSubmit={handleSubmit}>
-//           <div className="accordion-item border mb-4">
-//             <div className="accordion-body">
-//               <div className="row">
-//                 {/* DRIVER */}
-//                 <div className="col-md-6 mb-3">
-//                   <label className="form-label">Service Name</label>
-//                   <input
-//                   type="text"
-//                     name="modelName"
-//                     className="form-control"
-//                     value={formData.name}
-//                     onChange={handleChange}
-//                     placeholder="Enter Service Name"
-//                     required
-//                   />
-//                 </div>
-
-
-//                 <div className="col-md-6 mb-3">
-//                   <label className="form-label">Fare Plan Name</label>
-//                   <input
-//                   type="text"
-//                     name="modelName"
-//                     className="form-control"
-//                     value={formData.name}
-//                     onChange={handleChange}
-//                     placeholder="Enter Plan Name"
-//                     required
-//                   />
-//                 </div>
-
-//                 {/* Priority */}
-//                 <div className="col-md-6">
-//                   <label className="form-label">Priority</label>
-//                   <input
-//                     type="number"
-//                     className="form-control"
-//                     placeholder="Enter Priority"
-//                     value={formData.priority || ""}
-//                     onChange={(e) =>
-//                       setFormData({ ...formData, priority: e.target.value })
-//                     }
-//                   />
-//                 </div>
-//               </div>
-
-//                 <div className="row">
-//                 {/* Decription */}
-//                 <div className="col-md-6 mb-3">
-//                   <label className="form-label">Decription</label>
-//                   <input
-//                   type="text"
-//                     name="modelName"
-//                     className="form-control"
-//                     value={formData.name}
-//                     onChange={handleChange}
-//                     placeholder="Enter Description"
-//                     required
-//                   />
-//                 </div>
-
-//                 {/* Down Grade */}
-//                 <div className="col-md-6">
-//                   <label className="form-label">Radius</label>
-//                   <input
-//                     type="text"
-//                     className="form-control"
-//                     placeholder="Enter Radius"
-//                     value={formData.radius || ""}
-//                     onChange={(e) =>
-//                       setFormData({ ...formData, grade: e.target.value })
-//                     }
-//                   />
-//                 </div>
-//               </div>
-
-//                 {/* IMAGE */}
-//                   {/* <div className="col-md-6">
-//                     <label className="form-label">Image</label>
-//                     <input
-//                       type="file"
-//                       className="form-control"
-//                       accept="image/*"
-//                       onChange={(e) =>
-//                         setFormData({ ...formData, image: e.target.files[0] })
-//                       }
-//                     />
-//                   </div> */}
-
-//               <div className="text-end mt-3">
-//                 <button type="submit" className="btn btn-outline-success">
-//                   Add Plan
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-//         </form>
-//       </div>
-
-//     </div>
-//   );
-// };
-
-// export default AddFarePlan;
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { URLS } from "../../url";
+import { all_routes } from "../../routes/all_routes";
 
 const AddFarePlan = () => {
+  const navigate = useNavigate();
+  const route = all_routes;
+
+  const [status, setStatus] = useState(true); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const [formData, setFormData] = useState({
     serviceName: "",
-    farePlanName: "",
-    description: "",
+    planName: "",
     priority: "",
-    radius: "",
   });
 
-  // Common change handler
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Fare Plan Data:", formData);
+    setLoading(true);
+    setError("");
+
+    const payload = {
+      serviceName: formData.serviceName,
+      planName: formData.planName,
+      priority: formData.priority,
+      status: status ? "active" : "inactive",
+    };
+
+    try {
+      await axios.post(URLS.AddFaiPlan, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      navigate(route.fareplans);
+    } catch (err) {
+      const msg = err.response?.data?.message || "Failed to add fare plan";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="page-wrapper">
       <div className="content">
-        <div className="page-header">
+        <div className="page-header d-flex justify-content-between align-items-center">
           <div className="page-title">
             <h4>Add Fare Plan</h4>
           </div>
           <Link to="/fareplans" className="btn btn-secondary">
-          <i className="feather icon-arrow-left me-2" />
+            <i className="feather icon-arrow-left me-2" />
             Back to Fare Plan
           </Link>
         </div>
 
+        {error && <div className="alert alert-danger">{error}</div>}
+
         <form onSubmit={handleSubmit}>
           <div className="card border mb-4">
             <div className="card-body">
-
               {/* Service Name */}
               <div className="mb-3">
                 <label className="form-label">Service Name</label>
                 <select
-                  type="text"
                   name="serviceName"
                   className="form-select"
                   value={formData.serviceName}
                   onChange={handleChange}
                   required
                 >
-                    <option>Select Serivce</option>
-                    <option>City Ride</option>
-                    <option>Outstation Oneway</option>
-                    <option>outastation Round Trip</option>
-                    <option>Rental Hourly Package</option>
-                    </select>
+                  <option value="">Select Service</option>
+                  <option value="City Ride">City Ride</option>
+                  <option value="Outstation Oneway">Outstation Oneway</option>
+                  <option value="Outstation Round Trip">Outstation Round Trip</option>
+                  <option value="Rental Hourly Package">Rental Hourly Package</option>
+                </select>
               </div>
 
               {/* Fare Plan Name */}
@@ -235,62 +92,56 @@ const AddFarePlan = () => {
                 <label className="form-label">Fare Plan Name</label>
                 <input
                   type="text"
-                  name="farePlanName"
+                  name="planName"
                   className="form-control"
-                  value={formData.farePlanName}
+                  value={formData.planName}
                   onChange={handleChange}
                   placeholder="Enter Plan Name"
                   required
                 />
               </div>
 
-              {/* Description */}
-                {/* <div className="mb-3">
-                    <label className="form-label">Description</label>
-                    <textarea
-                    name="description"
-                    className="form-control"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Enter Description"
-                    rows="3"
-                    required
-                    />
-                </div> */}
-
               {/* Priority */}
               <div className="mb-3">
                 <label className="form-label">Priority</label>
                 <input
-                  type="number"
+                  type="text"
                   name="priority"
                   className="form-control"
                   value={formData.priority}
                   onChange={handleChange}
-                  placeholder="Enter Priority"
+                  placeholder="Enter Priority (e.g., High, Medium, Low)"
+                  required
                 />
               </div>
 
-              {/* Down Grade */}
-              {/* <div className="mb-3">
-                <label className="form-label">Radius</label>
-                <input
-                  type="text"
-                  name="radius"
-                  className="form-control"
-                  value={formData.radius}
-                  onChange={handleChange}
-                  placeholder="Enter Radius"
-                />
-              </div> */}
+              {/* Status */}
+              <div className="mb-3">
+                <label className="form-label">Status</label>
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="statusSwitch"
+                    checked={status}
+                    onChange={() => setStatus(!status)}
+                  />
+                  <label className="form-check-label" htmlFor="statusSwitch">
+                    {status ? "Active" : "Inactive"}
+                  </label>
+                </div>
+              </div>
 
               {/* Submit Button */}
               <div className="text-end">
-                <button type="submit" className="btn btn-success">
-                  Add Plan
+                <button
+                  type="submit"
+                  className="btn btn-success"
+                  disabled={loading}
+                >
+                  {loading ? "Adding..." : "Add Plan"}
                 </button>
               </div>
-
             </div>
           </div>
         </form>

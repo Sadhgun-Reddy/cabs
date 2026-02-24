@@ -46,7 +46,7 @@ const CustomPaginator = ({
     <>
       <div className="parent-class-datatable">
         <div className="dataTables_length" id="DataTables_Table_0_length">
-          <label>
+          {/* <label>
             Row Per Page{" "}
             <select
               name="DataTables_Table_0_length"
@@ -58,10 +58,9 @@ const CustomPaginator = ({
               <option value={10}>10</option>
               <option value={25}>25</option>
               <option value={50}>50</option>
-              <option value={100}>100</option>
             </select>{" "}
             Entries
-          </label>
+          </label> */}
         </div>
         <div
           className="dataTables_paginate paging_simple_numbers"
@@ -80,7 +79,7 @@ const CustomPaginator = ({
                 <i className="fa fa-angle-left"></i>
               </Link>
             </li>
-            {pageNumbers.map((page) => (
+            {/* {pageNumbers.map((page) => (
               <li
                 key={page}
                 className={`paginate_button page-item ${currentPage === page ? 'active' : ''}`}
@@ -96,7 +95,7 @@ const CustomPaginator = ({
                   {page}
                 </Link>
               </li>
-            ))}
+            ))} */}
             <li className={`paginate_button page-item next ${currentPage === totalPages ? 'disabled' : ''}`}>
               <Link
                 to="#"

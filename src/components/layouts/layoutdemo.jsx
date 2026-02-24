@@ -3050,9 +3050,9 @@ const LayoutDemo = () => {
           2014-2025 © Gk Cabs. All Right Reserved
         </p>
         <p>
-          Designed &amp; Developed By Dreams{" "}
+          Designed &amp; Developed By {" "}
           <Link to="#" className="link-primary">
-            Dreams
+            Moironix
           </Link>
         </p>
       </div>

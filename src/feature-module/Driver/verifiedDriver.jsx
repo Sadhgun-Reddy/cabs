@@ -104,6 +104,10 @@ export default function Verifieddriver() {
       field: "Email",
     },
     {
+      header: "Zone",
+      field: "zone",
+    },
+    {
       header: "Status",
       body: (row) => (
         <div className="form-check form-switch">
@@ -139,9 +143,9 @@ export default function Verifieddriver() {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
@@ -153,8 +157,7 @@ export default function Verifieddriver() {
             className="me-2 p-2"
             to="/viewdriverDetails"
             title="Driver Details"
-            // data-bs-toggle="modal"
-            // data-bs-target="#riderdetails-units"
+
           >
             <i className="ti ti-eye" />
           </Link>
@@ -162,8 +165,7 @@ export default function Verifieddriver() {
             className="me-2 p-2"
             to="/editdriver"
             title="Edit Driver"
-            // data-bs-toggle="modal"
-            // data-bs-target="#edit-units"
+
           >
             <i className="ti ti-edit" />
           </Link>
@@ -178,8 +180,7 @@ export default function Verifieddriver() {
           <Link
             className="p-2"
             to="/driverDocument"
-            // data-bs-toggle="modal"
-            // data-bs-target="#file-modal"
+
           >
             <i className="ti ti-file" />
           </Link>

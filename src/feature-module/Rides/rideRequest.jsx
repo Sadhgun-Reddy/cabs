@@ -114,9 +114,9 @@ export default function RideRequests() {
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
               day: "2-digit",
-              month: "short",
+              month: "2-digit",
               year: "numeric",
-              hour: "2-digit",
+              // hour: "2-digit",
             })
           : "--",
     },
@@ -126,7 +126,7 @@ export default function RideRequests() {
         <div className="view-action">
           <Link
             className="me-2 p-2"
-            to="#"
+            to="/Ride-Request-Details"
             title="Ride Request Details"
           >
             <i className="ti ti-eye" />
