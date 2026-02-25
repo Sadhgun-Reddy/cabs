@@ -64,7 +64,7 @@ export const all_routes = {
   cancelledrides: "/cancelledRides",
   completedrides: "/completedRides",
   export: "/export",
-  chat: "/Chats",
+  chats: "/Chats",
   preferences: "/preference",
   addpreference: "/addPreference",
   editpreference: "/Edit-Preference",

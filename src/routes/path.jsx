@@ -936,7 +936,7 @@ export const authRoutes = [
   },
   {
     id: 1,
-    path: routes.chat,
+    path: routes.chats,
     name: "Chats",
     element: <Chats />,
     route: Route,
