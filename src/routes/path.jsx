@@ -270,6 +270,9 @@ const ProfitLoss = lazy(() => import("../feature-module/Reports/profitloss"));
 const GeneralSettings = lazy(
   () => import("../feature-module/settings/generalsettings/generalsettings"),
 );
+const GstSettings = lazy(
+  () => import("../feature-module/settings/generalsettings/GstSettings"),
+);
 const SecuritySettings = lazy(
   () => import("../feature-module/settings/generalsettings/securitysettings"),
 );
@@ -1319,6 +1322,14 @@ export const authRoutes = [
     path: routes.Addzones,
     name: "Zones",
     element: <Addzones />,
+    route: Route,
+  },
+
+  {
+    id: 1,
+    path: routes.gstsettings,
+    name: "home",
+    element: <GstSettings />,
     route: Route,
   },
 

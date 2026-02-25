@@ -1044,6 +1044,7 @@ export const SidebarData = [
         icon: "settings",
         submenuItems: [
           { label: "Profile", link: "/general-settings" },
+          { label: "GST Settings", link: "/gst-settings" },
           { label: "Security", link: "/security-settings" },
           { label: "Notifications", link: "/notification" },
           { label: "Connected Apps", link: "/connected-apps" },
@@ -1113,6 +1114,13 @@ export const SidebarData = [
           { label: "Location Settings", link: "/ridesettings", showSubRoute: false },
           { label: "App Configuration", link: "#", showSubRoute: false },
         ],
+      },
+      {
+        label: "",
+        icon: "",
+        link: "/",
+        submenu: false,
+        showSubRoute: false,
       },
       // {
       //   label: "System Settings",
