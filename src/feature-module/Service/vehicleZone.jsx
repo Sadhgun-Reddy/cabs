@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import PrimeDataTable from "../../components/data-table";
 import CommonFooter from "../../components/footer/commonFooter";
@@ -8,7 +8,9 @@ import { URLS } from "../../url";
 
 export default function VehicleZone() {
   const location = useLocation();
+  const navigate = useNavigate();
   const groupName = location.state?.groupName;
+  const groupId = location.state?.groupId;
 
   /* ===================== STATE ===================== */
   const [rows, setRows] = useState(10);
@@ -59,6 +61,44 @@ export default function VehicleZone() {
   /* ===================== HANDLERS ===================== */
 
   const handleSearch = (value) => setSearchQuery(value);
+
+  const handleSetPrice = async (zoneId) => {
+    if (!groupId) {
+      alert("Vehicle Group ID is missing. Please go back to Vehicle Groups and select a zone again.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        URLS.ViewCityFair,
+        { zoneId, vehicleGroupId: groupId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.data?.success) {
+        navigate("/setworldPrice", {
+          state: {
+            cityfair: response.data.cityfair,
+            zoneId,
+            vehicleGroupId: groupId
+          }
+        });
+      } else {
+        alert(response.data?.message || "Failed to fetch city fair data.");
+      }
+    } catch (err) {
+      console.error("Error fetching city fair:", err);
+      alert("An error occurred while fetching city fair data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleStatus = (id) => {
     setTableData((prev) =>
@@ -128,11 +168,15 @@ export default function VehicleZone() {
     },
     {
       header: "Actions",
-      body: () => (
+      body: (row) => (
         <div className="edit-price-zone-action">
-          <Link className="btn btn-outline-success me-2 p-2" to="/setworldPrice">
-            Set Price
-          </Link>
+          <button
+            className="btn btn-outline-success me-2 p-2"
+            onClick={() => handleSetPrice(row.id)}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Set Price"}
+          </button>
           <Link to="/addIncentive" className="btn btn-outline-success me-2 p-2">
             Add Incentive
           </Link>

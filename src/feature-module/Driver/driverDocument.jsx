@@ -216,9 +216,9 @@ export default function Driverdocument() {
           </button>
 
           {/* Edit (optional) */}
-          <Link className="p-2" to="/edit-document" title="Edit">
+          {/* <Link className="p-2" to="/edit-document" title="Edit">
             <i className="ti ti-edit" />
-          </Link>
+          </Link> */}
 
           {/* Approve */}
           <button
@@ -250,9 +250,9 @@ export default function Driverdocument() {
       <div className="content">
         <div className="page-header d-flex justify-content-between align-items-center">
           <h4>Drivers Documents</h4>
-          <Link to="/addDocument" className="btn btn-outline-success">
+          {/* <Link to="/addDocument" className="btn btn-outline-success">
             <i className="ti ti-circle-plus me-1" /> Add Document
-          </Link>
+          </Link> */}
         </div>
 
         <div className="card table-list-card">

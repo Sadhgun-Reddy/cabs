@@ -229,7 +229,7 @@ export default function VehicleGroups() {
           </Link>
           <Link
             to="/vehicleZone"
-            state={{ groupName: row.name }}
+            state={{ groupName: row.name, groupId: row.id }}
             className="me-2 p-2 text-muted"
             title="Vehicle Zone"
           >

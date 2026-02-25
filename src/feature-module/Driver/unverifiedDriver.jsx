@@ -66,24 +66,24 @@ export default function UnverifiedDriver() {
 
   /* ===================== COLUMNS ===================== */
   const columns = [
-    {
-      header: (
-        <input
-          type="checkbox"
-          checked={
-            tableData.length > 0 && selectedRows.length === tableData.length
-          }
-          onChange={(e) => handleSelectAll(e.target.checked)}
-        />
-      ),
-      body: (row) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.id)}
-          onChange={() => handleRowSelect(row.id)}
-        />
-      ),
-    },
+    // {
+    //   header: (
+    //     <input
+    //       type="checkbox"
+    //       checked={
+    //         tableData.length > 0 && selectedRows.length === tableData.length
+    //       }
+    //       onChange={(e) => handleSelectAll(e.target.checked)}
+    //     />
+    //   ),
+    //   body: (row) => (
+    //     <input
+    //       type="checkbox"
+    //       checked={selectedRows.includes(row.id)}
+    //       onChange={() => handleRowSelect(row.id)}
+    //     />
+    //   ),
+    // },
     {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,
@@ -111,21 +111,6 @@ export default function UnverifiedDriver() {
         </div>
       ),
     },
-    // {
-    //   header: "Verified",
-    //   body: (row) => (
-    //     <div className="form-check form-switch">
-    //       <input
-    //         className={`form-check-input ${
-    //           row.Verified ? "bg-success" : "bg-danger"
-    //         }`}
-    //         type="checkbox"
-    //         checked={row.Verified}
-    //         onChange={() => toggleVerified(row.id)}
-    //       />
-    //     </div>
-    //   ),
-    // },
     {
       header: "Created Date",
       body: (row) =>
@@ -143,7 +128,7 @@ export default function UnverifiedDriver() {
         <div className="edit-delete-action">
           <Link
             className="me-2 p-2"
-            to="/driver-details"
+            to="/viewdriverDetails"
             title="View"
           >
             <i className="ti ti-eye" />

@@ -1,45 +1,60 @@
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { URLS } from "../../url";
 import CommonFooter from "../../components/footer/commonFooter";
 
 const SetWorldPrice = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const cityfair = location.state?.cityfair || {};
+  const zoneId = location.state?.zoneId;
+  const vehicleGroupId = location.state?.vehicleGroupId;
+
   const [categories, setCategories] = useState([]);
+  const [taxes, setTaxes] = useState([]);
+  const [driverRules, setDriverRules] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [loadingTaxes, setLoadingTaxes] = useState(false);
+  const [loadingRules, setLoadingRules] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
-    farePlan: "",
-    baseFare: "",
-    baseDistance: "",
-    perDistance: "",
-    minimumHrs: "",
-    perMinute: "",
-    waitingCharge: "",
-    freeWaitTime: "",
-    freeWaitAfterStart: "",
-    cancelRider: "",
-    cancelDriver: "",
-    commissionType: "fixed",
-    commissionRate: "",
-    chargeGoesTo: "admin",
-    allowTax: true,
-    tax: "",
-    allowAirport: true,
-    airportRate: "",
-    allowPreference: true,
-    preferenceText: "",
-    preferenceRate: "",
-    newPreference: "",
-    newPreferenceRate: "",
+    farePlan: cityfair.serviceCategoryId || "",
+    baseFare: cityfair.baseFareCharge || "",
+    baseDistance: cityfair.baseDistance || "",
+    perDistance: cityfair.perDistanceCharge || "",
+    minimumHrs: cityfair.minimumHrs || "", // Assuming this field exists or handles rental time
+    perMinute: cityfair.perMinuteCharge || "",
+    waitingCharge: cityfair.waitingCharge || "",
+    freeWaitTime: cityfair.freeWaitTime || "",
+    freeWaitAfterStart: cityfair.freeWaitTimeAfterStartRide || "",
+    cancelRider: cityfair.cancellationChargeForRider || "",
+    cancelDriver: cityfair.cancellationChargeForDriver || "",
+    commissionType: cityfair.commissionType || "fixed",
+    commissionRate: cityfair.commissionRate || "",
+    chargeGoesTo: cityfair.chargeGoesTo || "admin",
+    allowTax: cityfair.allowTax === "true" || cityfair.allowTax === true,
+    tax: cityfair.taxId || "",
+    allowAirport: cityfair.allowAirportCharge === "true" || cityfair.allowAirportCharge === true,
+    airportRate: cityfair.airportChargeRate || "",
+    allowPreference: cityfair.allowPreference === "true" || cityfair.allowPreference === true,
   });
 
-  const [preferences, setPreferences] = useState([
-    { id: 1, name: "Pet Allowed", price: "" },
-    { id: 2, name: "Extra Luggage Space", price: "" },
-    { id: 3, name: "Child Seat", price: "" },
-    { id: 4, name: "Smoke-Free", price: "" },
-  ]);
+  const getInitialPreferences = () => {
+    if (cityfair.preferences && cityfair.preferences.length > 0) {
+      // Map existing array of strings back to objects
+      return cityfair.preferences.map((prefName, idx) => ({
+        id: Date.now() + idx,
+        name: prefName,
+        // Since API gives one rate or maybe comma separated, just put it on the first one or leave empty
+        price: idx === 0 ? (cityfair.preferenceRate || "") : "0"
+      }));
+    }
+    return [];
+  };
 
+  const [preferences, setPreferences] = useState(getInitialPreferences());
   const [newPreference, setNewPreference] = useState("");
   const [newPreferencePrice, setNewPreferencePrice] = useState("");
 
@@ -79,8 +94,50 @@ const SetWorldPrice = () => {
     }
   };
 
+  const fetchTaxes = async () => {
+    setLoadingTaxes(true);
+    try {
+      const response = await axios.post(URLS.GetAllTax, {}, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (response.data?.taxes) {
+        setTaxes(response.data.taxes);
+      }
+    } catch (err) {
+      console.error("Error fetching taxes:", err);
+    } finally {
+      setLoadingTaxes(false);
+    }
+  };
+
+  const fetchDriverRules = async () => {
+    setLoadingRules(true);
+    try {
+      const response = await axios.post(
+        URLS.GetAllDriverRules,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data?.data) {
+        setDriverRules(response.data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching driver rules:", err);
+    } finally {
+      setLoadingRules(false);
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
+    fetchTaxes();
+    fetchDriverRules();
   }, []);
 
   const updatePreferencePrice = (id, value) => {
@@ -146,11 +203,61 @@ const SetWorldPrice = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!zoneId || !vehicleGroupId) {
+      alert("Missing Zone ID or Vehicle Group ID. Please try again from Vehicle Zones.");
+      return;
+    }
+
     if (validateForm()) {
-      console.log("Submitted Data:", formData);
-      // Proceed with API submission here...
+      setSubmitLoading(true);
+      try {
+        const payload = {
+          zoneId: zoneId,
+          vehicleGroupId: vehicleGroupId,
+          serviceCategoryId: formData.farePlan,
+          baseFareCharge: formData.baseFare.toString(),
+          baseDistance: formData.baseDistance.toString(),
+          perDistanceCharge: formData.perDistance.toString(),
+          perMinuteCharge: formData.perMinute.toString(),
+          waitingCharge: formData.waitingCharge.toString(),
+          freeWaitTime: formData.freeWaitTime.toString(),
+          freeWaitTimeAfterStartRide: formData.freeWaitAfterStart.toString(),
+          cancellationChargeForRider: formData.cancelRider.toString(),
+          cancellationChargeForDriver: formData.cancelDriver.toString(),
+          commissionType: formData.commissionType,
+          commissionRate: formData.commissionRate.toString(),
+          chargeGoesTo: formData.chargeGoesTo,
+          allowTax: formData.allowTax ? "true" : "false",
+          tax: formData.allowTax ? formData.tax : "",
+          allowAirportCharge: formData.allowAirport ? "true" : "false",
+          airportChargeRate: formData.allowAirport ? formData.airportRate.toString() : "",
+          allowPreference: formData.allowPreference ? "true" : "false",
+          selectPreference: formData.allowPreference && preferences.length > 0 ? preferences[0].name : "",
+          preferenceRate: formData.allowPreference && preferences.length > 0 ? preferences[0].price : "",
+          preferences: formData.allowPreference ? preferences.map(p => p.name) : []
+        };
+
+        const response = await axios.put(URLS.EditCityFair, payload, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (response.data?.success) {
+          alert(response.data.message || "Updated successfully");
+          navigate(-1); // Go back to vehicle zones table
+        } else {
+          alert(response.data?.message || "Failed to update fare plan");
+        }
+      } catch (error) {
+        console.error("Submission error:", error);
+        alert("An error occurred while saving the prices.");
+      } finally {
+        setSubmitLoading(false);
+      }
     }
   };
 
@@ -403,9 +510,15 @@ const SetWorldPrice = () => {
                       onChange={handleChange}
                     >
                       <option value="">Select Tax</option>
-                      <option value="gst">GST</option>
-                      <option value="vat">VAT</option>
-                      <option value="service">Service Tax</option>
+                      {loadingTaxes ? (
+                        <option value="" disabled>Loading...</option>
+                      ) : (
+                        taxes.map((t) => (
+                          <option key={t._id} value={t._id}>
+                            {t.name} ({t.tax}%)
+                          </option>
+                        ))
+                      )}
                     </select>
                   </div>
                 )}
@@ -454,31 +567,80 @@ const SetWorldPrice = () => {
                   </div>
                 </div>
 
-                {/* ================= PREFERENCE (EXACT ORDER) ================= */}
-                {formData.allowPreference &&
-                  preferences.map((item) => (
-                    <div className="row g-3 align-items-end" key={item.id}>
+                {/* ================= PREFERENCES ================= */}
+                {formData.allowPreference && (
+                  <>
+                    {/* Render Added Preferences */}
+                    {preferences.map((item) => (
+                      <div className="row g-3 align-items-end" key={item.id}>
+                        <div className="col-md-4">
+                          <label className="form-label">Preference</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={item.name}
+                            disabled
+                          />
+                        </div>
+
+                        <div className="col-md-4">
+                          <label className="form-label">Preference Price</label>
+                          <div className="input-group">
+                            <span className="input-group-text">₹</span>
+                            <input
+                              type="number"
+                              className="form-control"
+                              value={item.price}
+                              onChange={(e) =>
+                                updatePreferencePrice(item.id, e.target.value)
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="col-md-4">
+                          <button
+                            type="button"
+                            className="btn btn-outline-danger w-100"
+                            onClick={() => removePreference(item.id)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add New Preference Option */}
+                    <div className="row g-3 align-items-end mt-2">
                       <div className="col-md-4">
-                        <label className="form-label">Preference</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={item.name}
-                          disabled
-                        />
+                        <label className="form-label">Select Preference</label>
+                        <select
+                          className="form-select"
+                          value={newPreference}
+                          onChange={(e) => setNewPreference(e.target.value)}
+                        >
+                          <option value="">Select</option>
+                          {loadingRules ? (
+                            <option value="" disabled>Loading...</option>
+                          ) : (
+                            driverRules.map((rule) => (
+                              <option key={rule._id} value={rule.name}>
+                                {rule.name}
+                              </option>
+                            ))
+                          )}
+                        </select>
                       </div>
 
                       <div className="col-md-4">
-                        <label className="form-label">Preference Price</label>
+                        <label className="form-label">Preference Rate</label>
                         <div className="input-group">
                           <span className="input-group-text">₹</span>
                           <input
                             type="number"
                             className="form-control"
-                            value={item.price}
-                            onChange={(e) =>
-                              updatePreferencePrice(item.id, e.target.value)
-                            }
+                            value={newPreferencePrice}
+                            onChange={(e) => setNewPreferencePrice(e.target.value)}
                           />
                         </div>
                       </div>
@@ -486,60 +648,25 @@ const SetWorldPrice = () => {
                       <div className="col-md-4">
                         <button
                           type="button"
-                          className="btn btn-outline-danger w-100"
-                          onClick={() => removePreference(item.id)}
+                          className="btn btn-outline-success w-100"
+                          onClick={addPreference}
                         >
-                          Remove
+                          Add Preference
                         </button>
                       </div>
                     </div>
-                  ))}
-
-                <div className="col-md-4">
-                  <label className="form-label">Select Preference</label>
-                  <select
-                    className="form-select"
-                    name="newPreference"
-                    onChange={handleChange}
-                  >
-                    <option value="">Select</option>
-                    <option value="pet">Pet Allowed</option>
-                    <option value="ac">AC</option>
-                    <option value="luggage">Extra Luggage</option>
-                  </select>
-                </div>
-
-                <div className="col-md-4">
-                  <label className="form-label">Preference Rate</label>
-                  <div className="input-group">
-                    <span className="input-group-text">₹</span>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="newPreferenceRate"
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-md-4 d-flex align-items-end">
-                  <button
-                    type="button"
-                    className="btn btn-outline-success w-100"
-                  >
-                    Add Preference
-                  </button>
-                </div>
+                  </>
+                )}
               </div>
             </div>
 
             {/* ================= FOOTER BUTTONS ================= */}
             <div className="card-footer d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-outline-secondary">
+              <button type="button" className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary">
-                Save Prices
+              <button type="submit" className="btn btn-primary" disabled={submitLoading}>
+                {submitLoading ? "Saving..." : "Save Prices"}
               </button>
             </div>
           </form>
