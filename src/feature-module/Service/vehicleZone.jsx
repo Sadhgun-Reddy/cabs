@@ -1,24 +1,60 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import axios from "axios";
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/Coupons";
-import EditZones from "../../core/modals/coupons/editcoupons";
 import CommonFooter from "../../components/footer/commonFooter";
-import DeleteModal from "../../components/delete-modal";
 import SearchFromApi from "../../components/data-table/search";
+import { URLS } from "../../url";
 
 export default function VehicleZone() {
+  const location = useLocation();
+  const groupName = location.state?.groupName;
+
   /* ===================== STATE ===================== */
-  const [rows, setRows] = useState(1);
+  const [rows, setRows] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [tableData, setTableData] = useState(
-    CouponData.map((item) => ({
-      ...item,
-      Status: item.Status ?? true,
-    })),
-  );
+  /* ===================== API FETCH ===================== */
+  const fetchZones = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await axios.post(
+        URLS.GetAllZones,
+        { zoneType: "normal" },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.data?.success) {
+        const formattedZones = response.data.zones.map((zone) => ({
+          ...zone,
+          id: zone._id,
+          Status: zone.status === "active",
+        }));
+        setTableData(formattedZones);
+      } else {
+        setError(response.data?.message || "Failed to fetch zones");
+      }
+    } catch (err) {
+      console.error("Error fetching zones:", err);
+      setError("An error occurred while fetching zones.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchZones();
+  }, []);
 
   /* ===================== HANDLERS ===================== */
 
@@ -84,12 +120,8 @@ export default function VehicleZone() {
     },
     {
       header: "Zone Name",
-      field: "zonename",
+      field: "name",
     },
-    // {
-    //   header: "Currency Code",
-    //   field: "currencycode",
-    // },
     {
       header: "Priority",
       field: "priority",
@@ -116,7 +148,7 @@ export default function VehicleZone() {
       <div className="content">
         <div className="page-header d-flex justify-content-between">
           <div>
-            <h4>Vehicle Types Zones</h4>
+            <h4>Vehicle Types Zones {groupName ? `- ${groupName}` : ""}</h4>
           </div>
           <Link to="#" className="btn btn-outline-success">
             <i className="ti ti-info-circle me-1" />
@@ -126,12 +158,16 @@ export default function VehicleZone() {
 
         <div className="card table-list-card">
           <div className="card-body">
-            <PrimeDataTable
-              column={columns}
-              data={tableData}
-              totalRecords={tableData.length}
-              rows={rows}
-            />
+            {loading && <div className="text-center py-3">Loading...</div>}
+            {error && <div className="alert alert-danger">{error}</div>}
+            {!loading && !error && (
+              <PrimeDataTable
+                column={columns}
+                data={tableData}
+                totalRecords={tableData.length}
+                rows={rows}
+              />
+            )}
           </div>
         </div>
       </div>

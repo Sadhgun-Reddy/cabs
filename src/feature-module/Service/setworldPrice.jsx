@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { URLS } from "../../url";
 import CommonFooter from "../../components/footer/commonFooter";
 
 const SetWorldPrice = () => {
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     farePlan: "",
     baseFare: "",
@@ -40,11 +45,43 @@ const SetWorldPrice = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    // Clear error for the field being changed
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const response = await axios.post(
+        URLS.GetAllServiceCategories,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data?.serviceTypes) {
+        setCategories(response.data.serviceTypes);
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const updatePreferencePrice = (id, value) => {
     setPreferences((prev) =>
@@ -72,9 +109,49 @@ const SetWorldPrice = () => {
     setNewPreferencePrice("");
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.farePlan) newErrors.farePlan = "Category is required";
+
+    if (!formData.baseFare || isNaN(formData.baseFare) || Number(formData.baseFare) <= 0) {
+      newErrors.baseFare = "Valid Base Fare is required";
+    }
+
+    if (!formData.baseDistance || isNaN(formData.baseDistance) || Number(formData.baseDistance) <= 0) {
+      newErrors.baseDistance = "Valid Base Distance is required";
+    }
+
+    if (formData.farePlan === "rental" && (!formData.minimumHrs || isNaN(formData.minimumHrs) || Number(formData.minimumHrs) <= 0)) {
+      newErrors.minimumHrs = "Valid Minimum Hours is required for rental";
+    }
+
+    if (!formData.perDistance || isNaN(formData.perDistance) || Number(formData.perDistance) < 0) {
+      newErrors.perDistance = "Valid Per Distance Charge is required";
+    }
+
+    if (!formData.perMinute || isNaN(formData.perMinute) || Number(formData.perMinute) < 0) {
+      newErrors.perMinute = "Valid Per Minute Charge is required";
+    }
+
+    if (!formData.commissionType || formData.commissionType === "select") {
+      newErrors.commissionType = "Commission Type is required";
+    }
+
+    if (!formData.commissionRate || isNaN(formData.commissionRate) || Number(formData.commissionRate) < 0) {
+      newErrors.commissionRate = "Valid Commission Rate is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitted Data:", formData);
+    if (validateForm()) {
+      console.log("Submitted Data:", formData);
+      // Proceed with API submission here...
+    }
   };
 
   return (
@@ -91,21 +168,27 @@ const SetWorldPrice = () => {
                 {/* ================= BASIC PRICING ================= */}
 
                 <div className="col-md-4">
-                  <label className="form-label">Fare Plan</label>
+                  <label className="form-label">Categories *</label>
                   <div className="input-group">
                     <select
                       type="select"
-                      className="form-select"
+                      className={`form-select ${errors.farePlan ? "is-invalid" : ""}`}
                       name="farePlan"
                       value={formData.farePlan}
                       onChange={handleChange}
                     >
-                      <option>Select Plan</option>
-                      <option value="city">City Ride</option>
-                      <option value="outstation">Outstation Oneway </option>
-                      <option value="round">Round Trip</option>
-                      <option value="rental">Rental Hourly Package</option>
+                      <option value="">Select Plan</option>
+                      {loadingCategories ? (
+                        <option value="" disabled>Loading...</option>
+                      ) : (
+                        categories.map((cat) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </option>
+                        ))
+                      )}
                     </select>
+                    {errors.farePlan && <div className="invalid-feedback">{errors.farePlan}</div>}
                   </div>
                 </div>
 
@@ -115,10 +198,12 @@ const SetWorldPrice = () => {
                     <span className="input-group-text">₹</span>
                     <input
                       type="number"
-                      className="form-control"
+                      className={`form-control ${errors.baseFare ? "is-invalid" : ""}`}
                       name="baseFare"
+                      value={formData.baseFare}
                       onChange={handleChange}
                     />
+                    {errors.baseFare && <div className="invalid-feedback">{errors.baseFare}</div>}
                   </div>
                 </div>
 
@@ -126,26 +211,28 @@ const SetWorldPrice = () => {
                   <label className="form-label">Base Distance (Km) *</label>
                   <input
                     type="number"
-                    className="form-control"
+                    className={`form-control ${errors.baseDistance ? "is-invalid" : ""}`}
                     name="baseDistance"
+                    value={formData.baseDistance}
                     onChange={handleChange}
                   />
+                  {errors.baseDistance && <div className="invalid-feedback d-block">{errors.baseDistance}</div>}
                 </div>
 
-                {/* Show only for Rental Hourly Package */}
-                {formData.farePlan === "rental" && (
-                  <div className="col-md-4">
-                    <label className="form-label">Minimum Hours *</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="minimumHrs"
-                      value={formData.minimumHrs}
-                      onChange={handleChange}
-                      placeholder="Enter Minimum Hours"
-                    />
-                  </div>
-                )}
+                {/* Show only for Rental Hourly Package, assuming you map the ID or name for rental. 
+                    For now, showing always if rental was selected, but since IDs are dynamic, you might need to check name instead if you have a specific rental category */}
+                <div className="col-md-4">
+                  <label className="form-label">Minimum Hours (For Rental)</label>
+                  <input
+                    type="number"
+                    className={`form-control ${errors.minimumHrs ? "is-invalid" : ""}`}
+                    name="minimumHrs"
+                    value={formData.minimumHrs}
+                    onChange={handleChange}
+                    placeholder="Enter Minimum Hours"
+                  />
+                  {errors.minimumHrs && <div className="invalid-feedback d-block">{errors.minimumHrs}</div>}
+                </div>
 
                 <div className="col-md-4">
                   <label className="form-label">
@@ -155,10 +242,12 @@ const SetWorldPrice = () => {
                     <span className="input-group-text">₹</span>
                     <input
                       type="number"
-                      className="form-control"
+                      className={`form-control ${errors.perDistance ? "is-invalid" : ""}`}
                       name="perDistance"
+                      value={formData.perDistance}
                       onChange={handleChange}
                     />
+                    {errors.perDistance && <div className="invalid-feedback">{errors.perDistance}</div>}
                   </div>
                 </div>
 
@@ -168,10 +257,12 @@ const SetWorldPrice = () => {
                     <span className="input-group-text">₹</span>
                     <input
                       type="number"
-                      className="form-control"
+                      className={`form-control ${errors.perMinute ? "is-invalid" : ""}`}
                       name="perMinute"
+                      value={formData.perMinute}
                       onChange={handleChange}
                     />
+                    {errors.perMinute && <div className="invalid-feedback">{errors.perMinute}</div>}
                   </div>
                 </div>
 
@@ -245,26 +336,32 @@ const SetWorldPrice = () => {
                 <div className="col-md-4">
                   <label className="form-label">Commission Type *</label>
                   <select
-                    className="form-select"
+                    className={`form-select ${errors.commissionType ? "is-invalid" : ""}`}
                     name="commissionType"
+                    value={formData.commissionType}
                     onChange={handleChange}
                   >
                     <option value="select">Select</option>
                     <option value="fixed">Fixed</option>
                     <option value="percentage">Percentage</option>
                   </select>
+                  {errors.commissionType && <div className="invalid-feedback d-block">{errors.commissionType}</div>}
                 </div>
 
                 <div className="col-md-4">
                   <label className="form-label">Commission Rate *</label>
                   <div className="input-group">
-                    <span className="input-group-text">₹</span>
+                    <span className="input-group-text">
+                      {formData.commissionType === "percentage" ? "%" : "₹"}
+                    </span>
                     <input
                       type="number"
-                      className="form-control"
+                      className={`form-control ${errors.commissionRate ? "is-invalid" : ""}`}
                       name="commissionRate"
+                      value={formData.commissionRate}
                       onChange={handleChange}
                     />
+                    {errors.commissionRate && <div className="invalid-feedback">{errors.commissionRate}</div>}
                   </div>
                 </div>
 

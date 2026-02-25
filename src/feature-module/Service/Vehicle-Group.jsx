@@ -171,7 +171,15 @@ export default function VehicleGroups() {
     },
     {
       header: "Description",
-      field: "description",
+      body: (row) => (
+        <div
+          className="text-truncate"
+          style={{ maxWidth: "250px" }}
+          title={row?.description || ""}
+        >
+          {row?.description || "--"}
+        </div>
+      ),
     },
     {
       header: "Status",
@@ -221,6 +229,7 @@ export default function VehicleGroups() {
           </Link>
           <Link
             to="/vehicleZone"
+            state={{ groupName: row.name }}
             className="me-2 p-2 text-muted"
             title="Vehicle Zone"
           >
