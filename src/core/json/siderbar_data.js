@@ -68,6 +68,7 @@ export const SidebarData = [
         submenuItems: [
           { label: "Unverified Drivers", link: "/unverifiedDriver"},
           { label: "Verified Drivers", link: "/verifiedDriver"},
+          { label: "Rejected Drivers", link: "/Rejected-Drivers"},
           { label: "Driver Rules", link: "/driverRules"},
           { label: "Driver Location", link: "/driverLocation"},
           { label: "Driver Documents", link: "/driverDocument"},

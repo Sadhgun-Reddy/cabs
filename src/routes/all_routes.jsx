@@ -98,7 +98,8 @@ export const all_routes = {
   driverreviews: "/Driver-Reviews",
   refferral: "/Refferral",
   viewwithdrawrequestdetails: "/View-Withdraw-Request-Details",
-  // goolemap: "/Google-Map",
+  rejecteddrivers: "/Rejected-Drivers",
+  adddriverrule: "/Add-Driver-Rules",
 
 
 

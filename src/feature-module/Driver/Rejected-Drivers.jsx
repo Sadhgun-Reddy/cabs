@@ -1,20 +1,20 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import PrimeDataTable from "../../components/data-table";
 import CommonFooter from "../../components/footer/commonFooter";
 import SearchFromApi from "../../components/data-table/search";
 import { URLS } from "../../url";
-export default function DriverRules() {
+
+export default function RejectedDriver() {
   /* ===================== STATE ===================== */
   const [searchQuery, setSearchQuery] = useState("");
-  const [rows, setRows] = useState(5);
+  const [rows, setRows] = useState(10);
   const [tableData, setTableData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /* ===================== HANDLERS ===================== */
+  // Handlers
   const handleSearch = (value) => {
     setSearchQuery(value);
   };
@@ -22,13 +22,14 @@ export default function DriverRules() {
   // Filter data based on search query
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return tableData;
-    const query = searchQuery.toLowerCase();
-    return tableData.filter((item) => item.Name?.toLowerCase().includes(query));
+    return tableData.filter((item) =>
+      item.Name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   }, [tableData, searchQuery]);
 
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
   };
 
@@ -39,18 +40,27 @@ export default function DriverRules() {
   const toggleStatus = (id) => {
     setTableData((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, Status: !item.Status } : item,
-      ),
+        item.id === id ? { ...item, Status: !item.Status } : item
+      )
+    );
+  };
+
+  const toggleVerified = (id) => {
+    setTableData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, Verified: !item.Verified } : item
+      )
     );
   };
 
   const handleBulkAction = (type) => {
     if (!selectedRows.length) return;
-    const newStatus = type === "active";
     setTableData((prev) =>
       prev.map((item) =>
-        selectedRows.includes(item.id) ? { ...item, Status: newStatus } : item,
-      ),
+        selectedRows.includes(item.id)
+          ? { ...item, Status: type === "active" }
+          : item
+      )
     );
   };
 
@@ -79,16 +89,12 @@ export default function DriverRules() {
       body: (_row, options) => options.rowIndex + 1,
     },
     {
-      header: "Title",
+      header: "Name",
       field: "Name",
     },
     {
-      header: "Vehicle Group",
-      field: "vechiclegroup",
-    },
-    {
-      header: "Priority",
-      field: "priority",
+      header: "Email",
+      field: "Email",
     },
     {
       header: "Status",
@@ -104,7 +110,7 @@ export default function DriverRules() {
           />
         </div>
       ),
-    },
+    },  
     {
       header: "Created Date",
       body: (row) =>
@@ -120,64 +126,87 @@ export default function DriverRules() {
       header: "Actions",
       body: (row) => (
         <div className="edit-delete-action">
-          <Link className="me-2 p-2" to="/editdriverRules" title="Edit Rule">
+          <Link
+            className="me-2 p-2"
+            to="/driver-details"
+            title="View"
+          >
+            <i className="ti ti-eye" />
+          </Link>
+          <Link
+            className="me-2 p-2"
+            to="/editdriver"
+            title="Edit"
+          >
             <i className="ti ti-edit" />
           </Link>
           <Link
             className="p-2"
             to="#"
-            data-bs-toggle="modal"
-            data-bs-target="#delete-modal"
-            onClick={() => {}}
+            title="Delete"
           >
             <i className="ti ti-trash" />
+          </Link>
+          <Link
+            className="p-2"
+            to="/driverDocument"
+            title="Files"
+          >
+            <i className="ti ti-file" />
           </Link>
         </div>
       ),
     },
   ];
 
-  /* ===================== FETCH DATA ===================== */
-  const fetchDriverRules = async () => {
+  // Fetch drivers with kycStatus = "requested"
+  const fetchDrivers = async () => {
     setLoading(true);
     setError("");
     try {
-      const response = await axios.post(
-        URLS.GetAllDriverRules,
-        {},
+      const response = await fetch(
+        URLS.GetAllDrivers,
         {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        },
+          body: JSON.stringify({
+            kycStatus: "rejected",
+            date: new Date().toISOString().split("T")[0], 
+          }),
+        }
       );
 
-      const driverRules = response.data?.data || [];
-      const formattedData = driverRules.map((item) => ({
-        id: item._id,
-        Name: item.name,
-        vechiclegroup: item.vehicleGroupName,
-        priority: item.priority,
-        Status: item.status === "active",
-        date: item.logCreatedDate,
-      }));
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      setTableData(formattedData);
+      const data = await response.json();
+      if (data.success && Array.isArray(data.user)) {
+        const formattedData = data.user.map((user) => ({
+          id: user._id,
+          Name: user.name || user.phone || "N/A",
+          Email: user.email || "—",
+          Status: user.status === "active", // boolean
+          Verified: user.kycStatus === "approved", // boolean (for requested it's false)
+          date: user.logCreatedDate,
+        }));
+        setTableData(formattedData);
+      } else {
+        throw new Error(data.message || "Invalid response format");
+      }
     } catch (err) {
       console.error("Fetch error:", err);
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to fetch driver rules",
-      );
+      setError(err.message || "Failed to fetch drivers");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDriverRules();
+    fetchDrivers();
   }, []);
 
   /* ===================== JSX ===================== */
@@ -186,11 +215,8 @@ export default function DriverRules() {
       <div className="content">
         <div className="page-header">
           <div className="page-title">
-            <h4>Drivers Rules</h4>
+            <h4>Rejected Drivers</h4>
           </div>
-          <Link to="/Add-Driver-Rules" className="btn btn-primary">
-            <i className="ti ti-circle-plus me-1" /> Add Driver Rule
-          </Link>
         </div>
 
         <div className="card table-list-card">
@@ -273,7 +299,7 @@ export default function DriverRules() {
               <div className="table-responsive">
                 <PrimeDataTable
                   column={columns}
-                  data={filteredData} // use filtered data
+                  data={filteredData}
                   totalRecords={filteredData.length}
                   rows={rows}
                 />

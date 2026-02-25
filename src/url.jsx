@@ -44,13 +44,13 @@ export const URLS={
 
     GetAllServiceCategories : base_url + "v1/gkcabs/admin/servicetype/getallservicetypes",
     EditServiceCategory : base_url + "v1/gkcabs/admin/servicetype/editservicetype",
-    UpdateBulkAction : base_url + "v1/gkcabs/admin/servicetype/updateservicestatus",
+    UpdateServiceStatus : base_url + "v1/gkcabs/admin/servicetype/updateservicestatus",
     SearchServiceCategories : base_url + "v1/gkcabs/admin/servicetype/getallservicetypes?searchQuery=",
 
     // Vehicle Groups
 
     GetAllVehicleGroup : base_url + "v1/gkcabs/admin/vechilegroup/getallvechilegroups",
-    UpdateBulkAction : base_url + "v1/gkcabs/admin/vechilegroup/updatestatus",
+    UpdateVehicleGroupStatus : base_url + "v1/gkcabs/admin/vechilegroup/updatestatus",
     AddVehicleGroup : base_url + "v1/gkcabs/admin/vechilegroup/addvechilegroup",
     EditVehicleGroup : base_url + "v1/gkcabs/admin/vechilegroup/editvechilegroup",
     GetVehicleGroupById : base_url + "v1/gkcabs/admin/vechilegroup/getvechilegroupbyid/",
@@ -58,7 +58,7 @@ export const URLS={
     //Vehicle Model
 
     GetAllVehicleModel : base_url + "v1/gkcabs/admin/vechilemodel/getallvechilemodels",
-    UpdateBulkAction : base_url + "v1/gkcabs/admin/vechilemodel/updatestatus",
+    UpdateVehicleModelStatus : base_url + "v1/gkcabs/admin/vechilemodel/updatestatus",
     AddVehicleModel : base_url + "v1/gkcabs/admin/vechilemodel/addvechilemodel",
     EditVehicleModel : base_url + "v1/gkcabs/admin/vechilemodel/editvechilemodel",
     GetVehicleModelById : base_url + "v1/gkcabs/admin/vechilemodel/getvehiclebyid",
@@ -68,7 +68,7 @@ export const URLS={
     GetAllFairPlans : base_url + "v1/gkcabs/admin/fairplan/getallfairplans",
     AddFaiPlan : base_url + "v1/gkcabs/admin/fairplan/addfairplan",
     EditFarePlan : base_url + "v1/gkcabs/admin/fairplan/editfairplan",
-    UpdateBulkAction : base_url + "v1/gkcabs/admin/fairplan/updatestatus",
+    UpdateFairPlanStatus : base_url + "v1/gkcabs/admin/fairplan/updatestatus",
 
     // Riders
 

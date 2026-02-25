@@ -22,8 +22,8 @@ export default function Riderwallet() {
     const query = searchQuery.toLowerCase();
     return tableData.filter((item) => {
       const nameMatch = item.username?.toLowerCase().includes(query);
-      const phoneMatch = item.phonenumber?.toLowerCase().includes(query);
-      return nameMatch || phoneMatch;
+      const userPhoneMatch = item.phonenumber?.toLowerCase().includes(query);
+      return nameMatch || userPhoneMatch;
     });
   }, [tableData, searchQuery]);
 

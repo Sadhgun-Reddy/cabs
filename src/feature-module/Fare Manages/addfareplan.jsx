@@ -110,7 +110,7 @@ const AddFarePlan = () => {
                   className="form-control"
                   value={formData.priority}
                   onChange={handleChange}
-                  placeholder="Enter Priority (e.g., High, Medium, Low)"
+                  placeholder="Enter Priority"
                   required
                 />
               </div>

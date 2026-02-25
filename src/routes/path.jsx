@@ -129,6 +129,8 @@ import Refferrals from "../feature-module/Refferrals/Refferral";
 import ViewWithdrawRequestDetails from "../feature-module/Driver/View-Withdraw-Request-Details";
 import ZoneMap from "../feature-module/Zones/Google-Map";
 import Zones from "../feature-module/Zones/Zones";
+import RejectedDriver from "../feature-module/Driver/Rejected-Drivers";
+import AddDriverRules from "../feature-module/Driver/Add-Driver-Rules";
 
 const ProductList = lazy(
   () => import("../feature-module/inventory/productlist"),
@@ -661,6 +663,20 @@ const Timeline = lazy(
 const routes = all_routes;
 
 export const authRoutes = [
+  {
+    id: 1,
+    path: routes.adddriverrule,
+    name: "Driver",
+    element: <AddDriverRules />,
+    route: Route,
+  },
+  {
+    id: 1,
+    path: routes.rejecteddrivers,
+    name: "Driver",
+    element: <RejectedDriver />,
+    route: Route,
+  },
   {
     id: 1,
     path: routes.viewwithdrawrequestdetails,

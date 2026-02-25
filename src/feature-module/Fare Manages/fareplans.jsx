@@ -9,13 +9,12 @@ export default function FarePlans() {
   const [rows, setRows] = useState(10);
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [updateLoading, setUpdateLoading] = useState(false); 
+  const [updateLoading, setUpdateLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [tableData, setTableData] = useState([]);
 
-  // ===================== CLIENT‑SIDE SEARCH =====================
-  // (like Zones – filter already fetched data)
+  // ===================== CLIENT-SIDE SEARCH =====================
   const filteredData = useMemo(() => {
     if (!searchTerm.trim()) return tableData;
     const lowerSearch = searchTerm.toLowerCase();
@@ -26,14 +25,14 @@ export default function FarePlans() {
     );
   }, [tableData, searchTerm]);
 
-  // ===================== FETCH DATA (ONCE) =====================
+  // ===================== FETCH DATA =====================
   const fetchFairPlans = async () => {
     setLoading(true);
     setError("");
     try {
       const res = await axios.post(
         URLS.GetAllFairPlans,
-        {}, 
+        {},
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -41,14 +40,14 @@ export default function FarePlans() {
         }
       );
 
-      // Adjust extraction based on your actual API response
       const fairPlans = res.data?.fairPlans || res.data?.data || res.data || [];
       const formattedData = fairPlans.map((plan) => ({
         id: plan._id,
         serviceName: plan.servicecategoryName,
         planName: plan.planName,
         priority: plan.priority,
-        status: plan.status, 
+        // Convert string status to boolean for toggle switch
+        isActive: plan.status === "active",
         createdAt: plan.logCreatedDate || plan.createdAt,
       }));
 
@@ -65,61 +64,55 @@ export default function FarePlans() {
     fetchFairPlans();
   }, []);
 
-  // ===================== STATUS UPDATE HELPERS =====================
-  // Convert boolean (for internal use) to API string
+  // Helper to convert boolean to API‑expected string
   const boolToStatus = (bool) => (bool ? "active" : "inactive");
 
-  // Single status update (used by action buttons)
-  const updateSingleStatus = async (id, newStatus) => {
+  // ===================== STATUS UPDATE (BULK & SINGLE) =====================
+  const updateFairPlanStatus = async (ids, newStatusBool) => {
+    if (!ids.length) return;
+
     setUpdateLoading(true);
+    setError("");
+
     try {
+      const token = localStorage.getItem("token");
       await axios.put(
-        `${URLS.EditFairPlan}/${id}`,
-        { status: newStatus },
+        URLS.UpdateFairPlanStatus,  
+        {
+          ids,
+          status: boolToStatus(newStatusBool),
+        },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      // Refresh data
+
+     
       await fetchFairPlans();
     } catch (err) {
-      console.error("Single update error:", err);
+      console.error("Status update failed:", err);
       setError(err.response?.data?.message || "Failed to update status");
     } finally {
       setUpdateLoading(false);
     }
   };
 
-  // Bulk status update – expects a boolean (true = active, false = inactive)
-  const updateBulkStatus = async (newStatusBool) => {
-    if (!selectedRows.length) return;
-    setUpdateLoading(true);
-    try {
-      
-      const statusString = boolToStatus(newStatusBool);
+  // Individual toggle
+  const toggleStatus = (id) => {
+    const item = tableData.find((item) => item.id === id);
+    if (!item) return;
+    const newStatus = !item.isActive; 
+    updateFairPlanStatus([id], newStatus);
+  };
 
-      // Call your bulk endpoint – make sure URLS.UpdateFairPlanBulk is defined
-      await axios.post(
-        URLS.UpdateFairPlanBulk,
-        { ids: selectedRows, status: statusString },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      await fetchFairPlans();
-      setSelectedRows([]);
-    } catch (err) {
-      console.error("Bulk update error:", err);
-      setError(err.response?.data?.message || "Failed to update status");
-    } finally {
-      setUpdateLoading(false);
-    }
+  // Bulk actions
+  const handleBulkStatus = (statusBool) => {
+    if (!selectedRows.length) return;
+    updateFairPlanStatus(selectedRows, statusBool);
+    setSelectedRows([]);
   };
 
   // ===================== ROW SELECTION =====================
@@ -139,7 +132,10 @@ export default function FarePlans() {
       header: (
         <input
           type="checkbox"
-          checked={filteredData.length > 0 && selectedRows.length === filteredData.length}
+          checked={
+            filteredData.length > 0 &&
+            selectedRows.length === filteredData.length
+          }
           onChange={(e) => handleSelectAll(e.target.checked)}
           disabled={loading || updateLoading}
         />
@@ -171,40 +167,29 @@ export default function FarePlans() {
     },
     {
       header: "Status",
-      body: (row) => {
-        let badgeClass = "bg-warning text-dark";
-        if (row.status === "active") badgeClass = "bg-success";
-        if (row.status === "inactive") badgeClass = "bg-danger";
-        return (
-          <span className={`badge ${badgeClass}`}>
-            {row.status === "active" ? "Active" : "Inactive"}
-          </span>
-        );
-      },
+      body: (row) => (
+        <div className="form-check form-switch">
+          <input
+            type="checkbox"
+            className={`form-check-input ${row.isActive ? "bg-success" : "bg-danger"}`}
+            checked={row.isActive}
+            onChange={() => toggleStatus(row.id)}
+            disabled={updateLoading}
+          />
+        </div>
+      ),
     },
     {
       header: "Actions",
       body: (row) => (
         <div className="edit-delete-action d-flex align-items-center">
-          <Link className="me-2 p-2" to={`/editfareplan/${row.id}`} title="Edit">
+          <Link
+            className="me-2 p-2"
+            to={`/editfareplan/${row.id}`}
+            title="Edit"
+          >
             <i className="ti ti-edit" />
           </Link>
-          <button
-            className="btn p-2 text-success"
-            title="Set Active"
-            onClick={() => updateSingleStatus(row.id, "active")}
-            disabled={row.status === "active" || updateLoading}
-          >
-            <i className="ti ti-check" />
-          </button>
-          <button
-            className="btn p-2 text-danger"
-            title="Set Inactive"
-            onClick={() => updateSingleStatus(row.id, "inactive")}
-            disabled={row.status === "inactive" || updateLoading}
-          >
-            <i className="ti ti-x" />
-          </button>
         </div>
       ),
     },
@@ -237,7 +222,10 @@ export default function FarePlans() {
                 <ul className="dropdown-menu">
                   {[5, 10, 15, 20, 25].map((num) => (
                     <li key={num}>
-                      <button className="dropdown-item" onClick={() => setRows(num)}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => setRows(num)}
+                      >
                         {num}
                       </button>
                     </li>
@@ -245,7 +233,7 @@ export default function FarePlans() {
                 </ul>
               </div>
 
-              {/* Bulk Actions – now using boolean true/false like Zones */}
+              {/* Bulk Actions */}
               <div className="dropdown">
                 <button
                   className="btn btn-white dropdown-toggle"
@@ -259,24 +247,24 @@ export default function FarePlans() {
                   <li>
                     <button
                       className="dropdown-item text-success"
-                      onClick={() => updateBulkStatus(true)} // true = active
+                      onClick={() => handleBulkStatus(true)}
                     >
-                      Set Active
+                      Active
                     </button>
                   </li>
                   <li>
                     <button
                       className="dropdown-item text-danger"
-                      onClick={() => updateBulkStatus(false)} // false = inactive
+                      onClick={() => handleBulkStatus(false)}
                     >
-                      Set Inactive
+                      Inactive
                     </button>
                   </li>
                 </ul>
               </div>
             </div>
 
-            {/* Search Input – client‑side filter */}
+            {/* Search Input */}
             <div className="search-input">
               <input
                 type="text"
@@ -294,7 +282,7 @@ export default function FarePlans() {
             {!loading && !error && (
               <PrimeDataTable
                 column={columns}
-                data={filteredData}           // use filtered data
+                data={filteredData}
                 totalRecords={filteredData.length}
                 rows={rows}
               />

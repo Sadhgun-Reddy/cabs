@@ -71,7 +71,7 @@ export default function VehicleModel() {
       };
 
       // Replace with your actual bulk update URL
-      await axios.put(URLS.UpdateBulkAction, payload, {
+      await axios.put(URLS.UpdateVehicleModelStatus, payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,

@@ -66,7 +66,7 @@ export default function ServiceCategorie() {
         status: status ? "active" : "inactive",
       };
 
-      await axios.put(URLS.UpdateBulkAction, payload, {
+      await axios.put(URLS.UpdateServiceStatus, payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
