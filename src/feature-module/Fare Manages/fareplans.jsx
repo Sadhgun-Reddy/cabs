@@ -43,10 +43,11 @@ export default function FarePlans() {
       const fairPlans = res.data?.fairPlans || res.data?.data || res.data || [];
       const formattedData = fairPlans.map((plan) => ({
         id: plan._id,
+        serviceCategoryId: plan.serviceCategoryId, // keep for edit
         serviceName: plan.servicecategoryName,
         planName: plan.planName,
         priority: plan.priority,
-        // Convert string status to boolean for toggle switch
+        status: plan.status, // original status string
         isActive: plan.status === "active",
         createdAt: plan.logCreatedDate || plan.createdAt,
       }));
@@ -67,17 +68,15 @@ export default function FarePlans() {
   // Helper to convert boolean to API‑expected string
   const boolToStatus = (bool) => (bool ? "active" : "inactive");
 
-  // ===================== STATUS UPDATE (BULK & SINGLE) =====================
+  // ===================== STATUS UPDATE =====================
   const updateFairPlanStatus = async (ids, newStatusBool) => {
     if (!ids.length) return;
-
     setUpdateLoading(true);
     setError("");
-
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        URLS.UpdateFairPlanStatus,  
+        URLS.UpdateFairPlanStatus,
         {
           ids,
           status: boolToStatus(newStatusBool),
@@ -89,8 +88,6 @@ export default function FarePlans() {
           },
         }
       );
-
-     
       await fetchFairPlans();
     } catch (err) {
       console.error("Status update failed:", err);
@@ -104,7 +101,7 @@ export default function FarePlans() {
   const toggleStatus = (id) => {
     const item = tableData.find((item) => item.id === id);
     if (!item) return;
-    const newStatus = !item.isActive; 
+    const newStatus = !item.isActive;
     updateFairPlanStatus([id], newStatus);
   };
 
@@ -186,6 +183,7 @@ export default function FarePlans() {
           <Link
             className="me-2 p-2"
             to={`/editfareplan/${row.id}`}
+            state={{ plan: row }} // pass full plan data
             title="Edit"
           >
             <i className="ti ti-edit" />

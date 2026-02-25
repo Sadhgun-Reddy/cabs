@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { URLS } from "../../url";
@@ -8,15 +8,51 @@ const AddFarePlan = () => {
   const navigate = useNavigate();
   const route = all_routes;
 
-  const [status, setStatus] = useState(true); 
+  const [status, setStatus] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // State for service categories dropdown
+  const [serviceCategories, setServiceCategories] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(false);
+  const [errorServices, setErrorServices] = useState("");
+
   const [formData, setFormData] = useState({
-    serviceName: "",
+    serviceCategoryId: "",
     planName: "",
     priority: "",
   });
+
+  // Fetch service categories on mount
+  useEffect(() => {
+    const fetchServiceCategories = async () => {
+      setLoadingServices(true);
+      setErrorServices("");
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.post(
+          URLS.GetServiceCategoryById,  
+          {},                            
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        
+        const categories = res.data?.serviceTypes || [];
+        setServiceCategories(categories);
+      } catch (err) {
+        console.error("Failed to fetch service categories:", err);
+        setErrorServices("Could not load service categories");
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+
+    fetchServiceCategories();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,7 +65,7 @@ const AddFarePlan = () => {
     setError("");
 
     const payload = {
-      serviceName: formData.serviceName,
+      serviceCategoryId: formData.serviceCategoryId,
       planName: formData.planName,
       priority: formData.priority,
       status: status ? "active" : "inactive",
@@ -65,26 +101,38 @@ const AddFarePlan = () => {
         </div>
 
         {error && <div className="alert alert-danger">{error}</div>}
+        {errorServices && <div className="alert alert-warning">{errorServices}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="card border mb-4">
             <div className="card-body">
-              {/* Service Name */}
+              {/* Service Name Dropdown */}
               <div className="mb-3">
                 <label className="form-label">Service Name</label>
                 <select
-                  name="serviceName"
+                  name="serviceCategoryId"
                   className="form-select"
-                  value={formData.serviceName}
+                  value={formData.serviceCategoryId}
                   onChange={handleChange}
                   required
+                  disabled={loadingServices}
                 >
-                  <option value="">Select Service</option>
-                  <option value="City Ride">City Ride</option>
-                  <option value="Outstation Oneway">Outstation Oneway</option>
-                  <option value="Outstation Round Trip">Outstation Round Trip</option>
-                  <option value="Rental Hourly Package">Rental Hourly Package</option>
+                  <option value="">
+                    {loadingServices ? "Loading services..." : "Select Service"}
+                  </option>
+                  {!loadingServices &&
+                    serviceCategories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat._id}
+                      </option>
+                    ))}
                 </select>
+                {/* {loadingServices && (
+                  <div className="mt-2 text-muted">
+                    <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Loading...
+                  </div>
+                )} */}
               </div>
 
               {/* Fare Plan Name */}
@@ -137,7 +185,7 @@ const AddFarePlan = () => {
                 <button
                   type="submit"
                   className="btn btn-success"
-                  disabled={loading}
+                  disabled={loading || loadingServices}
                 >
                   {loading ? "Adding..." : "Add Plan"}
                 </button>

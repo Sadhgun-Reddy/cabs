@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useJsApiLoader, Autocomplete } from "@react-google-maps/api";
 import axios from "axios";
-import { all_routes } from "../../routes/all_routes";
 import CommonFooter from "../../components/footer/commonFooter";
 import { URLS } from "../../url";
 import ZoneMap from "./Google-Map";

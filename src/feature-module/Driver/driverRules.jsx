@@ -54,26 +54,69 @@ export default function DriverRules() {
     );
   };
 
+  /* ===================== FETCH DATA ===================== */
+  const fetchDriverRules = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await axios.post(
+        URLS.GetAllDriverRules,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      const driverRules = response.data?.data || [];
+      const formattedData = driverRules.map((item) => ({
+        id: item._id,
+        Name: item.name,
+        vechiclegroup: item.vehicleGroupName,
+        priority: item.priority,
+        Status: item.status === "active",
+        date: item.logCreatedDate,
+      }));
+
+      setTableData(formattedData);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to fetch driver rules",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDriverRules();
+  }, []);
+
   /* ===================== COLUMNS ===================== */
   const columns = [
-    {
-      header: (
-        <input
-          type="checkbox"
-          checked={
-            tableData.length > 0 && selectedRows.length === tableData.length
-          }
-          onChange={(e) => handleSelectAll(e.target.checked)}
-        />
-      ),
-      body: (row) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.id)}
-          onChange={() => handleRowSelect(row.id)}
-        />
-      ),
-    },
+    // {
+    //   header: (
+    //     <input
+    //       type="checkbox"
+    //       checked={
+    //         tableData.length > 0 && selectedRows.length === tableData.length
+    //       }
+    //       onChange={(e) => handleSelectAll(e.target.checked)}
+    //     />
+    //   ),
+    //   body: (row) => (
+    //     <input
+    //       type="checkbox"
+    //       checked={selectedRows.includes(row.id)}
+    //       onChange={() => handleRowSelect(row.id)}
+    //     />
+    //   ),
+    // },
     {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,
@@ -136,49 +179,6 @@ export default function DriverRules() {
       ),
     },
   ];
-
-  /* ===================== FETCH DATA ===================== */
-  const fetchDriverRules = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await axios.post(
-        URLS.GetAllDriverRules,
-        {},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      const driverRules = response.data?.data || [];
-      const formattedData = driverRules.map((item) => ({
-        id: item._id,
-        Name: item.name,
-        vechiclegroup: item.vehicleGroupName,
-        priority: item.priority,
-        Status: item.status === "active",
-        date: item.logCreatedDate,
-      }));
-
-      setTableData(formattedData);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to fetch driver rules",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDriverRules();
-  }, []);
 
   /* ===================== JSX ===================== */
   return (

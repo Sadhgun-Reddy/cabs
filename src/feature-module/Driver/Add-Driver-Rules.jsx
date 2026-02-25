@@ -1,7 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { all_routes } from "../../routes/all_routes";
 import CommonFooter from "../../components/footer/commonFooter";
 import { URLS } from "../../url";
 
@@ -12,12 +11,64 @@ const AddDriverRules = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Vehicle groups dropdown
+  const [groups, setGroups] = useState([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+  const [errorGroups, setErrorGroups] = useState("");
+
   const [formData, setFormData] = useState({
     title: "",
-    vehhicleGroup: "",
+    vehicleGroup: "", // will store the selected group NAME
     priority: "",
-    status: "active",
   });
+
+  // Fetch vehicle groups on mount
+  useEffect(() => {
+    const fetchVehicleGroup = async () => {
+      setLoadingGroups(true);
+      setErrorGroups("");
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.post(
+          URLS.GetAllVehicleGroup,
+          {},
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("Vehicle groups API response:", res.data);
+
+        // Try to extract the array – adjust based on your actual response
+        let categories = [];
+        if (Array.isArray(res.data)) {
+          categories = res.data;
+        } else if (res.data?.vehicleGroups && Array.isArray(res.data.vehicleGroups)) {
+          categories = res.data.vehicleGroups;
+        } else if (res.data?.data && Array.isArray(res.data.data)) {
+          categories = res.data.data;
+        } else if (res.data?.groups && Array.isArray(res.data.groups)) {
+          categories = res.data.groups;
+        }
+
+        if (categories.length === 0) {
+          console.warn("No vehicle groups found or unexpected response structure");
+        }
+
+        setGroups(categories);
+      } catch (err) {
+        console.error("Failed to fetch vehicle groups:", err);
+        setErrorGroups("Could not load vehicle groups");
+      } finally {
+        setLoadingGroups(false);
+      }
+    };
+
+    fetchVehicleGroup();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,6 +78,30 @@ const AddDriverRules = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+
+    const payload = {
+      name: formData.title,
+      vehicleGroupId: formData.vehicleGroup, // sending name; adjust if backend expects ID
+      priority: Number(formData.priority),
+      status: status ? "active" : "inactive",
+    };
+
+    try {
+      await axios.post(URLS.AddDriverRule, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      navigate("/driverRules");
+    } catch (err) {
+      console.error("Add error:", err);
+      setError(err.response?.data?.message || "Failed to add driver rule");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -55,27 +130,20 @@ const AddDriverRules = () => {
           </ul>
         </div>
 
-        <div className="row justify-content-center">
-          {/* LEFT COLUMN – FORM */}
-          <div className="col-lg-6 col-md-6 col-12">
+        <div className="row">
+          <div className="col-lg-12 col-md-6 col-12">
+            {error && <div className="alert alert-danger">{error}</div>}
+            {errorGroups && <div className="alert alert-warning">{errorGroups}</div>}
+
             <form onSubmit={handleSubmit}>
               <div className="add-Addzones">
                 <div className="card border mb-4">
-                  {/* <h2 className="card-header" id="headingSpacingOne">
-                    <div className="d-flex align-items-center justify-content-between flex-fill">
-                      <h5 className="d-flex align-items-center">
-                        <i className="feather icon-info text-primary me-2" />
-                        <span>Add Driver Rules Information</span>
-                      </h5>
-                    </div>
-                  </h2> */}
-
                   <div className="accordion-body border-top">
-                    {/* Zone Name */}
+                    {/* Title */}
                     <div className="row">
                       <div className="col-sm-6 col-12 w-100">
                         <div className="mb-3">
-                          <label className="form-label">Titile</label>
+                          <label className="form-label">Title</label>
                           <input
                             type="text"
                             name="title"
@@ -89,20 +157,37 @@ const AddDriverRules = () => {
                       </div>
                     </div>
 
-                    {/* Priority */}
+                    {/* Vehicle Group Dropdown */}
                     <div className="row">
                       <div className="col-sm-6 col-12 w-100">
                         <div className="mb-3 list position-relative">
                           <label className="form-label">Vehicle Group</label>
-                          <input
-                            type="text"
+                          <select
                             name="vehicleGroup"
                             className="form-control"
                             value={formData.vehicleGroup}
                             onChange={handleChange}
-                            placeholder="Enter Vehicle Group"
                             required
-                          />
+                            disabled={loadingGroups}
+                          >
+                            <option value="">
+                              {loadingGroups
+                                ? "Loading vehicle groups..."
+                                : "Select Vehicle Group"}
+                            </option>
+                            {!loadingGroups &&
+                              groups.map((group) => (
+                                <option key={group._id} value={group._id || group._id || group.title}>
+                                  {group.name || group._id || group.title}
+                                </option>
+                              ))}
+                          </select>
+                          {loadingGroups && (
+                            <div className="mt-2 text-muted">
+                              <span className="spinner-border spinner-border-sm me-1" />
+                              Loading...
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -169,7 +254,7 @@ const AddDriverRules = () => {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={loading}
+                    disabled={loading || loadingGroups}
                   >
                     {loading ? "Adding..." : "Add Rule"}
                   </button>

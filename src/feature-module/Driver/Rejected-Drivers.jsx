@@ -66,24 +66,24 @@ export default function RejectedDriver() {
 
   /* ===================== COLUMNS ===================== */
   const columns = [
-    {
-      header: (
-        <input
-          type="checkbox"
-          checked={
-            tableData.length > 0 && selectedRows.length === tableData.length
-          }
-          onChange={(e) => handleSelectAll(e.target.checked)}
-        />
-      ),
-      body: (row) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.id)}
-          onChange={() => handleRowSelect(row.id)}
-        />
-      ),
-    },
+    // {
+    //   header: (
+    //     <input
+    //       type="checkbox"
+    //       checked={
+    //         tableData.length > 0 && selectedRows.length === tableData.length
+    //       }
+    //       onChange={(e) => handleSelectAll(e.target.checked)}
+    //     />
+    //   ),
+    //   body: (row) => (
+    //     <input
+    //       type="checkbox"
+    //       checked={selectedRows.includes(row.id)}
+    //       onChange={() => handleRowSelect(row.id)}
+    //     />
+    //   ),
+    // },
     {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,

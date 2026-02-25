@@ -103,5 +103,3 @@ export const URLS = {
     EditCityFair: base_url + "v1/gkcabs/admin/cityfair/editcityfair",
 
 }
-
-
