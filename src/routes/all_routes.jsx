@@ -27,7 +27,7 @@ export const all_routes = {
   Verifieddriver: "/verifiedDriver",
   UnverifiedDriver: "/unverifiedDriver",
   driverRules: "/driverRules",
-  driverWallet: "/driverWallet",
+  driverWallet:"/driverWallet",
   driverDocument: "/driverDocument",
   Commissionhostories: "/commissionHistories",
   withdrawrequest: "/withdrawRequest",
@@ -192,6 +192,7 @@ export const all_routes = {
   flagicons: "/icon-flag",
   ribbon: "/ui-ribbon",
 
+  chat: "/chat",
   Sortable: "/sortable",
   SwiperJs: "/swiper-js",
   FormPicker: "/form-picker",

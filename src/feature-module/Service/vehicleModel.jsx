@@ -67,11 +67,11 @@ export default function VehicleModel() {
     try {
       const payload = {
         ids: selectedRows,
-        status: newStatus,
+        status: newStatus, 
       };
 
       // Replace with your actual bulk update URL
-      await axios.put(URLS.UpdateVehicleModelStatus, payload, {
+      await axios.put(URLS.UpdateBulkAction, payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -111,7 +111,7 @@ export default function VehicleModel() {
       let vechileModels = res.data?.vechileModels;
 
 
-
+      
 
       const formattedData = vechileModels.map((vehicleModel) => ({
         id: vehicleModel._id,
@@ -119,7 +119,7 @@ export default function VehicleModel() {
         modelname: vehicleModel.name || "—",
         seater: vehicleModel.seater || "—",
         priority: vehicleModel.priority || "—",
-        status: vehicleModel.status || "",
+        status: vehicleModel.status || "", 
       }));
 
       setTableData(formattedData);

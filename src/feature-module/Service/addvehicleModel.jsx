@@ -62,7 +62,7 @@ const AddVehicleModel = () => {
       seater: formData.seater,
       priority: formData.priority,
       vehicleGroupId: formData.vehicleGroupId,
-      status: "pending", // default status
+      status: "active", // default status
     };
 
     try {

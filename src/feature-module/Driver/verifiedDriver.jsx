@@ -1,29 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/Coupons";
-import EditZones from "../../core/modals/coupons/editcoupons";
 import CommonFooter from "../../components/footer/commonFooter";
-import DeleteModal from "../../components/delete-modal";
 import SearchFromApi from "../../components/data-table/search";
-import { Search } from "react-feather";
+import { URLS } from "../../url"; // adjust path to your URL config
 
 export default function Verifieddriver() {
   /* ===================== STATE ===================== */
   const [searchQuery, setSearchQuery] = useState("");
   const [rows, setRows] = useState(5);
-  const [tableData, setTableData] = useState(CouponData);
+  const [tableData, setTableData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   /* ===================== HANDLERS ===================== */
-
   const handleSearch = (value) => {
     setSearchQuery(value);
   };
 
+  // Filter data based on search query (by name, phone, or email)
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return tableData;
+    const query = searchQuery.toLowerCase();
+    return tableData.filter(
+      (item) =>
+        item.Name?.toLowerCase().includes(query) ||
+        item.phonenumber?.includes(query) ||
+        item.Email?.toLowerCase().includes(query)
+    );
+  }, [tableData, searchQuery]);
+
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
   };
 
@@ -34,40 +44,24 @@ export default function Verifieddriver() {
   const toggleStatus = (id) => {
     setTableData((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, Status: !item.Status } : item,
-      ),
+        item.id === id ? { ...item, Status: !item.Status } : item
+      )
     );
+    // Optionally: call API to persist status change
   };
-  const toggleVerified = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Verified: !item.Verified } : item,
-      ),
-    );
-  };
-
-  /* ===================== COLUMNS ===================== */
 
   const handleBulkAction = (type) => {
     if (!selectedRows.length) return;
-
-    if (type === "active") {
-      setTableData((prev) =>
-        prev.map((item) =>
-          selectedRows.includes(item.id) ? { ...item, Status: true } : item,
-        ),
-      );
-    }
-
-    if (type === "inactive") {
-      setTableData((prev) =>
-        prev.map((item) =>
-          selectedRows.includes(item.id) ? { ...item, Status: false } : item,
-        ),
-      );
-    }
+    const newStatus = type === "active";
+    setTableData((prev) =>
+      prev.map((item) =>
+        selectedRows.includes(item.id) ? { ...item, Status: newStatus } : item
+      )
+    );
+    // Optionally: call API to bulk update
   };
 
+  /* ===================== COLUMNS ===================== */
   const columns = [
     {
       header: (
@@ -93,7 +87,7 @@ export default function Verifieddriver() {
     },
     {
       header: "Name",
-      field: "name",
+      field: "Name",
     },
     {
       header: "Phone Number",
@@ -102,10 +96,6 @@ export default function Verifieddriver() {
     {
       header: "Email",
       field: "Email",
-    },
-    {
-      header: "Zone",
-      field: "zone",
     },
     {
       header: "Status",
@@ -123,41 +113,24 @@ export default function Verifieddriver() {
       ),
     },
     {
-      header: "Verified",
-      body: (row) => (
-        <div className="form-check form-switch">
-          <input
-            className={`form-check-input ${
-              row.Status ? "bg-success" : "bg-danger"
-            }`}
-            type="checkbox"
-            checked={row.Verified}
-            onChange={() => toggleVerified(row.id)}
-          />
-        </div>
-      ),
-    },
-    {
       header: "Created Date",
       body: (row) =>
         row?.date
-          ? new Date(row.date).toLocaleString("en-IN", {
+          ? new Date(row.date).toLocaleDateString("en-IN", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
-              // hour: "2-digit",
             })
           : "--",
     },
     {
       header: "Actions",
-      body: () => (
+      body: (row) => (
         <div className="edit-delete-action">
           <Link
             className="me-2 p-2"
             to="/viewdriverDetails"
             title="Driver Details"
-
           >
             <i className="ti ti-eye" />
           </Link>
@@ -165,7 +138,6 @@ export default function Verifieddriver() {
             className="me-2 p-2"
             to="/editdriver"
             title="Edit Driver"
-
           >
             <i className="ti ti-edit" />
           </Link>
@@ -177,11 +149,7 @@ export default function Verifieddriver() {
           >
             <i className="ti ti-trash" />
           </Link>
-          <Link
-            className="p-2"
-            to="/driverDocument"
-
-          >
+          <Link className="p-2" to="/driverDocument">
             <i className="ti ti-file" />
           </Link>
         </div>
@@ -189,103 +157,157 @@ export default function Verifieddriver() {
     },
   ];
 
-  /* ===================== JSX ===================== */
+  /* ===================== FETCH DRIVERS ===================== */
+  const fetchDrivers = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(URLS.GetAllDrivers, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          kycStatus: "verified",
+          date: new Date().toISOString().split("T")[0], // today's date
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && Array.isArray(data.user)) {
+        const formattedData = data.user.map((user) => ({
+          id: user._id,
+          Name: user.name || user.phone || "N/A",
+          Email: user.email || "—",
+          phonenumber: user.phone || "—",
+          Status: user.status === "active", // account status, not kycStatus
+          date: user.logCreatedDate,
+        }));
+        setTableData(formattedData);
+      } else {
+        throw new Error(data.message || "Invalid response format");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message || "Failed to fetch drivers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
+
+  /* ===================== JSX ===================== */
   return (
-    <div>
-      <div className="page-wrapper">
-        <div className="content">
-          <div className="page-header">
-            <div className="page-title">
-              <h4>Verified Drivers</h4>
+    <div className="page-wrapper">
+      <div className="content">
+        <div className="page-header">
+          <div className="page-title">
+            <h4>Verified Drivers</h4>
+          </div>
+          <Link to="/export" className="btn btn-outline-success">
+            <i className="ti ti-download me-2" />
+            Export All Driver
+          </Link>
+        </div>
+
+        <div className="card table-list-card">
+          <div className="card-header d-flex justify-content-between">
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              {/* Rows dropdown */}
+              <div className="dropdown">
+                <button
+                  className="btn btn-white dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                >
+                  {rows}
+                </button>
+                <ul className="dropdown-menu">
+                  {[5, 10, 15, 20, 25].map((num) => (
+                    <li key={num}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => setRows(num)}
+                      >
+                        {num}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Bulk Actions */}
+              <div className="dropdown">
+                <button
+                  className="btn btn-white dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                >
+                  Bulk Actions
+                </button>
+                <ul className="dropdown-menu">
+                  <li>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => handleBulkAction("active")}
+                    >
+                      Active
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => handleBulkAction("inactive")}
+                    >
+                      Inactive
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              <button className="btn btn-outline-success">Apply</button>
             </div>
-            <Link to="/export" className="btn btn-outline-success"><i className="ti ti-download me-2" />Export All Driver</Link>
+            <SearchFromApi
+              callback={handleSearch}
+              rows={rows}
+              setRows={setRows}
+            />
           </div>
 
-          <div className="card table-list-card">
-            <div className="card-header d-flex justify-content-between">
-              <div className="d-flex align-items-center gap-2 flex-wrap">
-                {/* Rows dropdown */}
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                  >
-                    {rows}
-                  </Link>
-                  <ul className="dropdown-menu">
-                    {[5, 10, 15, 20, 25].map((num) => (
-                      <li key={num}>
-                        <Link
-                          to="#"
-                          className="dropdown-item"
-                          onClick={() => setRows(num)}
-                        >
-                          {num}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+          <div className="card-body">
+            {loading && (
+              <div className="text-center py-4">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
                 </div>
-
-                {/* Bulk Actions */}
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                  >
-                    Bulk Actions
-                  </Link>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <Link
-                        to="#"
-                        className="dropdown-item"
-                        onClick={() => handleBulkAction("active")}
-                      >
-                        Active
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="#"
-                        className="dropdown-item"
-                        onClick={() => handleBulkAction("inactive")}
-                      >
-                        Inactive
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <button className="btn btn-outline-success">Apply</button>
               </div>
-              <SearchFromApi
-                callback={handleSearch}
-                rows={rows}
-                setRows={setRows}
-              />
-            </div>
-
-            <div className="card-body">
+            )}
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+            {!loading && !error && (
               <div className="table-responsive">
                 <PrimeDataTable
                   column={columns}
-                  data={tableData}
-                  totalRecords={tableData.length}
+                  data={filteredData} // use filtered data for search
+                  totalRecords={filteredData.length}
                   rows={rows}
                 />
               </div>
-            </div>
+            )}
           </div>
         </div>
-
-        <CommonFooter />
       </div>
-
-      <EditZones />
-      <DeleteModal />
+      <CommonFooter />
     </div>
   );
 }

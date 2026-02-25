@@ -1,29 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios"; 
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/Coupons";
-import EditZones from "../../core/modals/coupons/editcoupons";
 import CommonFooter from "../../components/footer/commonFooter";
-import DeleteModal from "../../components/delete-modal";
 import SearchFromApi from "../../components/data-table/search";
-import { Search } from "react-feather";
-
+import { URLS } from "../../url"; 
 export default function DriverRules() {
   /* ===================== STATE ===================== */
   const [searchQuery, setSearchQuery] = useState("");
   const [rows, setRows] = useState(5);
-  const [tableData, setTableData] = useState(CouponData);
+  const [tableData, setTableData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   /* ===================== HANDLERS ===================== */
-
   const handleSearch = (value) => {
     setSearchQuery(value);
   };
 
+  // Filter data based on search query 
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return tableData;
+    const query = searchQuery.toLowerCase();
+    return tableData.filter((item) =>
+      item.Name?.toLowerCase().includes(query)
+    );
+  }, [tableData, searchQuery]);
+
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
   };
 
@@ -34,41 +41,24 @@ export default function DriverRules() {
   const toggleStatus = (id) => {
     setTableData((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, Status: !item.Status } : item,
-      ),
+        item.id === id ? { ...item, Status: !item.Status } : item
+      )
     );
+   
   };
-
-  // const toggleVerified = (id) => {
-  //   setTableData((prev) =>
-  //     prev.map((item) =>
-  //       item.id === id ? { ...item, Verified: !item.Verified } : item,
-  //     ),
-  //   );
-  // };
-
-  /* ===================== COLUMNS ===================== */
 
   const handleBulkAction = (type) => {
     if (!selectedRows.length) return;
-
-    if (type === "active") {
-      setTableData((prev) =>
-        prev.map((item) =>
-          selectedRows.includes(item.id) ? { ...item, Status: true } : item,
-        ),
-      );
-    }
-
-    if (type === "inactive") {
-      setTableData((prev) =>
-        prev.map((item) =>
-          selectedRows.includes(item.id) ? { ...item, Status: false } : item,
-        ),
-      );
-    }
+    const newStatus = type === "active";
+    setTableData((prev) =>
+      prev.map((item) =>
+        selectedRows.includes(item.id) ? { ...item, Status: newStatus } : item
+      )
+    );
+    
   };
 
+  /* ===================== COLUMNS ===================== */
   const columns = [
     {
       header: (
@@ -93,12 +83,12 @@ export default function DriverRules() {
       body: (_row, options) => options.rowIndex + 1,
     },
     {
-      header: "Titile",
-      field: "title",
+      header: "Title",
+      field: "Name",
     },
     {
-      header: "Vechicle Type",
-      field: "vechicletype",
+      header: "Vehicle Group",
+      field: "vechiclegroup",
     },
     {
       header: "Priority",
@@ -119,50 +109,25 @@ export default function DriverRules() {
         </div>
       ),
     },
-    // {
-    //   header: "Verified",
-    //   body: (row) => (
-    //     <div className="form-check form-switch">
-    //       <input
-    //         className={`form-check-input ${
-    //           row.Status ? "bg-success" : "bg-danger"
-    //         }`}
-    //         type="checkbox"
-    //         checked={row.Verified}
-    //         onChange={() => toggleVerified(row.id)}
-    //       />
-    //     </div>
-    //   ),
-    // },
     {
       header: "Created Date",
       body: (row) =>
         row?.date
-          ? new Date(row.date).toLocaleString("en-IN", {
+          ? new Date(row.date).toLocaleDateString("en-IN", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
-              // hour: "2-digit",
             })
           : "--",
     },
     {
       header: "Actions",
-      body: () => (
+      body: (row) => (
         <div className="edit-delete-action">
-          {/* <Link
-            className="me-2 p-2"
-            to="#"
-            data-bs-toggle="modal"
-            data-bs-target="#riderdetails-units"
-          >
-            <i className="ti ti-eye" />
-          </Link> */}
           <Link
             className="me-2 p-2"
             to="/editdriverRules"
             title="Edit Rule"
-
           >
             <i className="ti ti-edit" />
           </Link>
@@ -171,112 +136,157 @@ export default function DriverRules() {
             to="#"
             data-bs-toggle="modal"
             data-bs-target="#delete-modal"
+            onClick={() => {
+              
+            }}
           >
             <i className="ti ti-trash" />
           </Link>
-
         </div>
       ),
     },
   ];
 
-  /* ===================== JSX ===================== */
+  /* ===================== FETCH DATA ===================== */
+  const fetchDriverRules = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await axios.post(
+        URLS.GetAllDriverRules,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
+      const driverRules = response.data?.data || [];
+      const formattedData = driverRules.map((item) => ({
+        id: item._id,
+        Name: item.name,
+        vechiclegroup: item.vehicleGroupName,
+        priority: item.priority,
+        Status: item.status === "active", 
+        date: item.logCreatedDate,
+      }));
+
+      setTableData(formattedData);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.response?.data?.message || err.message || "Failed to fetch driver rules");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDriverRules();
+  }, []);
+
+  /* ===================== JSX ===================== */
   return (
-    <div>
-      <div className="page-wrapper">
-        <div className="content">
-          <div className="page-header">
-            <div className="page-title">
-              <h4>Drivers Rules</h4>
+    <div className="page-wrapper">
+      <div className="content">
+        <div className="page-header">
+          <div className="page-title">
+            <h4>Drivers Rules</h4>
+          </div>
+          {/* Add "Add Rule" button if needed */}
+        </div>
+
+        <div className="card table-list-card">
+          <div className="card-header d-flex justify-content-between">
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              {/* Rows dropdown */}
+              <div className="dropdown">
+                <button
+                  className="btn btn-white dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                >
+                  {rows}
+                </button>
+                <ul className="dropdown-menu">
+                  {[5, 10, 15, 20, 25].map((num) => (
+                    <li key={num}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => setRows(num)}
+                      >
+                        {num}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Bulk Actions */}
+              <div className="dropdown">
+                <button
+                  className="btn btn-white dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                >
+                  Bulk Actions
+                </button>
+                <ul className="dropdown-menu">
+                  <li>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => handleBulkAction("active")}
+                    >
+                      Active
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => handleBulkAction("inactive")}
+                    >
+                      Inactive
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              <button className="btn btn-outline-success">Apply</button>
             </div>
-            {/* <button className="btn btn-outline-success">Export All Driver</button> */}
+            <SearchFromApi
+              callback={handleSearch}
+              rows={rows}
+              setRows={setRows}
+            />
           </div>
 
-          <div className="card table-list-card">
-            <div className="card-header d-flex justify-content-between">
-              <div className="d-flex align-items-center gap-2 flex-wrap">
-                {/* Rows dropdown */}
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                  >
-                    {rows}
-                  </Link>
-                  <ul className="dropdown-menu">
-                    {[5, 10, 15, 20, 25].map((num) => (
-                      <li key={num}>
-                        <Link
-                          to="#"
-                          className="dropdown-item"
-                          onClick={() => setRows(num)}
-                        >
-                          {num}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+          <div className="card-body">
+            {loading && (
+              <div className="text-center py-4">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
                 </div>
-
-                {/* Bulk Actions */}
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                  >
-                    Bulk Actions
-                  </Link>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <Link
-                        to="#"
-                        className="dropdown-item"
-                        onClick={() => handleBulkAction("active")}
-                      >
-                        Active
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="#"
-                        className="dropdown-item"
-                        onClick={() => handleBulkAction("inactive")}
-                      >
-                        Inactive
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <button className="btn btn-outline-success">Apply</button>
               </div>
-              <SearchFromApi
-                callback={handleSearch}
-                rows={rows}
-                setRows={setRows}
-              />
-            </div>
-
-            <div className="card-body">
+            )}
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+            {!loading && !error && (
               <div className="table-responsive">
                 <PrimeDataTable
                   column={columns}
-                  data={tableData}
-                  totalRecords={tableData.length}
+                  data={filteredData} // use filtered data
+                  totalRecords={filteredData.length}
                   rows={rows}
                 />
               </div>
-            </div>
+            )}
           </div>
         </div>
-
-        <CommonFooter />
       </div>
-
-      <EditZones />
-      <DeleteModal />
+      <CommonFooter />
     </div>
   );
 }

@@ -1,28 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/Coupons";
 import CommonFooter from "../../components/footer/commonFooter";
 import SearchFromApi from "../../components/data-table/search";
+import { URLS } from "../../url"; // adjust path to your URL config
 
 export default function Driverdocument() {
   /* ===================== STATE ===================== */
-  const [rows, setRows] = useState(5);
+  const [rows, setRows] = useState(10);
   const [selectedRows, setSelectedRows] = useState([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const [tableData, setTableData] = useState(
-    CouponData.map((item) => ({
-      ...item,
-      Status: item.Status
-        ? item.Status.charAt(0).toUpperCase() +
-          item.Status.slice(1).toLowerCase()
-        : "Pending",
-    })),
-  );
+  // Define document types and their corresponding field names in API response
+  const documentTypes = [
+    { label: "Aadhar Front", field: "adharCardFront" },
+    { label: "Aadhar Back", field: "adharCardBack" },
+    { label: "Driving Licence Front", field: "drivingLicenceFront" },
+    { label: "Driving Licence Back", field: "drivingLicenceBack" },
+    { label: "Vehicle RC", field: "vehicleRC" },
+    { label: "Vehicle Insurance", field: "vehicleInsurance" },
+    { label: "Vehicle Pollution", field: "vehiclePollution" },
+    { label: "Vehicle Fitness", field: "vehicleFitness" },
+    { label: "Policy Verify", field: "policyVerify" },
+    { label: "Quarterly Tax", field: "quarterlyTax" },
+  ];
 
-  /* ===================== ROW SELECTION ===================== */
+  /* ===================== HANDLERS ===================== */
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+  };
+
+  // Filter data based on search query (by driver name or document type)
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return tableData;
+    const query = searchQuery.toLowerCase();
+    return tableData.filter(
+      (item) =>
+        item.driver?.toLowerCase().includes(query) ||
+        item.document?.toLowerCase().includes(query),
+    );
+  }, [tableData, searchQuery]);
+
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
@@ -30,30 +53,32 @@ export default function Driverdocument() {
   };
 
   const handleSelectAll = (checked) => {
-    setSelectedRows(checked ? visibleData.map((row) => row.id) : []);
+    setSelectedRows(checked ? filteredData.map((row) => row.id) : []);
   };
 
-  /* ===================== STATUS ACTIONS ===================== */
+  // Approve document (update status locally)
   const approveDocument = (id) => {
     setTableData((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, Status: "Approved" } : item,
       ),
     );
+    // TODO: Call API to persist approval
   };
 
+  // Reject document (update status locally)
   const rejectDocument = (id) => {
     setTableData((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, Status: "Rejected" } : item,
       ),
     );
+    // TODO: Call API to persist rejection
   };
 
-  /* ===================== BULK MOVE TO TRASH ===================== */
+  // Bulk move to trash (set status to "Trash")
   const handleBulkTrash = () => {
     if (!selectedRows.length) return;
-
     setTableData((prev) =>
       prev.map((item) =>
         selectedRows.includes(item.id) ? { ...item, Status: "Trash" } : item,
@@ -62,8 +87,58 @@ export default function Driverdocument() {
     setSelectedRows([]);
   };
 
-  /* ===================== FILTER DATA ===================== */
-  const visibleData = tableData.filter((item) => item.Status !== "Trash");
+  /* ===================== FETCH DATA ===================== */
+  const fetchDocuments = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(URLS.GetDriverDocument, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+  
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && Array.isArray(data.data)) {
+        const rows = [];
+        data.data.forEach((driver) => {
+          documentTypes.forEach((doc) => {
+            const imageUrl = driver[doc.field];
+
+            if (imageUrl && imageUrl.trim() !== "") {
+              rows.push({
+                id: `${driver.driverId}_${doc.field}`,
+                document: doc.label,
+                driver: driver.driverName,
+                documentImage: imageUrl,
+                Status: "Pending",
+                date: driver.logCreatedDate,
+              });
+            }
+          });
+        });
+        setTableData(rows);
+      } else {
+        throw new Error(data.message || "Invalid response format");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message || "Failed to fetch documents");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
 
   /* ===================== COLUMNS ===================== */
   const columns = [
@@ -72,7 +147,8 @@ export default function Driverdocument() {
         <input
           type="checkbox"
           checked={
-            visibleData.length > 0 && selectedRows.length === visibleData.length
+            filteredData.length > 0 &&
+            selectedRows.length === filteredData.length
           }
           onChange={(e) => handleSelectAll(e.target.checked)}
         />
@@ -99,7 +175,7 @@ export default function Driverdocument() {
     },
     {
       header: "Expired At",
-      field: "expiredat",
+      body: () => "--", // Placeholder; add expiry field when available
     },
     {
       header: "Status",
@@ -107,6 +183,7 @@ export default function Driverdocument() {
         let badgeClass = "bg-warning text-dark";
         if (row.Status === "Approved") badgeClass = "bg-success";
         if (row.Status === "Rejected") badgeClass = "bg-danger";
+        if (row.Status === "Trash") badgeClass = "bg-secondary";
 
         return <span className={`badge ${badgeClass}`}>{row.Status}</span>;
       },
@@ -115,11 +192,10 @@ export default function Driverdocument() {
       header: "Created Date",
       body: (row) =>
         row?.date
-          ? new Date(row.date).toLocaleString("en-IN", {
+          ? new Date(row.date).toLocaleDateString("en-IN", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
-              // hour: "2-digit",
             })
           : "--",
     },
@@ -127,24 +203,24 @@ export default function Driverdocument() {
       header: "Actions",
       body: (row) => (
         <div className="edit-delete-action d-flex align-items-center">
-          {/* VIEW */}
-          <Link className="me-2 p-2" to="/editdriverDocument" title="Edit">
-            <i className="ti ti-edit" />
-          </Link>
-
+          {/* View Image */}
           <button
-            className="me-2 "
-            to="#"
+            className="btn p-2"
             title="View"
             onClick={() => {
-              setSelectedImage(row.documentImage); // 👈 your image field
+              setSelectedImage(row.documentImage);
               setShowImageModal(true);
             }}
           >
             <i className="ti ti-eye" />
           </button>
 
-          {/* APPROVE */}
+          {/* Edit (optional) */}
+          <Link className="p-2" to="/edit-document" title="Edit">
+            <i className="ti ti-edit" />
+          </Link>
+
+          {/* Approve */}
           <button
             className="btn p-2 text-success"
             title="Approve"
@@ -154,7 +230,7 @@ export default function Driverdocument() {
             <i className="ti ti-check" />
           </button>
 
-          {/* REJECT */}
+          {/* Reject */}
           <button
             className="btn p-2 text-danger"
             title="Reject"
@@ -182,49 +258,47 @@ export default function Driverdocument() {
         <div className="card table-list-card">
           <div className="card-header d-flex justify-content-between flex-wrap gap-2">
             <div className="d-flex gap-2 flex-wrap">
-              {/* Rows */}
+              {/* Rows dropdown */}
               <div className="dropdown">
-                <Link
-                  to="#"
+                <button
                   className="btn btn-white dropdown-toggle"
+                  type="button"
                   data-bs-toggle="dropdown"
                 >
                   {rows}
-                </Link>
+                </button>
                 <ul className="dropdown-menu">
                   {[5, 10, 15, 20, 25].map((num) => (
                     <li key={num}>
-                      <Link
-                        to="#"
+                      <button
                         className="dropdown-item"
                         onClick={() => setRows(num)}
                       >
                         {num}
-                      </Link>
+                      </button>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Bulk */}
+              {/* Bulk Actions */}
               <div className="dropdown">
-                <Link
-                  to="#"
+                <button
                   className="btn btn-white dropdown-toggle"
+                  type="button"
                   data-bs-toggle="dropdown"
                 >
                   Bulk Actions
-                </Link>
+                </button>
                 <ul className="dropdown-menu">
                   <li>
-                    <Link
-                      to="#"
+                    <button
                       className="dropdown-item text-danger"
                       onClick={handleBulkTrash}
                     >
                       <i className="ti ti-trash me-2" />
                       Move to Trash
-                    </Link>
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -236,48 +310,73 @@ export default function Driverdocument() {
               >
                 Apply
               </button>
-
-              {showImageModal && (
-                <div className="modal d-block" tabIndex="-1">
-                  <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
-                      <div className="modal-header">
-                        <h5 className="modal-title">Document Image</h5>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          onClick={() => setShowImageModal(false)}
-                        ></button>
-                      </div>
-
-                      <div className="modal-body text-center">
-                        <img
-                          src={selectedImage}
-                          alt="Document"
-                          className="img-fluid rounded"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
-            <SearchFromApi rows={rows} setRows={setRows} />
+            <SearchFromApi
+              callback={handleSearch}
+              rows={rows}
+              setRows={setRows}
+            />
           </div>
 
           <div className="card-body">
-            <div className="table-responsive">
-              <PrimeDataTable
-                column={columns}
-                data={visibleData}
-                totalRecords={visibleData.length}
-                rows={rows}
-              />
-            </div>
+            {loading && (
+              <div className="text-center py-4">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            )}
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+            {!loading && !error && (
+              <div className="table-responsive">
+                <PrimeDataTable
+                  column={columns}
+                  data={filteredData}
+                  totalRecords={filteredData.length}
+                  rows={rows}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Document Image</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowImageModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body text-center">
+                <img
+                  src={`http://88.222.213.67:5090/${selectedImage}`} // adjust base URL if needed
+                  alt="Document"
+                  className="img-fluid rounded"
+                  onError={(e) => {
+                    e.target.src = "/placeholder-image.png"; // fallback
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <CommonFooter />
     </div>

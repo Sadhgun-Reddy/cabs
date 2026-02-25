@@ -215,6 +215,19 @@ const EditPeakZones = () => {
                     />
                   </div>
 
+                  {/* Priority */}
+                  <div className="mb-3">
+                    <label className="form-label">Priority</label>
+                    <input
+                      type="number"
+                      name="priority"
+                      className="form-control"
+                      value={formData.priority}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
                   {/* Search Location with Autocomplete */}
                   <div className="mb-3">
                     <label className="form-label">Search Location</label>
@@ -245,20 +258,6 @@ const EditPeakZones = () => {
                         disabled
                       />
                     )}
-
-                  </div>
-
-                  {/* Priority */}
-                  <div className="mb-3">
-                    <label className="form-label">Priority</label>
-                    <input
-                      type="number"
-                      name="priority"
-                      className="form-control"
-                      value={formData.priority}
-                      onChange={handleChange}
-                      required
-                    />
                   </div>
 
                   {/* Map (inside the form, after fields) */}
@@ -267,7 +266,7 @@ const EditPeakZones = () => {
                       Zone Area (draw / edit)
                     </label>
                     <ZoneMap
-                    isLoaded={isLoaded}
+                      isLoaded={isLoaded}
                       onPolygonComplete={handlePolygonComplete}
                       initialCoordinates={polygonCoordinates}
                       center={mapCenter}

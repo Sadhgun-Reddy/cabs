@@ -20,13 +20,13 @@ export default function ServiceCategorie() {
   const [error, setError] = useState("");
 
 
-  // Debounced search update
+    // Debounced search update
   const debouncedSetSearchTerm = useCallback(
     debounce((value) => setSearchTerm(value), 500),
     []
   );
 
-  // Handle search input change
+    // Handle search input change
   const handleSearch = (value) => {
     setSearchQuery(value);
     debouncedSetSearchTerm(value);
@@ -66,7 +66,7 @@ export default function ServiceCategorie() {
         status: status ? "active" : "inactive",
       };
 
-      await axios.put(URLS.UpdateServiceCategoryStatus, payload, {
+      await axios.put(URLS.UpdateBulkAction, payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -85,19 +85,19 @@ export default function ServiceCategorie() {
   };
 
   //  FETCH DATA
-
+ 
   const fetchServiceCategories = async (search = "") => {
     setLoading(true);
     setError("");
     try {
-
+      
       const url = search
         ? `${URLS.GetAllServiceCategories}?searchQuery=${encodeURIComponent(search)}`
         : URLS.GetAllServiceCategories;
 
       const response = await axios.post(
         url,
-        {},
+        {}, 
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -171,8 +171,9 @@ export default function ServiceCategorie() {
         <div className="form-check form-switch">
           <input
             type="checkbox"
-            className={`form-check-input ${row.Status ? "bg-success" : "bg-danger"
-              }`}
+            className={`form-check-input ${
+              row.Status ? "bg-success" : "bg-danger"
+            }`}
             checked={row.Status}
             onChange={() => toggleStatus(row.id)}
             disabled={bulkLoading || loading}
@@ -185,12 +186,12 @@ export default function ServiceCategorie() {
       body: (row) =>
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            // hour: "2-digit",
-            // minute: "2-digit",
-          })
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              // hour: "2-digit",
+              // minute: "2-digit",
+            })
           : "--",
     },
     {

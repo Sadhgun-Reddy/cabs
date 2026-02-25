@@ -50,7 +50,7 @@ const Editzones = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
 
       const zone = res.data.zone;
@@ -215,6 +215,19 @@ const Editzones = () => {
                     />
                   </div>
 
+                  {/* Priority */}
+                  <div className="mb-3">
+                    <label className="form-label">Priority</label>
+                    <input
+                      type="number"
+                      name="priority"
+                      className="form-control"
+                      value={formData.priority}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
                   {/* Search Location with Autocomplete */}
                   <div className="mb-3">
                     <label className="form-label">Search Location</label>
@@ -245,20 +258,6 @@ const Editzones = () => {
                         disabled
                       />
                     )}
-
-                  </div>
-
-                  {/* Priority */}
-                  <div className="mb-3">
-                    <label className="form-label">Priority</label>
-                    <input
-                      type="number"
-                      name="priority"
-                      className="form-control"
-                      value={formData.priority}
-                      onChange={handleChange}
-                      required
-                    />
                   </div>
 
                   {/* Map */}

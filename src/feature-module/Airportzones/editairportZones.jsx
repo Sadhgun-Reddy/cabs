@@ -222,6 +222,20 @@ const EditAirportZones = () => {
                     />
                   </div>
 
+                  
+                  {/* Priority */}
+                  <div className="mb-3">
+                    <label className="form-label">Priority</label>
+                    <input
+                      type="number"
+                      name="priority"
+                      className="form-control"
+                      value={formData.priority}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
                   {/* Search Location with Autocomplete */}
                   <div className="mb-3">
                     <label className="form-label">Search Location</label>
@@ -255,18 +269,6 @@ const EditAirportZones = () => {
 
                   </div>
 
-                  {/* Priority */}
-                  <div className="mb-3">
-                    <label className="form-label">Priority</label>
-                    <input
-                      type="number"
-                      name="priority"
-                      className="form-control"
-                      value={formData.priority}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
 
                   {/* Zone Type (hidden – always airport) */}
                   <input type="hidden" name="zoneType" value={formData.zoneType} />

@@ -45,7 +45,7 @@ export default function FarePlans() {
       const fairPlans = res.data?.fairPlans || res.data?.data || res.data || [];
       const formattedData = fairPlans.map((plan) => ({
         id: plan._id,
-        serviceName: plan.serviceName,
+        serviceName: plan.servicecategoryName,
         planName: plan.planName,
         priority: plan.priority,
         status: plan.status, 

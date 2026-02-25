@@ -1,26 +1,36 @@
-
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/Coupons";
-import EditZones from "../../core/modals/coupons/editcoupons";
 import CommonFooter from "../../components/footer/commonFooter";
-import DeleteModal from "../../components/delete-modal";
+import { URLS } from "../../url";
+import axios from "axios";
 import SearchFromApi from "../../components/data-table/search";
-import { Search } from "react-feather";
 
 export default function Riders() {
-  /* ===================== STATE ===================== */
+  // ========== STATE ==========
   const [searchQuery, setSearchQuery] = useState("");
-  const [rows, setRows] = useState(5);
-  const [tableData, setTableData] = useState(CouponData);
+  const [rows, setRows] = useState(10);
+  const [tableData, setTableData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  /* ===================== HANDLERS ===================== */
+  // Modal state for blocking
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [selectedRider, setSelectedRider] = useState(null);
+  const [blockReason, setBlockReason] = useState("");
 
+  // ========== HANDLERS ==========
   const handleSearch = (value) => {
     setSearchQuery(value);
   };
+
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return tableData;
+    return tableData.filter((item) =>
+      item.Name?.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [tableData, searchQuery]);
 
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
@@ -32,6 +42,101 @@ export default function Riders() {
     setSelectedRows(checked ? tableData.map((row) => row.id) : []);
   };
 
+  // ========== API CALLS ==========
+  const fetchRiders = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.post(
+        URLS.GetAllRiders,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      const riders = res.data?.user || [];
+      const formattedData = riders.map((user) => ({
+        id: user._id,
+        Name: user.name,
+        phonenumber: user.phone,
+        Email: user.email,
+        Status: user.status === "active",
+        date: user.logCreatedDate,
+      }));
+
+      setTableData(formattedData);
+      setError("");
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError("Failed to fetch riders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update rider status – CORRECTED endpoint and flexible payload
+  const updateRiderStatus = async (userId, newStatus, blockedReason = "") => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      const response = await axios.put(
+        URLS.UpdateRiderStatus,
+        {
+          userId: userId,
+          status: newStatus,
+          ...(blockedReason && { blockedReason }),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log("Update success:", response.data);
+      await fetchRiders();
+    } catch (err) {
+      console.error("Status update error:", err);
+
+      if (err.response) {
+        setError(
+          `Update failed: ${err.response.status} - ${err.response.data?.message || err.response.statusText}`,
+        );
+      } else if (err.request) {
+        setError("No response from server. Check network or CORS.");
+      } else {
+        setError("Failed to update rider status");
+      }
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Activate rider (direct)
+  const handleActivate = async (id) => {
+    try {
+      await updateRiderStatus(id, "active");
+    } catch (err) {}
+  };
+
+  // Block rider (with modal)
+  const handleBlockConfirm = async () => {
+    if (!selectedRider) return;
+    try {
+      await updateRiderStatus(selectedRider.id, "blocked", blockReason);
+      setShowBlockModal(false);
+      setSelectedRider(null);
+      setBlockReason("");
+    } catch (err) {}
+  };
+
+  // Local toggle
   const toggleStatus = (id) => {
     setTableData((prev) =>
       prev.map((item) =>
@@ -40,28 +145,11 @@ export default function Riders() {
     );
   };
 
-  /* ===================== COLUMNS ===================== */
+  useEffect(() => {
+    fetchRiders();
+  }, []);
 
-  const handleBulkAction = (type) => {
-    if (!selectedRows.length) return;
-
-    if (type === "active") {
-      setTableData((prev) =>
-        prev.map((item) =>
-          selectedRows.includes(item.id) ? { ...item, Status: true } : item,
-        ),
-      );
-    }
-
-    if (type === "inactive") {
-      setTableData((prev) =>
-        prev.map((item) =>
-          selectedRows.includes(item.id) ? { ...item, Status: false } : item,
-        ),
-      );
-    }
-  };
-
+  // ========== COLUMNS ==========
   const columns = [
     {
       header: (
@@ -85,10 +173,6 @@ export default function Riders() {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,
     },
-    // {
-    //   header: "ID",
-    //   field: "id",
-    // },
     {
       header: "Name",
       field: "Name",
@@ -117,10 +201,6 @@ export default function Riders() {
       ),
     },
     {
-      header: "OTP",
-      field: "otp",
-    },
-    {
       header: "Created Date",
       body: (row) =>
         row?.date
@@ -128,46 +208,50 @@ export default function Riders() {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
-              // hour: "2-digit",
             })
           : "--",
     },
     {
       header: "Actions",
-      body: () => (
+      body: (row) => (
         <div className="edit-delete-action">
-          <Link
-            className="me-2 p-2"
-            to="/viewrider"
-            title="View Details"
-            // data-bs-toggle="modal"
-            // data-bs-target="#riderdetails-units"
-          >
+          <Link className="me-2 p-2" to="/viewrider" title="View Details">
             <i className="ti ti-eye" />
           </Link>
-          <Link
-            className="me-2 p-2"
-            to="/EditRiderProfile"
-            // data-bs-toggle="modal"
-            // data-bs-target="#edit-units"
-          >
-            <i className="ti ti-edit" />
-          </Link>
-          {/* <Link
-            className="p-2"
-            to="#"
-            data-bs-toggle="modal"
-            data-bs-target="#delete-modal"
-          >
-            <i className="ti ti-trash" />
-          </Link> */}
+
+          {row.Status ? (
+            <Link
+              to="#"
+              className="p-2 text-danger"
+              title="Block Rider"
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedRider({ id: row.id, name: row.Name });
+                setBlockReason("");
+                setShowBlockModal(true);
+              }}
+            >
+              <i className="ti ti-ban" />
+            </Link>
+          ) : (
+            <Link
+              to="#"
+              className="p-2 text-success"
+              title="Activate Rider"
+              onClick={(e) => {
+                e.preventDefault();
+                handleActivate(row.id);
+              }}
+            >
+              <i className="ti ti-check" />
+            </Link>
+          )}
         </div>
       ),
     },
   ];
 
-  /* ===================== JSX ===================== */
-
+  // ========== JSX ==========
   return (
     <div>
       <div className="page-wrapper">
@@ -178,10 +262,11 @@ export default function Riders() {
             </div>
           </div>
 
+          {error && <div className="alert alert-danger">{error}</div>}
+
           <div className="card table-list-card">
             <div className="card-header d-flex justify-content-between">
               <div className="d-flex align-items-center gap-2 flex-wrap">
-                {/* Rows dropdown */}
                 <div className="dropdown">
                   <Link
                     to="#"
@@ -204,38 +289,6 @@ export default function Riders() {
                     ))}
                   </ul>
                 </div>
-
-                {/* Bulk Actions */}
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                  >
-                    Bulk Actions
-                  </Link>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <Link
-                        to="#"
-                        className="dropdown-item"
-                        onClick={() => handleBulkAction("active")}
-                      >
-                        Active
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="#"
-                        className="dropdown-item"
-                        onClick={() => handleBulkAction("inactive")}
-                      >
-                        Inactive
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <button className="btn btn-outline-success">Apply</button>
               </div>
               <SearchFromApi
                 callback={handleSearch}
@@ -248,8 +301,8 @@ export default function Riders() {
               <div className="table-responsive">
                 <PrimeDataTable
                   column={columns}
-                  data={tableData}
-                  totalRecords={tableData.length}
+                  data={filteredData}
+                  totalRecords={filteredData.length}
                   rows={rows}
                 />
               </div>
@@ -260,8 +313,59 @@ export default function Riders() {
         <CommonFooter />
       </div>
 
-      <EditZones />
-      <DeleteModal />
+      {/* Block Modal */}
+      {showBlockModal && (
+        <>
+          <div
+            className="modal fade show"
+            style={{ display: "block" }}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Block Rider</h5>
+                </div>
+                <div className="modal-body">
+                  <p>
+                    <strong>Rider:</strong> {selectedRider?.name}
+                  </p>
+                  <div className="mb-3">
+                    <label htmlFor="blockReason" className="form-label">
+                      Reason for blocking
+                      <span className="text-danger">*</span>
+                    </label>
+                    <textarea
+                      id="blockReason"
+                      className="form-control"
+                      rows="3"
+                      value={blockReason}
+                      onChange={(e) => setBlockReason(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary me-2"
+                    onClick={() => setShowBlockModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={handleBlockConfirm}
+                    disabled={loading}
+                  >
+                    {loading ? "Updating..." : "Confirm"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
+      )}
     </div>
   );
 }
