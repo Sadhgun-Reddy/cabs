@@ -54,7 +54,7 @@ const IncomeList = () => {
         data-bs-toggle="modal"
         data-bs-target="#edit-units">
         
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
         data-bs-toggle="modal"
@@ -62,7 +62,7 @@ const IncomeList = () => {
         className="me-0 p-2 mb-0"
         to="#">
         
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>,
 

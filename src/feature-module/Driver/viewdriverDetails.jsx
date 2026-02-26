@@ -59,7 +59,7 @@ const ViewDriverDetails = () => {
       body: () => (
         <div className="view-action">
           <Link className="me-2 p-2" to="/rideDetails" title="Ride Details">
-            <i className="ti ti-eye" />
+            <i className="ti ti-eye text-primary" />
           </Link>
         </div>
       ),

@@ -232,13 +232,13 @@ const BankSetting = () => {
                                         data-bs-toggle="modal"
                                         data-bs-target="#edit-account">
                                         
-                                        <i className="ti ti-edit" />
+                                        <i className="ti ti-edit text-primary" />
                                       </Link>
                                       <Link
                                         className="confirm-text p-2"
                                         to="#">
                                         
-                                        <i className="ti ti-trash" />
+                                        <i className="ti ti-trash text-danger" />
                                       </Link>
                                     </div>
                                   </td>
@@ -264,13 +264,13 @@ const BankSetting = () => {
                                         data-bs-toggle="modal"
                                         data-bs-target="#edit-account">
                                         
-                                        <i className="ti ti-edit" />
+                                        <i className="ti ti-edit text-primary" />
                                       </Link>
                                       <Link
                                         className="confirm-text p-2"
                                         to="#">
                                         
-                                        <i className="ti ti-trash" />
+                                        <i className="ti ti-trash text-danger" />
                                       </Link>
                                     </div>
                                   </td>
@@ -296,13 +296,13 @@ const BankSetting = () => {
                                         data-bs-toggle="modal"
                                         data-bs-target="#edit-account">
                                         
-                                        <i className="ti ti-edit" />
+                                        <i className="ti ti-edit text-primary" />
                                       </Link>
                                       <Link
                                         className="confirm-text p-2"
                                         to="#">
                                         
-                                        <i className="ti ti-trash" />
+                                        <i className="ti ti-trash text-danger" />
                                       </Link>
                                     </div>
                                   </td>
@@ -328,13 +328,13 @@ const BankSetting = () => {
                                         data-bs-toggle="modal"
                                         data-bs-target="#edit-account">
                                         
-                                        <i className="ti ti-edit" />
+                                        <i className="ti ti-edit text-primary" />
                                       </Link>
                                       <Link
                                         className="confirm-text p-2"
                                         to="#">
                                         
-                                        <i className="ti ti-trash" />
+                                        <i className="ti ti-trash text-danger" />
                                       </Link>
                                     </div>
                                   </td>
@@ -360,13 +360,13 @@ const BankSetting = () => {
                                         data-bs-toggle="modal"
                                         data-bs-target="#edit-account">
                                         
-                                        <i className="ti ti-edit" />
+                                        <i className="ti ti-edit text-primary" />
                                       </Link>
                                       <Link
                                         className="confirm-text p-2"
                                         to="#">
                                         
-                                        <i className="ti ti-trash" />
+                                        <i className="ti ti-trash text-danger" />
                                       </Link>
                                     </div>
                                   </td>

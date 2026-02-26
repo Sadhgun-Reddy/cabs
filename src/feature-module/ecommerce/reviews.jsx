@@ -511,7 +511,7 @@ const Reviews = () => {
               <div className="success-wrap text-center">
                 <form>
                   <div className="icon-success bg-danger-transparent text-danger mb-2">
-                    <i className="ti ti-trash" />
+                    <i className="ti ti-trash text-danger" />
                   </div>
                   <h3 className="mb-2">Delete Review</h3>
                   <p className="fs-16 mb-3">

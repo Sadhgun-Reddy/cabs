@@ -64,7 +64,7 @@ const ExpensesList = () => {
     <div className="action-table-data">
           <div className="edit-delete-action">
             <Link className="me-2 p-2 mb-0" to="#">
-              <i className="ti ti-eye" />
+              <i className="ti ti-eye text-primary" />
             </Link>
             <Link
           to="#"
@@ -72,7 +72,7 @@ const ExpensesList = () => {
           data-bs-toggle="modal"
           data-bs-target="#edit-units">
           
-              <i className="ti ti-edit" />
+              <i className="ti ti-edit text-primary" />
             </Link>
             <Link
           className="me-3 confirm-text p-2 mb-0"
@@ -80,7 +80,7 @@ const ExpensesList = () => {
           data-bs-toggle="modal"
           data-bs-target="#delete-modal">
           
-              <i className="ti ti-trash" />
+              <i className="ti ti-trash text-danger" />
             </Link>
           </div>
         </div>

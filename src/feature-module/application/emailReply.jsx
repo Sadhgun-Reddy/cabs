@@ -549,7 +549,7 @@ const EmailReply = () => {
                               alt="img" />
                             
                             <span className="avatar avatar-md avatar-rounded">
-                              <i className="ti ti-eye" />
+                              <i className="ti ti-eye text-primary" />
                             </span>
                           </Link>
                           <Link
@@ -563,7 +563,7 @@ const EmailReply = () => {
                               alt="img" />
                             
                             <span className="avatar avatar-md avatar-rounded">
-                              <i className="ti ti-eye" />
+                              <i className="ti ti-eye text-primary" />
                             </span>
                           </Link>
                           <Link
@@ -577,7 +577,7 @@ const EmailReply = () => {
                               alt="img" />
                             
                             <span className="avatar avatar-md avatar-rounded">
-                              <i className="ti ti-eye" />
+                              <i className="ti ti-eye text-primary" />
                             </span>
                           </Link>
                         </div>
@@ -761,7 +761,7 @@ const EmailReply = () => {
                                   to="#"
                                   className="btn btn-icon btn-sm rounded-circle">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                                 <Link
                                   to={routes.email}
@@ -887,7 +887,7 @@ const EmailReply = () => {
                   <i className="ti ti-calendar-repeat" />
                 </Link>
                 <Link to="#" className="btn btn-icon btn-sm rounded-circle">
-                  <i className="ti ti-trash" />
+                  <i className="ti ti-trash text-danger" />
                 </Link>
                 <button
                   type="button"

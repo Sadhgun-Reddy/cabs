@@ -67,7 +67,7 @@
 //       body: () => (
 //         <div className="view-action">
 //           <Link className="me-2 p-2" to="/rideDetails" title="Ride Details">
-//             <i className="ti ti-eye" />
+//             <i className="ti ti-eye text-primary" />
 //           </Link>
 //         </div>
 //       ),
@@ -241,7 +241,7 @@
 // export default ViewRiderDetails;
 
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";  
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaStar } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
@@ -336,7 +336,7 @@ const ViewRiderDetails = () => {
             to={`/rideDetails/${row._id}`}
             title="Ride Details"
           >
-            <i className="ti ti-eye" />
+            <i className="ti ti-eye text-primary" />
           </Link>
         </div>
       ),

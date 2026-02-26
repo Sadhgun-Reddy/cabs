@@ -107,7 +107,7 @@ const Countries = () => {
         data-bs-target="#edit-country"
         to="#">
         
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
         data-bs-toggle="modal"
@@ -115,7 +115,7 @@ const Countries = () => {
         className="p-2"
         to="#">
         
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>,
 

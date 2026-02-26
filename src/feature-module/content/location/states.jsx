@@ -109,7 +109,7 @@ const States = () => {
         data-bs-target="#edit-state"
         to="#">
         
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
         data-bs-toggle="modal"
@@ -117,7 +117,7 @@ const States = () => {
         className="p-2"
         to="#">
         
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>
 

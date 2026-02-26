@@ -132,7 +132,7 @@ export default function SurgePrices() {
             title="Day Details"
 
           >
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
             to="#"
@@ -140,7 +140,7 @@ export default function SurgePrices() {
             title="Delete"
 
           >
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>
       ),

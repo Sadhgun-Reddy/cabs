@@ -135,11 +135,11 @@ export default function PushNotification() {
     //     <div className="edit-delete-action d-flex align-items-center">
     //       {/* VIEW */}
     //       <Link className="me-2 p-2" to="#" title="Edit">
-    //         <i className="ti ti-edit" />
+    //         <i className="ti ti-edit text-primary" />
     //       </Link>
 
     //       <Link className="me-2 p-2" to="#" title="View">
-    //         <i className="ti ti-eye" />
+    //         <i className="ti ti-eye text-primary" />
     //       </Link>
 
     //       {/* APPROVE */}

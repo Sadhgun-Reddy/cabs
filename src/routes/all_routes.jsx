@@ -23,7 +23,7 @@ export const all_routes = {
   viewridedetails: "/rideDetails",
   viewdriverdetails: "/viewdriverDetails",
   editdriver: "/editdriver",
-  editdriverrule: "/editdriverRules",
+  editdriverrule: "/editdriverRules/:id",
   Verifieddriver: "/verifiedDriver",
   UnverifiedDriver: "/unverifiedDriver",
   driverRules: "/driverRules",

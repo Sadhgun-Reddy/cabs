@@ -218,7 +218,7 @@ export default function VehicleGroups() {
             to={`/EditVehicleGroup/${row.id}`}
             title="Edit"
           >
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
             to="/vehiclesurgeprice"

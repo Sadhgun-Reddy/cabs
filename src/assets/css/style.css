@@ -18147,7 +18147,8 @@ div#global-loader .whirly-loader:not(:required) {
 .sidebar .sidebar-menu > ul > li.submenu-open ul li a:hover,
 .settings-sidebar .sidebar-menu > ul > li.submenu-open ul li a:hover {
   color: #212b36;
-  background-color: #f2f2f2;
+  /* background-color: #f2f2f2; */
+  background-color: #0984E3;
 }
 .sidebar .sidebar-menu > ul > li.submenu-open ul li a:hover:after,
 .settings-sidebar .sidebar-menu > ul > li.submenu-open ul li a:hover:after {

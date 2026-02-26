@@ -111,7 +111,7 @@ const DepartmentList = () => {
           data-bs-toggle="modal"
           data-bs-target="#edit-department">
           
-              <i className="ti ti-edit" />
+              <i className="ti ti-edit text-primary" />
             </Link>
             <Link
           className="confirm-text p-2"
@@ -119,7 +119,7 @@ const DepartmentList = () => {
           data-bs-toggle="modal"
           data-bs-target="#delete-modal">
           
-              <i className="ti ti-trash" />
+              <i className="ti ti-trash text-danger" />
             </Link>
           </div>
         </div>

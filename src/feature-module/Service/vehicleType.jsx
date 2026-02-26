@@ -136,7 +136,7 @@ export default function VehicleType() {
             data-bs-toggle="modal"
             data-bs-target="#edit-units"
           >
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link> */}
           <Link to="/vehiclesurgeprice" className="me-2 p-2 text-muted" title="Surge Price">
             <i className="ti ti-trending-up" />

@@ -310,7 +310,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -319,7 +319,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -407,7 +407,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -416,7 +416,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -504,7 +504,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -513,7 +513,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -601,7 +601,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -610,7 +610,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -700,7 +700,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -709,7 +709,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -797,7 +797,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -806,7 +806,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -894,7 +894,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -903,7 +903,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -991,7 +991,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -1000,7 +1000,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -1090,7 +1090,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -1099,7 +1099,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>
@@ -1187,7 +1187,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#edit_todo">
                               
-                              <i className="ti ti-edit" />
+                              <i className="ti ti-edit text-primary" />
                             </Link>
                             <Link
                               to="#"
@@ -1196,7 +1196,7 @@ const TodoList = () => {
                               data-inert={true}
                               data-bs-target="#delete_modal">
                               
-                              <i className="ti ti-trash" />
+                              <i className="ti ti-trash text-danger" />
                             </Link>
                           </div>
                         </td>

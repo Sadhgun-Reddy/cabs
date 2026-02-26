@@ -101,7 +101,7 @@ const Companies = () => {
         data-bs-toggle="modal"
         data-bs-target="#company_detail">
         
-            <i className="ti ti-eye" />
+            <i className="ti ti-eye text-primary" />
           </Link>
           <Link
         to="#"
@@ -109,7 +109,7 @@ const Companies = () => {
         data-bs-toggle="modal"
         data-bs-target="#edit_company">
         
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
         to="#"
@@ -117,7 +117,7 @@ const Companies = () => {
         data-bs-toggle="modal"
         data-bs-target="#delete_modal">
         
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>,
 

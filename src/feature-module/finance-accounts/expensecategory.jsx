@@ -45,7 +45,7 @@ const ExpenseCategory = () => {
           data-bs-toggle="modal"
           data-bs-target="#edit-units">
           
-              <i className="ti ti-edit" />
+              <i className="ti ti-edit text-primary" />
             </Link>
             <Link
           className="me-0 confirm-text p-2 mb-0"
@@ -53,7 +53,7 @@ const ExpenseCategory = () => {
           data-bs-target="#delete-modal"
           to="#">
           
-              <i className="ti ti-trash" />
+              <i className="ti ti-trash text-danger" />
             </Link>
           </div>
         </div>,

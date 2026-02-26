@@ -64,7 +64,7 @@ const BankSettingGrid = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#edit-account">
                                   
-                                  <i className="ti ti-edit" />
+                                  <i className="ti ti-edit text-primary" />
                                 </Link>
                                 <Link
                                   to="#"
@@ -72,7 +72,7 @@ const BankSettingGrid = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete-modal">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </div>
                             </div>
@@ -98,7 +98,7 @@ const BankSettingGrid = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#edit-account">
                                   
-                                  <i className="ti ti-edit" />
+                                  <i className="ti ti-edit text-primary" />
                                 </Link>
                                 <Link
                                   to="#"
@@ -106,7 +106,7 @@ const BankSettingGrid = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete-modal">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </div>
                             </div>
@@ -132,7 +132,7 @@ const BankSettingGrid = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#edit-account">
                                   
-                                  <i className="ti ti-edit" />
+                                  <i className="ti ti-edit text-primary" />
                                 </Link>
                                 <Link
                                   to="#"
@@ -140,7 +140,7 @@ const BankSettingGrid = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete-modal">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </div>
                             </div>

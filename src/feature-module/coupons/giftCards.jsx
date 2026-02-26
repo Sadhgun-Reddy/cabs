@@ -74,7 +74,7 @@ const GiftCards = () => {
           className="me-2 edit-icon  p-2"
           to="#">
           
-              <i className="ti ti-eye" />
+              <i className="ti ti-eye text-primary" />
             </Link>
             <Link
           className="me-2 p-2"
@@ -82,7 +82,7 @@ const GiftCards = () => {
           data-bs-toggle="modal"
           data-bs-target="#edit-units">
           
-              <i className="ti ti-edit" />
+              <i className="ti ti-edit text-primary" />
             </Link>
             <Link
           data-bs-toggle="modal"
@@ -90,7 +90,7 @@ const GiftCards = () => {
           className="p-2"
           to="#">
           
-              <i className="ti ti-trash" />
+              <i className="ti ti-trash text-danger" />
             </Link>
           </div>
         </div>,

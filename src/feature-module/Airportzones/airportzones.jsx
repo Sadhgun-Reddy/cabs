@@ -12,6 +12,7 @@ export default function AirportZones() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectionVersion, setSelectionVersion] = useState(0);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -26,7 +27,7 @@ export default function AirportZones() {
   // Helper: convert boolean to API status string
   const boolToStatus = (bool) => (bool ? "active" : "inactive");
 
-  // API call to update status (uses UpdateAirportZoneStatus endpoint)
+  // API call to update status
   const updateZoneStatus = async (ids, newStatus) => {
     try {
       setUpdateLoading(true);
@@ -42,14 +43,12 @@ export default function AirportZones() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
-      // Refresh data after successful update
       await fetchZones();
     } catch (err) {
       console.error("Status update failed:", err);
       setError("Failed to update status");
-      // Optionally show toast notification
     } finally {
       setUpdateLoading(false);
     }
@@ -68,97 +67,109 @@ export default function AirportZones() {
     if (!selectedRows.length) return;
     updateZoneStatus(selectedRows, status);
     setSelectedRows([]);
+    setSelectionVersion((v) => v + 1);
   };
 
   // Row selection
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
+    setSelectionVersion((v) => v + 1);
   };
 
   const handleSelectAll = (checked) => {
     setSelectedRows(checked ? filteredData.map((row) => row.id) : []);
+    setSelectionVersion((v) => v + 1);
   };
 
   // Filter data based on search query
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return tableData;
     return tableData.filter((item) =>
-      item.Name?.toLowerCase().includes(searchQuery.toLowerCase()),
+      item.Name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [tableData, searchQuery]);
 
-  // Columns definition
-  const columns = [
-    {
-      header: (
-        <input
-          type="checkbox"
-          checked={
-            filteredData.length > 0 &&
-            selectedRows.length === filteredData.length
-          }
-          onChange={(e) => handleSelectAll(e.target.checked)}
-        />
-      ),
-      body: (row) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.id)}
-          onChange={() => handleRowSelect(row.id)}
-        />
-      ),
-    },
-    {
-      header: "Sl.No",
-      body: (_row, options) => options.rowIndex + 1,
-    },
-    {
-      header: "Name",
-      field: "Name",
-    },
-    {
-      header: "Priority",
-      field: "priority",
-    },
-    {
-      header: "Status",
-      body: (row) => (
-        <div className="form-check form-switch">
+  // Compute if all visible rows are selected
+  const allVisibleSelected =
+    filteredData.length > 0 &&
+    selectedRows.length === filteredData.length &&
+    filteredData.every((row) => selectedRows.includes(row.id));
+
+  // Columns definition (memoized with dependencies)
+  const columns = useMemo(
+    () => [
+      {
+        header: (
           <input
             type="checkbox"
-            className={`form-check-input ${row.Status ? "bg-success" : "bg-danger"}`}
-            checked={row.Status}
-            onChange={() => toggleStatus(row.id)}
-            disabled={updateLoading}
+            style={{ accentColor: '#0d6efd' }} // Primary color
+            checked={allVisibleSelected}
+            onChange={(e) => handleSelectAll(e.target.checked)}
           />
-        </div>
-      ),
-    },
-    {
-      header: "Created Date",
-      body: (row) =>
-        row?.date
-          ? new Date(row.date).toLocaleString("en-IN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              // hour: "2-digit",
-            })
-          : "--",
-    },
-    {
-      header: "Actions",
-      body: (row) => (
-        <div className="edit-delete-action">
-          <Link className="me-2 p-2" to={`/editairportZones/${row.id}`}>
-            <i className="ti ti-edit" />
-          </Link>
-        </div>
-      ),
-    },
-  ];
+        ),
+        body: (row) => (
+          <input
+            type="checkbox"
+            style={{ accentColor: '#0d6efd' }} // Primary color
+            checked={selectedRows.includes(row.id)}
+            onChange={() => handleRowSelect(row.id)}
+          />
+        ),
+      },
+      {
+        header: "Sl.No",
+        body: (_row, options) => options.rowIndex + 1 + (currentPage - 1) * rows,
+      },
+      {
+        header: "Name",
+        field: "Name",
+      },
+      {
+        header: "Priority",
+        field: "priority",
+      },
+      {
+        header: "Status",
+        body: (row) => (
+          <div className="form-check form-switch">
+            <input
+              type="checkbox"
+              className={`form-check-input ${
+                row.Status ? "bg-success" : "bg-danger"
+              }`}
+              checked={row.Status}
+              onChange={() => toggleStatus(row.id)}
+              disabled={updateLoading}
+            />
+          </div>
+        ),
+      },
+      {
+        header: "Created Date",
+        body: (row) =>
+          row?.date
+            ? new Date(row.date).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "--",
+      },
+      {
+        header: "Actions",
+        body: (row) => (
+          <div className="edit-delete-action">
+            <Link className="me-2 p-2" to={`/editairportZones/${row.id}`}>
+              <i className="ti ti-edit" />
+            </Link>
+          </div>
+        ),
+      },
+    ],
+    [selectedRows, filteredData, allVisibleSelected, currentPage, rows, updateLoading]
+  );
 
   // Fetch zones
   const fetchZones = async () => {
@@ -172,7 +183,7 @@ export default function AirportZones() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        },
+        }
       );
 
       const zones = res.data?.zones || [];
@@ -274,14 +285,25 @@ export default function AirportZones() {
           </div>
 
           <div className="card-body">
-            <PrimeDataTable
-              column={columns}
-              data={filteredData}
-              totalRecords={filteredData.length}
-              rows={rows}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-            />
+            {loading && (
+              <div className="text-center py-4">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            )}
+            {error && <div className="alert alert-danger">{error}</div>}
+            {!loading && !error && (
+              <PrimeDataTable
+                key={selectionVersion}
+                column={columns}
+                data={filteredData}
+                totalRecords={filteredData.length}
+                rows={rows}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+              />
+            )}
           </div>
         </div>
       </div>

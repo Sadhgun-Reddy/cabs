@@ -94,7 +94,7 @@ const RideSettings = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#edit-printer">
                                   
-                                  <i className="ti ti-edit" />
+                                  <i className="ti ti-edit text-primary" />
                                 </Link>
                                 <Link
                                   className="p-2"
@@ -102,7 +102,7 @@ const RideSettings = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete-modal">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </div>
                             </td>
@@ -120,7 +120,7 @@ const RideSettings = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#edit-printer">
                                   
-                                  <i className="ti ti-edit" />
+                                  <i className="ti ti-edit text-primary" />
                                 </Link>
                                 <Link
                                   className="p-2"
@@ -128,7 +128,7 @@ const RideSettings = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete-modal">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </div>
                             </td>

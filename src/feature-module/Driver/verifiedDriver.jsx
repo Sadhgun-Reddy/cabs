@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
 import CommonFooter from "../../components/footer/commonFooter";
 import SearchFromApi from "../../components/data-table/search";
-import { URLS } from "../../url"; // adjust path to your URL config
+import { URLS } from "../../url";
 
 export default function Verifieddriver() {
+  const navigate = useNavigate();
+
   /* ===================== STATE ===================== */
   const [searchQuery, setSearchQuery] = useState("");
   const [rows, setRows] = useState(5);
@@ -19,7 +21,6 @@ export default function Verifieddriver() {
     setSearchQuery(value);
   };
 
-  // Filter data based on search query (by name, phone, or email)
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return tableData;
     const query = searchQuery.toLowerCase();
@@ -47,7 +48,6 @@ export default function Verifieddriver() {
         item.id === id ? { ...item, Status: !item.Status } : item
       )
     );
-    // Optionally: call API to persist status change
   };
 
   const handleBulkAction = (type) => {
@@ -58,29 +58,62 @@ export default function Verifieddriver() {
         selectedRows.includes(item.id) ? { ...item, Status: newStatus } : item
       )
     );
-    // Optionally: call API to bulk update
   };
+
+  // Navigate to documents page
+  const goToDriverDocuments = (driverId, driverName) => {
+    navigate("/driverDocument", { state: { driverId, driverName } });
+  };
+
+  /* ===================== FETCH DRIVERS ===================== */
+  const fetchDrivers = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(URLS.GetAllDrivers, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          kycStatus: "verified",
+          date: new Date().toISOString().split("T")[0],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && Array.isArray(data.user)) {
+        const formattedData = data.user.map((user) => ({
+          id: user.driverId,
+          Name: user.name || user.phone,
+          Email: user.email || "—",
+          phonenumber: user.phone || "—",
+          Status: user.status === "active",
+          date: user.logCreatedDate,
+        }));
+        setTableData(formattedData);
+      } else {
+        throw new Error(data.message || "Invalid response format");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message || "Failed to fetch drivers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
 
   /* ===================== COLUMNS ===================== */
   const columns = [
-    // {
-    //   header: (
-    //     <input
-    //       type="checkbox"
-    //       checked={
-    //         tableData.length > 0 && selectedRows.length === tableData.length
-    //       }
-    //       onChange={(e) => handleSelectAll(e.target.checked)}
-    //     />
-    //   ),
-    //   body: (row) => (
-    //     <input
-    //       type="checkbox"
-    //       checked={selectedRows.includes(row.id)}
-    //       onChange={() => handleRowSelect(row.id)}
-    //     />
-    //   ),
-    // },
     {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,
@@ -132,14 +165,14 @@ export default function Verifieddriver() {
             to="/viewdriverDetails"
             title="Driver Details"
           >
-            <i className="ti ti-eye" />
+            <i className="ti ti-eye text-primary" />
           </Link>
-          <Link
+          {/* <Link
             className="me-2 p-2"
             to="/editdriver"
             title="Edit Driver"
           >
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
             className="p-2"
@@ -147,62 +180,20 @@ export default function Verifieddriver() {
             data-bs-toggle="modal"
             data-bs-target="#delete-modal"
           >
-            <i className="ti ti-trash" />
-          </Link>
-          <Link className="p-2" to="/driverDocument">
+            <i className="ti ti-trash text-danger" />
+          </Link> */}
+          {/* Document icon with navigation */}
+          <button
+            className="btn p-2"
+            title="View Documents"
+            onClick={() => goToDriverDocuments(row.id, row.Name)}
+          >
             <i className="ti ti-file" />
-          </Link>
+          </button>
         </div>
       ),
     },
   ];
-
-  /* ===================== FETCH DRIVERS ===================== */
-  const fetchDrivers = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await fetch(URLS.GetAllDrivers, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          kycStatus: "verified",
-          date: new Date().toISOString().split("T")[0], // today's date
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (data.success && Array.isArray(data.user)) {
-        const formattedData = data.user.map((user) => ({
-          id: user._id,
-          Name: user.name || user.phone || "N/A",
-          Email: user.email || "—",
-          phonenumber: user.phone || "—",
-          Status: user.status === "active", // account status, not kycStatus
-          date: user.logCreatedDate,
-        }));
-        setTableData(formattedData);
-      } else {
-        throw new Error(data.message || "Invalid response format");
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError(err.message || "Failed to fetch drivers");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDrivers();
-  }, []);
 
   /* ===================== JSX ===================== */
   return (
@@ -298,7 +289,7 @@ export default function Verifieddriver() {
               <div className="table-responsive">
                 <PrimeDataTable
                   column={columns}
-                  data={filteredData} // use filtered data for search
+                  data={filteredData}
                   totalRecords={filteredData.length}
                   rows={rows}
                 />
@@ -308,6 +299,60 @@ export default function Verifieddriver() {
         </div>
       </div>
       <CommonFooter />
+
+            {/* Reject Modal */}
+      {showRejectModal && (
+        <>
+          <div
+            className="modal fade show"
+            style={{ display: "block" }}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Reject Driver</h5>
+                </div>
+                <div className="modal-body">
+                  <p>
+                    <strong>Driver:</strong> {selectedDriver?.name}
+                  </p>
+                  <div className="mb-3">
+                    <label htmlFor="rejectReason" className="form-label">
+                      Reason for rejecting
+                      <span className="text-danger">*</span>
+                    </label>
+                    <textarea
+                      id="rejectReason"
+                      className="form-control"
+                      rows="3"
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary me-2"
+                    onClick={() => setShowRejectModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={handleRejectConfirm}
+                    disabled={loading}
+                  >
+                    {loading ? "Updating..." : "Confirm"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
+      )}
     </div>
   );
 }

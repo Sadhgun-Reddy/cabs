@@ -151,11 +151,11 @@ export default function FarePlans() {
       body: (_row, options) => options.rowIndex + 1,
     },
     {
-      header: "Service Name",
+      header: "Service Category Name",
       body: (row) => row.serviceName,
     },
     {
-      header: "Plan Name",
+      header: "Fare Plan Name",
       body: (row) => row.planName,
     },
     {
@@ -183,10 +183,10 @@ export default function FarePlans() {
           <Link
             className="me-2 p-2"
             to={`/editfareplan/${row.id}`}
-            state={{ plan: row }} // pass full plan data
+            state={{ plan: row }}
             title="Edit"
           >
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
         </div>
       ),

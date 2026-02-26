@@ -623,7 +623,7 @@ const SecuritySettings = () => {
                             <td>232.222.12.72</td>
                             <td>
                               <Link to="#" className="btn">
-                                <i className="ti ti-trash" />
+                                <i className="ti ti-trash text-danger" />
                               </Link>
                             </td>
                           </tr>
@@ -634,7 +634,7 @@ const SecuritySettings = () => {
                             <td>224.111.12.75</td>
                             <td>
                               <Link to="#" className="btn">
-                                <i className="ti ti-trash" />
+                                <i className="ti ti-trash text-danger" />
                               </Link>
                             </td>
                           </tr>
@@ -645,7 +645,7 @@ const SecuritySettings = () => {
                             <td>111.222.13.28</td>
                             <td>
                               <Link to="#" className="btn">
-                                <i className="ti ti-trash" />
+                                <i className="ti ti-trash text-danger" />
                               </Link>
                             </td>
                           </tr>
@@ -656,7 +656,7 @@ const SecuritySettings = () => {
                             <td>333.555.10.54</td>
                             <td>
                               <Link to="#" className="btn">
-                                <i className="ti ti-trash" />
+                                <i className="ti ti-trash text-danger" />
                               </Link>
                             </td>
                           </tr>

@@ -119,11 +119,11 @@ export default function PopularDestionation() {
         <div className="edit-delete-action d-flex align-items-center">
           {/* VIEW */}
           {/* <Link className="me-2 p-2" to="#" title="Edit">
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link> */}
 
           <Link className="me-2 p-2" to="#" title="Delete">
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
 
           {/* APPROVE */}

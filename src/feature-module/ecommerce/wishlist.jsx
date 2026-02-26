@@ -44,7 +44,7 @@ const Wishlist = () => {
                   data-bs-toggle="modal"
                   data-bs-target="#remove_all">
                   
-                                    <i className="ti ti-trash" /> Remove All
+                                    <i className="ti ti-trash text-danger" /> Remove All
                                 </Link>
                             </div>
                         </div>
@@ -567,7 +567,7 @@ const Wishlist = () => {
                                 <div className="success-wrap text-center">
                                     <form>
                                         <div className="icon-success bg-danger-transparent text-danger mb-2">
-                                            <i className="ti ti-trash" />
+                                            <i className="ti ti-trash text-danger" />
                                         </div>
                                         <h3 className="mb-2">Remove Product</h3>
                                         <p className="fs-16 mb-3">
@@ -600,7 +600,7 @@ const Wishlist = () => {
                                 <div className="success-wrap text-center">
                                     <form>
                                         <div className="icon-success bg-danger-transparent text-danger mb-2">
-                                            <i className="ti ti-trash" />
+                                            <i className="ti ti-trash text-danger" />
                                         </div>
                                         <h3 className="mb-2">Remove All Products</h3>
                                         <p className="fs-16 mb-3">

@@ -114,7 +114,7 @@ export default function SosAlerts() {
       body: () => (
         <div className="edit-delete-action">
           <Link className="me-2 p-2" to="/Sos-Alert-Details">
-            <i className="ti ti-eye" />
+            <i className="ti ti-eye text-primary" />
           </Link>
         </div>
       ),

@@ -1458,7 +1458,7 @@ const Pos = () => {
                                                     </div>
                                                 </div>
                                                 <Link to="#" className="close-icon">
-                                                    <i className="ti ti-trash" />
+                                                    <i className="ti ti-trash text-danger" />
                                                 </Link>
                                             </div>
                                         </div>
@@ -1475,7 +1475,7 @@ const Pos = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#shipping-cost">
                                 
-                                                                <i className="ti ti-edit" />
+                                                                <i className="ti ti-edit text-primary" />
                                                             </Link>
                                                         </td>
                                                         <td className="text-gray-9 text-end">$40.21</td>
@@ -1489,7 +1489,7 @@ const Pos = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#order-tax">
                                 
-                                                                <i className="ti ti-edit" />
+                                                                <i className="ti ti-edit text-primary" />
                                                             </Link>
                                                         </td>
                                                         <td className="text-gray-9 text-end">$25</td>
@@ -1503,7 +1503,7 @@ const Pos = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#coupon-code">
                                 
-                                                                <i className="ti ti-edit" />
+                                                                <i className="ti ti-edit text-primary" />
                                                             </Link>
                                                         </td>
                                                         <td className="text-gray-9 text-end">$25</td>
@@ -1517,7 +1517,7 @@ const Pos = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#discount">
                                 
-                                                                <i className="ti ti-edit" />
+                                                                <i className="ti ti-edit text-primary" />
                                                             </Link>
                                                         </td>
                                                         <td className="text-danger text-end">$15.21</td>

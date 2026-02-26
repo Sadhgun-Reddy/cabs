@@ -83,7 +83,7 @@ const CurrencySettings = () => {
                                           data-bs-toggle="modal"
                                           data-bs-target="#delete-modal">
                                           
-                                          <i className="ti ti-trash" />
+                                          <i className="ti ti-trash text-danger" />
                                         </Link>
                                       </div>
                                     </td>

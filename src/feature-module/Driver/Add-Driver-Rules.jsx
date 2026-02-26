@@ -158,7 +158,7 @@ const AddDriverRules = () => {
                     </div>
 
                     {/* Vehicle Group Dropdown */}
-                    <div className="row">
+                    {/* <div className="row">
                       <div className="col-sm-6 col-12 w-100">
                         <div className="mb-3 list position-relative">
                           <label className="form-label">Vehicle Group</label>
@@ -190,7 +190,7 @@ const AddDriverRules = () => {
                           )}
                         </div>
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* Priority */}
                     <div className="row">

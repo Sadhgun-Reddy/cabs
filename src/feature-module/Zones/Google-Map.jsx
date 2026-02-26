@@ -11,7 +11,12 @@ const defaultCenter = {
   lng: 78.486671,
 };
 
-export default function ZoneMap({ isLoaded, onPolygonComplete, initialCoordinates, center }) {
+export default function ZoneMap({
+  isLoaded,
+  onPolygonComplete,
+  initialCoordinates,
+  center,
+}) {
   const [polygonPath, setPolygonPath] = useState(initialCoordinates || []);
   const [mapCenter, setMapCenter] = useState(center || defaultCenter);
 
@@ -37,13 +42,20 @@ export default function ZoneMap({ isLoaded, onPolygonComplete, initialCoordinate
       if (onPolygonComplete) onPolygonComplete(coordinates);
       polygon.setMap(null);
     },
-    [onPolygonComplete]
+    [onPolygonComplete],
   );
 
-  if (!isLoaded) return ;
+  if (!isLoaded) return;
 
   return (
-    <GoogleMap mapContainerStyle={containerStyle} center={mapCenter} zoom={12}>
+    <GoogleMap
+      mapContainerStyle={containerStyle}
+      center={mapCenter}
+      zoom={12}
+      options={{
+        mapTypeControl: false,
+      }}
+    >
       <DrawingManager
         onPolygonComplete={onPolygonCompleteCallback}
         options={{

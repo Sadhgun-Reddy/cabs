@@ -1195,7 +1195,7 @@ const Pos4 = () => {
                                     data-bs-toggle="modal"
                                     data-bs-target="#edit-product">
                                     
-                                    <i className="ti ti-edit" />
+                                    <i className="ti ti-edit text-primary" />
                                   </Link>
                                 </div>
                                 Price : $400
@@ -1213,7 +1213,7 @@ const Pos4 = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </td>
                             </tr>
@@ -1235,7 +1235,7 @@ const Pos4 = () => {
                                     data-bs-toggle="modal"
                                     data-bs-target="#edit-product">
                                     
-                                    <i className="ti ti-edit" />
+                                    <i className="ti ti-edit text-primary" />
                                   </Link>
                                 </div>
                                 Price : $400
@@ -1253,7 +1253,7 @@ const Pos4 = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </td>
                             </tr>
@@ -1275,7 +1275,7 @@ const Pos4 = () => {
                                     data-bs-toggle="modal"
                                     data-bs-target="#edit-product">
                                     
-                                    <i className="ti ti-edit" />
+                                    <i className="ti ti-edit text-primary" />
                                   </Link>
                                 </div>
                                 Price : $600
@@ -1293,7 +1293,7 @@ const Pos4 = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </td>
                             </tr>
@@ -1315,7 +1315,7 @@ const Pos4 = () => {
                                     data-bs-toggle="modal"
                                     data-bs-target="#edit-product">
                                     
-                                    <i className="ti ti-edit" />
+                                    <i className="ti ti-edit text-primary" />
                                   </Link>
                                 </div>
                                 Price : $1400
@@ -1333,7 +1333,7 @@ const Pos4 = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </td>
                             </tr>

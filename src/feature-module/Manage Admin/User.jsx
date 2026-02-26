@@ -140,7 +140,7 @@ export default function ManageUser() {
               // data-bs-toggle="modal"
               // data-bs-target="#edit-units"
             >
-              <i className="ti ti-edit" />
+              <i className="ti ti-edit text-primary" />
             </Link>
             <Link
               data-bs-toggle="modal"
@@ -149,7 +149,7 @@ export default function ManageUser() {
               to="#"
               title="Delete"
             >
-              <i className="ti ti-trash" />
+              <i className="ti ti-trash text-danger" />
             </Link>
           </div>
         </div>

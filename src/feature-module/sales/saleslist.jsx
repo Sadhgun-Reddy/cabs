@@ -190,7 +190,7 @@ const SalesList = () => {
             data-bs-toggle="modal"
             data-bs-target="#sales-details-new">
             
-                <i className="ti ti-eye" />
+                <i className="ti ti-eye text-primary" />
                 Sale Detail
               </Link>
             </li>
@@ -201,7 +201,7 @@ const SalesList = () => {
             data-bs-toggle="modal"
             data-bs-target="#edit-sales-new">
             
-                <i className="ti ti-edit" />
+                <i className="ti ti-edit text-primary" />
                 Edit Sale
               </Link>
             </li>
@@ -239,7 +239,7 @@ const SalesList = () => {
             className="dropdown-item confirm-text mb-0"
             // onClick={showConfirmationAlert}
           >
-                <i className="ti ti-trash" />
+                <i className="ti ti-trash text-danger" />
                 Delete Sale
               </Link>
             </li>
@@ -1267,10 +1267,10 @@ const SalesList = () => {
                                         data-bs-toggle="modal"
                                         data-bs-target="#editpayment">
                                         
-                                        <i className="ti ti-edit" />
+                                        <i className="ti ti-edit text-primary" />
                                       </Link>
                                       <Link className="confirm-text p-2" to="#">
-                                        <i className="ti ti-trash" />
+                                        <i className="ti ti-trash text-danger" />
                                       </Link>
                                     </div>
                                   </td>

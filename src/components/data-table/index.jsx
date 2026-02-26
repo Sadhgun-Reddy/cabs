@@ -10,7 +10,7 @@ const PrimeDataTable = ({
   totalRecords,
   currentPage = 1,
   setCurrentPage,
-  rows = 5,
+  rows = 10,
   setRows,
   sortable = true,
   footer = null,
@@ -95,8 +95,8 @@ const PrimeDataTable = ({
                 rowData[col.field]
               )
             }
-            sortable={sortable === false ? false : col.sortable !== false}
-            sortField={col.sortField ?? col.field}
+            // sortable={sortable === false ? false : col.sortable !== false}
+            // sortField={col.sortField ?? col.field}
             className={col.className ?? ""}
           />
         ))}

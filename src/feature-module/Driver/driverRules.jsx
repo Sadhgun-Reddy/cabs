@@ -5,6 +5,7 @@ import PrimeDataTable from "../../components/data-table";
 import CommonFooter from "../../components/footer/commonFooter";
 import SearchFromApi from "../../components/data-table/search";
 import { URLS } from "../../url";
+
 export default function DriverRules() {
   /* ===================== STATE ===================== */
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,9 +16,7 @@ export default function DriverRules() {
   const [error, setError] = useState("");
 
   /* ===================== HANDLERS ===================== */
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-  };
+  const handleSearch = (value) => setSearchQuery(value);
 
   // Filter data based on search query
   const filteredData = useMemo(() => {
@@ -26,31 +25,49 @@ export default function DriverRules() {
     return tableData.filter((item) => item.Name?.toLowerCase().includes(query));
   }, [tableData, searchQuery]);
 
+  // Toggle single row selection
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
   };
 
+  // Select/deselect all visible rows
   const handleSelectAll = (checked) => {
-    setSelectedRows(checked ? tableData.map((row) => row.id) : []);
+    if (checked) {
+      setSelectedRows((prev) => {
+        const visibleIds = filteredData.map((row) => row.id);
+        return [...new Set([...prev, ...visibleIds])];
+      });
+    } else {
+      setSelectedRows((prev) =>
+        prev.filter((id) => !filteredData.some((row) => row.id === id))
+      );
+    }
   };
 
-  const toggleStatus = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: !item.Status } : item,
-      ),
-    );
-  };
+  // Check if all visible rows are selected
+  const allVisibleSelected =
+    filteredData.length > 0 &&
+    filteredData.every((row) => selectedRows.includes(row.id));
 
+  // Bulk status update
   const handleBulkAction = (type) => {
     if (!selectedRows.length) return;
     const newStatus = type === "active";
     setTableData((prev) =>
       prev.map((item) =>
-        selectedRows.includes(item.id) ? { ...item, Status: newStatus } : item,
-      ),
+        selectedRows.includes(item.id) ? { ...item, Status: newStatus } : item
+      )
+    );
+  };
+
+  // Toggle individual status
+  const toggleStatus = (id) => {
+    setTableData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, Status: !item.Status } : item
+      )
     );
   };
 
@@ -67,7 +84,7 @@ export default function DriverRules() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        },
+        }
       );
 
       const driverRules = response.data?.data || [];
@@ -86,7 +103,7 @@ export default function DriverRules() {
       setError(
         err.response?.data?.message ||
           err.message ||
-          "Failed to fetch driver rules",
+          "Failed to fetch driver rules"
       );
     } finally {
       setLoading(false);
@@ -97,88 +114,90 @@ export default function DriverRules() {
     fetchDriverRules();
   }, []);
 
-  /* ===================== COLUMNS ===================== */
-  const columns = [
-    // {
-    //   header: (
-    //     <input
-    //       type="checkbox"
-    //       checked={
-    //         tableData.length > 0 && selectedRows.length === tableData.length
-    //       }
-    //       onChange={(e) => handleSelectAll(e.target.checked)}
-    //     />
-    //   ),
-    //   body: (row) => (
-    //     <input
-    //       type="checkbox"
-    //       checked={selectedRows.includes(row.id)}
-    //       onChange={() => handleRowSelect(row.id)}
-    //     />
-    //   ),
-    // },
-    {
-      header: "Sl.No",
-      body: (_row, options) => options.rowIndex + 1,
-    },
-    {
-      header: "Title",
-      field: "Name",
-    },
-    {
-      header: "Vehicle Group",
-      field: "vechiclegroup",
-    },
-    {
-      header: "Priority",
-      field: "priority",
-    },
-    {
-      header: "Status",
-      body: (row) => (
-        <div className="form-check form-switch">
+  /* ===================== COLUMNS (memoized) ===================== */
+  const columns = useMemo(
+    () => [
+      {
+        header: (
           <input
-            className={`form-check-input ${
-              row.Status ? "bg-success" : "bg-danger"
-            }`}
             type="checkbox"
-            checked={row.Status}
-            onChange={() => toggleStatus(row.id)}
+            style={{ accentColor: '#0d6efd' }} // Primary color
+            checked={allVisibleSelected}
+            onChange={(e) => handleSelectAll(e.target.checked)}
           />
-        </div>
-      ),
-    },
-    {
-      header: "Created Date",
-      body: (row) =>
-        row?.date
-          ? new Date(row.date).toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })
-          : "--",
-    },
-    {
-      header: "Actions",
-      body: (row) => (
-        <div className="edit-delete-action">
-          <Link className="me-2 p-2" to="/editdriverRules" title="Edit Rule">
-            <i className="ti ti-edit" />
-          </Link>
-          <Link
-            className="p-2"
-            to="#"
-            data-bs-toggle="modal"
-            data-bs-target="#delete-modal"
-            onClick={() => {}}
-          >
-            <i className="ti ti-trash" />
-          </Link>
-        </div>
-      ),
-    },
-  ];
+        ),
+        body: (row) => (
+          <input
+            type="checkbox"
+            style={{ accentColor: '#0d6efd' }} // Primary color
+            checked={selectedRows.includes(row.id)}
+            onChange={() => handleRowSelect(row.id)}
+          />
+        ),
+      },
+      {
+        header: "Sl.No",
+        body: (_row, options) => options.rowIndex + 1,
+      },
+      {
+        header: "Title",
+        field: "Name",
+      },
+      // {
+      //   header: "Vehicle Group",
+      //   field: "vechiclegroup",
+      // },
+      {
+        header: "Priority",
+        field: "priority",
+      },
+      {
+        header: "Status",
+        body: (row) => (
+          <div className="form-check form-switch">
+            <input
+              className={`form-check-input ${
+                row.Status ? "bg-success" : "bg-danger"
+              }`}
+              type="checkbox"
+              checked={row.Status}
+              onChange={() => toggleStatus(row.id)}
+            />
+          </div>
+        ),
+      },
+      {
+        header: "Created Date",
+        body: (row) =>
+          row?.date
+            ? new Date(row.date).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "--",
+      },
+      {
+        header: "Actions",
+        body: (row) => (
+          <div className="edit-delete-action">
+            <Link
+              className="me-2 p-2"
+              to={`/editdriverRules/${row.id}`}
+              state={{ driverRule: row }}
+              title="Edit Rule"
+            >
+              <i className="ti ti-edit text-primary" />
+            </Link>
+            <Link className="p-2 text-danger" to="#" onClick={() => {}}>
+              <i className="ti ti-trash text-danger" />
+            </Link>
+          </div>
+        ),
+      },
+    ],
+    [selectedRows, filteredData, allVisibleSelected]
+  );
 
   /* ===================== JSX ===================== */
   return (
@@ -247,7 +266,6 @@ export default function DriverRules() {
                   </li>
                 </ul>
               </div>
-              <button className="btn btn-outline-success">Apply</button>
             </div>
             <SearchFromApi
               callback={handleSearch}
@@ -272,8 +290,9 @@ export default function DriverRules() {
             {!loading && !error && (
               <div className="table-responsive">
                 <PrimeDataTable
+                  key={selectedRows.length}
                   column={columns}
-                  data={filteredData} // use filtered data
+                  data={filteredData}
                   totalRecords={filteredData.length}
                   rows={rows}
                 />

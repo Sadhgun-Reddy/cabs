@@ -311,7 +311,7 @@ const TodoModal = () => {
                 <div className="content">
                   <div className="delete-popup text-center">
                     <div className="icon-success bg-danger-transparent text-danger mb-2">
-                      <i className="ti ti-trash" />
+                      <i className="ti ti-trash text-danger" />
                     </div>
                     <div className="delete-heads">
                       <h4>Are You Sure?</h4>

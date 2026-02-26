@@ -105,7 +105,7 @@ const Subscription = () => {
         data-bs-target="#delete_modal"
         className="d-flex align-items-center p-2 border rounded">
         
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>,
 

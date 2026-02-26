@@ -1783,7 +1783,7 @@ const Email = () => {
                   <i className="ti ti-calendar-repeat" />
                 </Link>
                 <Link to="#" className="btn btn-icon btn-sm rounded-circle">
-                  <i className="ti ti-trash" />
+                  <i className="ti ti-trash text-danger" />
                 </Link>
                 <button
                   type="button"

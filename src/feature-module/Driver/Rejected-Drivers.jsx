@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
 import CommonFooter from "../../components/footer/commonFooter";
 import SearchFromApi from "../../components/data-table/search";
 import { URLS } from "../../url";
 
 export default function RejectedDriver() {
+  const navigate = useNavigate();
+
   /* ===================== STATE ===================== */
   const [searchQuery, setSearchQuery] = useState("");
   const [rows, setRows] = useState(10);
@@ -14,12 +16,10 @@ export default function RejectedDriver() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Handlers
   const handleSearch = (value) => {
     setSearchQuery(value);
   };
 
-  // Filter data based on search query
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return tableData;
     return tableData.filter((item) =>
@@ -45,14 +45,6 @@ export default function RejectedDriver() {
     );
   };
 
-  const toggleVerified = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Verified: !item.Verified } : item
-      )
-    );
-  };
-
   const handleBulkAction = (type) => {
     if (!selectedRows.length) return;
     setTableData((prev) =>
@@ -64,26 +56,59 @@ export default function RejectedDriver() {
     );
   };
 
+  // Navigate to documents page
+  const goToDriverDocuments = (driverId, driverName) => {
+    navigate("/driverDocument", { state: { driverId, driverName } });
+  };
+
+  /* ===================== FETCH DRIVERS ===================== */
+  const fetchDrivers = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(URLS.GetAllDrivers, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          kycStatus: "rejected",
+          date: new Date().toISOString().split("T")[0],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && Array.isArray(data.user)) {
+        const formattedData = data.user.map((user) => ({
+          id: user.driverId,
+          Name: user.name || user.phone,
+          Email: user.email,
+          Status: user.status === "active",
+          date: user.logCreatedDate,
+        }));
+        setTableData(formattedData);
+      } else {
+        throw new Error(data.message || "Invalid response format");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message || "Failed to fetch drivers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
+
   /* ===================== COLUMNS ===================== */
   const columns = [
-    // {
-    //   header: (
-    //     <input
-    //       type="checkbox"
-    //       checked={
-    //         tableData.length > 0 && selectedRows.length === tableData.length
-    //       }
-    //       onChange={(e) => handleSelectAll(e.target.checked)}
-    //     />
-    //   ),
-    //   body: (row) => (
-    //     <input
-    //       type="checkbox"
-    //       checked={selectedRows.includes(row.id)}
-    //       onChange={() => handleRowSelect(row.id)}
-    //     />
-    //   ),
-    // },
     {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,
@@ -110,7 +135,7 @@ export default function RejectedDriver() {
           />
         </div>
       ),
-    },  
+    },
     {
       header: "Created Date",
       body: (row) =>
@@ -128,86 +153,37 @@ export default function RejectedDriver() {
         <div className="edit-delete-action">
           <Link
             className="me-2 p-2"
-            to="/driver-details"
+            to="/viewdriverDetails"
             title="View"
           >
-            <i className="ti ti-eye" />
+            <i className="ti ti-eye text-primary" />
           </Link>
-          <Link
+          {/* <Link
             className="me-2 p-2"
             to="/editdriver"
             title="Edit"
           >
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
             className="p-2"
             to="#"
             title="Delete"
           >
-            <i className="ti ti-trash" />
-          </Link>
-          <Link
-            className="p-2"
-            to="/driverDocument"
+            <i className="ti ti-trash text-danger" />
+          </Link> */}
+          {/* Document icon with navigation */}
+          <button
+            className="btn p-2"
             title="Files"
+            onClick={() => goToDriverDocuments(row.id, row.Name)}
           >
             <i className="ti ti-file" />
-          </Link>
+          </button>
         </div>
       ),
     },
   ];
-
-  // Fetch drivers with kycStatus = "requested"
-  const fetchDrivers = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await fetch(
-        URLS.GetAllDrivers,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            kycStatus: "rejected",
-            date: new Date().toISOString().split("T")[0], 
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (data.success && Array.isArray(data.user)) {
-        const formattedData = data.user.map((user) => ({
-          id: user._id,
-          Name: user.name || user.phone || "N/A",
-          Email: user.email || "—",
-          Status: user.status === "active", // boolean
-          Verified: user.kycStatus === "approved", // boolean (for requested it's false)
-          date: user.logCreatedDate,
-        }));
-        setTableData(formattedData);
-      } else {
-        throw new Error(data.message || "Invalid response format");
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError(err.message || "Failed to fetch drivers");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDrivers();
-  }, []);
 
   /* ===================== JSX ===================== */
   return (

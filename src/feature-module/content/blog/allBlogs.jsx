@@ -174,7 +174,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -182,7 +182,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>
@@ -246,7 +246,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -254,7 +254,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>
@@ -318,7 +318,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -326,7 +326,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>
@@ -390,7 +390,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -398,7 +398,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>
@@ -462,7 +462,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -470,7 +470,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>
@@ -534,7 +534,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -542,7 +542,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>
@@ -606,7 +606,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -614,7 +614,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>
@@ -678,7 +678,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -686,7 +686,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>
@@ -750,7 +750,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#edit_blog">
                         
-                        <i className="ti ti-edit" />
+                        <i className="ti ti-edit text-primary" />
                       </Link>
                       <Link
                         to="#"
@@ -758,7 +758,7 @@ const AllBlogs = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         
-                        <i className="ti ti-trash" />
+                        <i className="ti ti-trash text-danger" />
                       </Link>
                     </div>
                   </div>

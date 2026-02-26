@@ -27,7 +27,7 @@ const FileModal = () => {
               to="#"
               className="d-flex align-items-center justify-content-center text-white me-3">
               
-              <i className="ti ti-trash" />
+              <i className="ti ti-trash text-danger" />
             </Link>
             <Link
               to="#"

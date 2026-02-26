@@ -191,7 +191,7 @@ const Testimonial = () => {
         data-bs-toggle="modal"
         data-bs-target="#edit-testimonial">
         
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
         data-bs-toggle="modal"
@@ -199,7 +199,7 @@ const Testimonial = () => {
         className="p-2"
         to="#">
         
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>
 

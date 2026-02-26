@@ -122,7 +122,7 @@ export default function Preferences() {
       body: () => (
         <div className="edit-delete-action">
           <Link className="me-2 p-2" to="/Edit-Preference">
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
             to="#"
@@ -130,7 +130,7 @@ export default function Preferences() {
             data-bs-toggle="modal"
             data-bs-target="#delete-modal"
           >
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>
       ),

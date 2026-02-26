@@ -8,9 +8,10 @@ import axios from "axios";
 
 export default function Zones() {
   const [rows, setRows] = useState(10);
-  const [currentPage, setCurrentPage] = useState(); 
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectionVersion, setSelectionVersion] = useState(0);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -19,7 +20,7 @@ export default function Zones() {
   // Handlers
   const handleSearch = (value) => {
     setSearchQuery(value);
-    setCurrentPage(); 
+    setCurrentPage(1);
   };
 
   // Filter data based on search query
@@ -51,7 +52,7 @@ export default function Zones() {
           },
         }
       );
-      await fetchZones(); 
+      await fetchZones();
     } catch (err) {
       console.error("Status update failed:", err);
       setError("Failed to update status");
@@ -73,6 +74,7 @@ export default function Zones() {
     if (!selectedRows.length) return;
     updateZoneStatus(selectedRows, status);
     setSelectedRows([]);
+    setSelectionVersion((v) => v + 1);
   };
 
   // Row selection
@@ -80,79 +82,93 @@ export default function Zones() {
     setSelectedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
+    setSelectionVersion((v) => v + 1);
   };
 
   const handleSelectAll = (checked) => {
     setSelectedRows(checked ? filteredData.map((row) => row.id) : []);
+    setSelectionVersion((v) => v + 1);
   };
 
-  // Columns definition
-  const columns = [
-    {
-      header: (
-        <input
-          type="checkbox"
-          checked={filteredData.length > 0 && selectedRows.length === filteredData.length}
-          onChange={(e) => handleSelectAll(e.target.checked)}
-        />
-      ),
-      body: (row) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.id)}
-          onChange={() => handleRowSelect(row.id)}
-        />
-      ),
-    },
-    {
-      header: "Sl.No",
-      body: (_row, options) => options.rowIndex + 1,
-    },
-    {
-      header: "Name",
-      field: "Name",
-    },
-    {
-      header: "Priority",
-      field: "priority",
-    },
-    {
-      header: "Status",
-      body: (row) => (
-        <div className="form-check form-switch">
+  // Compute if all visible rows are selected
+  const allVisibleSelected =
+    filteredData.length > 0 &&
+    selectedRows.length === filteredData.length &&
+    filteredData.every((row) => selectedRows.includes(row.id));
+
+  // Columns definition (memoized with dependencies)
+  const columns = useMemo(
+    () => [
+      {
+        header: (
           <input
             type="checkbox"
-            className={`form-check-input ${row.Status ? "bg-success" : "bg-danger"}`}
-            checked={row.Status}
-            onChange={() => toggleStatus(row.id)}
-            disabled={updateLoading}
+            style={{ accentColor: '#0d6efd' }} // Primary color
+            checked={allVisibleSelected}
+            onChange={(e) => handleSelectAll(e.target.checked)}
           />
-        </div>
-      ),
-    },
-    {
-      header: "Created Date",
-      body: (row) =>
-        row?.date
-          ? new Date(row.date).toLocaleString("en-IN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              // hour: "2-digit",
-            })
-          : "--",
-    },
-    {
-      header: "Actions",
-      body: (row) => (
-        <div className="edit-delete-action">
-          <Link className="me-2 p-2" to={`/editZones/${row.id}`}>
-            <i className="ti ti-edit" />
-          </Link>
-        </div>
-      ),
-    },
-  ];
+        ),
+        body: (row) => (
+          <input
+            type="checkbox"
+            style={{ accentColor: '#0d6efd' }} // Primary color
+            checked={selectedRows.includes(row.id)}
+            onChange={() => handleRowSelect(row.id)}
+          />
+        ),
+      },
+      {
+        header: "Sl.No",
+        body: (_row, options) => options.rowIndex + 1 + (currentPage - 1) * rows,
+      },
+      {
+        header: "Name",
+        field: "Name",
+      },
+      {
+        header: "Priority",
+        field: "priority",
+      },
+      {
+        header: "Status",
+        body: (row) => (
+          <div className="form-check form-switch">
+            <input
+              type="checkbox"
+              className={`form-check-input ${
+                row.Status ? "bg-success" : "bg-danger"
+              }`}
+              checked={row.Status}
+              onChange={() => toggleStatus(row.id)}
+              disabled={updateLoading}
+            />
+          </div>
+        ),
+      },
+      {
+        header: "Created Date",
+        body: (row) =>
+          row?.date
+            ? new Date(row.date).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "--",
+      },
+      {
+        header: "Actions",
+        body: (row) => (
+          <div className="edit-delete-action">
+            <Link className="me-2 p-2" to={`/editZones/${row.id}`}>
+              <i className="ti ti-edit text-primary" />
+            </Link>
+          </div>
+        ),
+      },
+    ],
+    [selectedRows, filteredData, allVisibleSelected, currentPage, rows, updateLoading]
+  );
 
   // Fetch zones
   const fetchZones = async () => {
@@ -206,13 +222,21 @@ export default function Zones() {
             <div className="d-flex gap-2 flex-wrap">
               {/* Rows dropdown */}
               <div className="dropdown">
-                <Link to="#" className="btn btn-white dropdown-toggle" data-bs-toggle="dropdown">
+                <Link
+                  to="#"
+                  className="btn btn-white dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                >
                   {rows}
                 </Link>
                 <ul className="dropdown-menu">
                   {[5, 10, 15, 20, 25].map((num) => (
                     <li key={num}>
-                      <Link to="#" className="dropdown-item" onClick={() => setRows(num)}>
+                      <Link
+                        to="#"
+                        className="dropdown-item"
+                        onClick={() => setRows(num)}
+                      >
                         {num}
                       </Link>
                     </li>
@@ -222,7 +246,11 @@ export default function Zones() {
 
               {/* Bulk actions */}
               <div className="dropdown">
-                <Link to="#" className="btn btn-white dropdown-toggle" data-bs-toggle="dropdown">
+                <Link
+                  to="#"
+                  className="btn btn-white dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                >
                   Bulk Actions
                 </Link>
                 <ul className="dropdown-menu">
@@ -248,19 +276,33 @@ export default function Zones() {
               </div>
             </div>
 
-            <SearchFromApi callback={handleSearch} rows={rows} setRows={setRows} />
+            <SearchFromApi
+              callback={handleSearch}
+              rows={rows}
+              setRows={setRows}
+            />
           </div>
 
           <div className="card-body">
-            <PrimeDataTable
-              column={columns}
-              data={filteredData}                     
-              totalRecords={filteredData.length}      
-              rows={rows}
-              currentPage={currentPage}               
-              setCurrentPage={setCurrentPage}         
-              
-            />
+            {loading && (
+              <div className="text-center py-4">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            )}
+            {error && <div className="alert alert-danger">{error}</div>}
+            {!loading && !error && (
+              <PrimeDataTable
+                key={selectionVersion}
+                column={columns}
+                data={filteredData}
+                totalRecords={filteredData.length}
+                rows={rows}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+              />
+            )}
           </div>
         </div>
       </div>

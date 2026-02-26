@@ -597,7 +597,7 @@ const SocialFeed = () => {
                         
                         <img src={gallery01} className="rounded" alt="img" />
                         <span className="avatar avatar-md avatar-rounded">
-                          <i className="ti ti-eye" />
+                          <i className="ti ti-eye text-primary" />
                         </span>
                       </Link>
                       <Link
@@ -611,7 +611,7 @@ const SocialFeed = () => {
                           alt="img" />
                         
                         <span className="avatar avatar-md avatar-rounded">
-                          <i className="ti ti-eye" />
+                          <i className="ti ti-eye text-primary" />
                         </span>
                       </Link>
                       <Link
@@ -625,7 +625,7 @@ const SocialFeed = () => {
                           alt="img" />
                         
                         <span className="avatar avatar-md avatar-rounded">
-                          <i className="ti ti-eye" />
+                          <i className="ti ti-eye text-primary" />
                         </span>
                       </Link>
                       <Link
@@ -639,7 +639,7 @@ const SocialFeed = () => {
                           alt="img" />
                         
                         <span className="avatar avatar-md avatar-rounded">
-                          <i className="ti ti-eye" />
+                          <i className="ti ti-eye text-primary" />
                         </span>
                       </Link>
                       <Link
@@ -653,7 +653,7 @@ const SocialFeed = () => {
                           alt="img" />
                         
                         <span className="avatar avatar-md avatar-rounded">
-                          <i className="ti ti-eye" />
+                          <i className="ti ti-eye text-primary" />
                         </span>
                       </Link>
                     </Slider>

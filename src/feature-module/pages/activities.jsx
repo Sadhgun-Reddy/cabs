@@ -21,7 +21,7 @@ const Activities = () => {
                   <i className="ti ti-checklist " /> Mark all as read
                 </Link>
                 <Link to="#" className="btn btn-danger me-1">
-                  <i className="ti ti-trash" /> Delete All
+                  <i className="ti ti-trash text-danger" /> Delete All
                 </Link>
               </div>
             </div>
@@ -71,7 +71,7 @@ const Activities = () => {
                     data-bs-toggle="modal"
                     data-bs-target="#delte-notification"
                   >
-                    <i className="ti ti-trash" />
+                    <i className="ti ti-trash text-danger" />
                   </Link>
                 </div>
               </div>
@@ -121,7 +121,7 @@ const Activities = () => {
                     data-bs-toggle="modal"
                     data-bs-target="#delte-notification"
                   >
-                    <i className="ti ti-trash" />
+                    <i className="ti ti-trash text-danger" />
                   </Link>
                 </div>
               </div>
@@ -171,7 +171,7 @@ const Activities = () => {
                     data-bs-toggle="modal"
                     data-bs-target="#delte-notification"
                   >
-                    <i className="ti ti-trash" />
+                    <i className="ti ti-trash text-danger" />
                   </Link>
                 </div>
               </div>
@@ -222,7 +222,7 @@ const Activities = () => {
                     data-bs-toggle="modal"
                     data-bs-target="#delte-notification"
                   >
-                    <i className="ti ti-trash" />
+                    <i className="ti ti-trash text-danger" />
                   </Link>
                 </div>
               </div>
@@ -266,7 +266,7 @@ const Activities = () => {
                     data-bs-toggle="modal"
                     data-bs-target="#delte-notification"
                   >
-                    <i className="ti ti-trash" />
+                    <i className="ti ti-trash text-danger" />
                   </Link>
                 </div>
               </div>
@@ -313,7 +313,7 @@ const Activities = () => {
                     data-bs-toggle="modal"
                     data-bs-target="#delte-notification"
                   >
-                    <i className="ti ti-trash" />
+                    <i className="ti ti-trash text-danger" />
                   </Link>
                 </div>
               </div>
@@ -339,7 +339,7 @@ const Activities = () => {
               <div className="success-wrap text-center">
                 <form action="activities.html">
                   <div className="icon-success bg-danger-transparent text-danger mb-2">
-                    <i className="ti ti-trash" />
+                    <i className="ti ti-trash text-danger" />
                   </div>
                   <h3 className="mb-2">Delete Notification</h3>
                   <p className="fs-16 mb-3">

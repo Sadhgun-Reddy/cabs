@@ -131,7 +131,7 @@ export default function RolePermission() {
               title="Edit Zone"
 
             >
-              <i className="ti ti-edit" />
+              <i className="ti ti-edit text-primary" />
             </Link>
             <Link
               data-bs-toggle="modal"
@@ -140,7 +140,7 @@ export default function RolePermission() {
               to="#"
               title="Delete"
             >
-              <i className="ti ti-trash" />
+              <i className="ti ti-trash text-danger" />
             </Link>
           </div>
         </div>

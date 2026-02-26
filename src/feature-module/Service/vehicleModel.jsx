@@ -205,7 +205,7 @@ export default function VehicleModel() {
             to={`/EditVehicleModel/${row.id}`}
             title="Edit"
           >
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
         </div>
       ),

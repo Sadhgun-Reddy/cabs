@@ -123,7 +123,7 @@ const AddFarePlan = () => {
                   {!loadingServices &&
                     serviceCategories.map((cat) => (
                       <option key={cat._id} value={cat._id}>
-                        {cat._id}
+                        {cat.name}
                       </option>
                     ))}
                 </select>

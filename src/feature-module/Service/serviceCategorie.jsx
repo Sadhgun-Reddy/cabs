@@ -199,7 +199,7 @@ export default function ServiceCategorie() {
       body: (row) => (
         <div className="edit-delete-action">
           <Link className="me-2 p-2" to={`/editServices/${row.id}`}>
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
         </div>
       ),

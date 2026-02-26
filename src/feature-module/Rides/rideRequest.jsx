@@ -129,7 +129,7 @@ export default function RideRequests() {
             to="/Ride-Request-Details"
             title="Ride Request Details"
           >
-            <i className="ti ti-eye" />
+            <i className="ti ti-eye text-primary" />
           </Link>
         </div>
       ),

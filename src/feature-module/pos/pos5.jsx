@@ -1231,7 +1231,7 @@ const Pos5 = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </td>
                             </tr>
@@ -1265,7 +1265,7 @@ const Pos5 = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </td>
                             </tr>
@@ -1299,7 +1299,7 @@ const Pos5 = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#delete">
                                   
-                                  <i className="ti ti-trash" />
+                                  <i className="ti ti-trash text-danger" />
                                 </Link>
                               </td>
                             </tr>
@@ -1327,7 +1327,7 @@ const Pos5 = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#shipping-cost">
                                 
-                                <i className="ti ti-edit" />
+                                <i className="ti ti-edit text-primary" />
                               </Link>
                             </td>
                             <td className="text-end">$35</td>
@@ -1341,7 +1341,7 @@ const Pos5 = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#order-tax">
                                 
-                                <i className="ti ti-edit" />
+                                <i className="ti ti-edit text-primary" />
                               </Link>
                             </td>
                             <td className="text-end">$25</td>
@@ -1355,7 +1355,7 @@ const Pos5 = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#coupon-code">
                                 
-                                <i className="ti ti-edit" />
+                                <i className="ti ti-edit text-primary" />
                               </Link>
                             </td>
                             <td className="text-end">$25</td>
@@ -1369,7 +1369,7 @@ const Pos5 = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#discount">
                                 
-                                <i className="ti ti-edit" />
+                                <i className="ti ti-edit text-primary" />
                               </Link>
                             </td>
                             <td className="text-danger text-end">-$24</td>

@@ -100,7 +100,7 @@ const PurchaseTransaction = () => {
         data-bs-target="#delete_modal"
         className="p-2 d-flex align-items-center border rounded">
         
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>,
 

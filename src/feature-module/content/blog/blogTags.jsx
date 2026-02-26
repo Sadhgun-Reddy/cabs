@@ -89,7 +89,7 @@ const BlogTags = () => {
         data-bs-toggle="modal"
         data-bs-target="#edit_blog-tags">
         
-            <i className="ti ti-edit" />
+            <i className="ti ti-edit text-primary" />
           </Link>
           <Link
         to="#"
@@ -97,7 +97,7 @@ const BlogTags = () => {
         data-bs-target="#delete_modal"
         className="p-2 d-flex align-items-center border rounded">
         
-            <i className="ti ti-trash" />
+            <i className="ti ti-trash text-danger" />
           </Link>
         </div>
 
