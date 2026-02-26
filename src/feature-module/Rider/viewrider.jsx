@@ -7,7 +7,7 @@ import axios from "axios";
 import { URLS } from "../../url";
 
 const ViewRiderDetails = () => {
-  const { riderId } = useParams();
+  const { id: riderId } = useParams();
 
   const [rider, setRider] = useState(null);
   const [loading, setLoading] = useState(false);

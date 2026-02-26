@@ -1,36 +1,38 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link, useLocation } from "react-router-dom"; 
+import { Link, useLocation } from "react-router-dom";
 import PrimeDataTable from "../../components/data-table";
 import CommonFooter from "../../components/footer/commonFooter";
 import SearchFromApi from "../../components/data-table/search";
 import { URLS } from "../../url";
 
-// 👇 IMPORTANT: Replace with your actual backend base URL
-const BASE_URL = "http://88.222.213.67:5090/";  // adjust if needed
+const BASE_URL = "http://88.222.213.67:5090/";
 
 export default function Driverdocument() {
   const location = useLocation();
-  const { driverId, driverName } = location.state || {};
 
   /* ===================== STATE ===================== */
   const [rows, setRows] = useState(10);
   const [page, setPage] = useState(1);
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [selectionVersion, setSelectionVersion] = useState(0);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Bulk action type
-  const [bulkAction, setBulkAction] = useState("trash");
+  // Document modal
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [selectedDriverDocs, setSelectedDriverDocs] = useState([]);
+  const [activeDocIndex, setActiveDocIndex] = useState(0);
+  const [modalLoading, setModalLoading] = useState(false);
 
-  // Multi‑image modal
-  const [showDriverDocumentsModal, setShowDriverDocumentsModal] = useState(false);
-  const [selectedDriverDocuments, setSelectedDriverDocuments] = useState([]);
-  const [selectedDriverName, setSelectedDriverName] = useState("");
+  // Approve / Reject
+  const [showRejectInput, setShowRejectInput] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
 
   const documentTypes = [
+    { label: "Driver Image", field: "driverImage" },
     { label: "Aadhar Front", field: "adharCardFront" },
     { label: "Aadhar Back", field: "adharCardBack" },
     { label: "Driving Licence Front", field: "drivingLicenceFront" },
@@ -43,6 +45,39 @@ export default function Driverdocument() {
     { label: "Quarterly Tax", field: "quarterlyTax" },
   ];
 
+  /* ===================== HELPERS ===================== */
+  const buildImageUrl = (path) => {
+    if (!path || !path.trim()) return null;
+    return path.startsWith("http") ? path : BASE_URL + path;
+  };
+
+  const getDriverDocuments = (driver) => {
+    const docs = [];
+    documentTypes.forEach((docType) => {
+      const url = buildImageUrl(driver[docType.field]);
+      if (url) {
+        docs.push({
+          key: `${driver.driverId}_${docType.field}`,
+          label: docType.label,
+          url,
+        });
+      }
+    });
+    if (Array.isArray(driver.vehicleImages)) {
+      driver.vehicleImages.forEach((img, idx) => {
+        const url = buildImageUrl(img);
+        if (url) {
+          docs.push({
+            key: `${driver.driverId}_vehicleImage_${idx}`,
+            label: `Vehicle Image ${idx + 1}`,
+            url,
+          });
+        }
+      });
+    }
+    return docs;
+  };
+
   /* ===================== HANDLERS ===================== */
   const handleSearch = (value) => {
     setSearchQuery(value);
@@ -52,10 +87,8 @@ export default function Driverdocument() {
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return tableData;
     const query = searchQuery.toLowerCase();
-    return tableData.filter(
-      (item) =>
-        item.driver?.toLowerCase().includes(query) ||
-        item.document?.toLowerCase().includes(query)
+    return tableData.filter((item) =>
+      item.driverName?.toLowerCase().includes(query)
     );
   }, [tableData, searchQuery]);
 
@@ -64,94 +97,74 @@ export default function Driverdocument() {
     return filteredData.slice(start, start + rows);
   }, [filteredData, page, rows]);
 
-  const handleRowSelect = (id) => {
-    setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
-    );
-    setSelectionVersion((v) => v + 1);
-  };
-
-  const handleSelectAll = (checked) => {
-    setSelectedRows((prev) => {
-      const visibleIds = filteredData.map((row) => row.id);
-      if (checked) {
-        return [...new Set([...prev, ...visibleIds])];
-      } else {
-        return prev.filter((id) => !filteredData.some((row) => row.id === id));
-      }
-    });
-    setSelectionVersion((v) => v + 1);
-  };
-
-  const allVisibleSelected =
-    filteredData.length > 0 &&
-    filteredData.every((row) => selectedRows.includes(row.id));
-
-  const approveDocument = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: "Approved" } : item
-      )
-    );
-  };
-
-  const rejectDocument = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: "Rejected" } : item
-      )
-    );
-  };
-
-  const handleBulkTrash = () => {
-    if (!selectedRows.length) return;
-    setTableData((prev) =>
-      prev.map((item) =>
-        selectedRows.includes(item.id) ? { ...item, Status: "Trash" } : item
-      )
-    );
-    setSelectedRows([]);
-    setSelectionVersion((v) => v + 1);
-  };
-
-  const handleBulkApprove = () => {
-    if (!selectedRows.length) return;
-    setTableData((prev) =>
-      prev.map((item) =>
-        selectedRows.includes(item.id) ? { ...item, Status: "Approved" } : item
-      )
-    );
-    setSelectedRows([]);
-    setSelectionVersion((v) => v + 1);
-  };
-
-  const handleBulkReject = () => {
-    if (!selectedRows.length) return;
-    setTableData((prev) =>
-      prev.map((item) =>
-        selectedRows.includes(item.id) ? { ...item, Status: "Rejected" } : item
-      )
-    );
-    setSelectedRows([]);
-    setSelectionVersion((v) => v + 1);
-  };
-
-  /* ===================== FETCH DATA ===================== */
-  const fetchDocuments = async () => {
-    setLoading(true);
-    setError("");
-
-    const url = driverId ? URLS.GetDriverDocumentById : URLS.GetDriverDocument;
-    const body = driverId ? JSON.stringify({ driverId }) : "{}";
+  /* ===================== MODAL OPEN / CLOSE ===================== */
+  const openDocumentsModal = async (driver) => {
+    setSelectedDriver(driver);
+    setActiveDocIndex(0);
+    setShowRejectInput(false);
+    setRejectReason("");
+    setActionMessage({ type: "", text: "" });
+    setShowDocumentsModal(true);
+    setModalLoading(true);
 
     try {
-      const response = await fetch(url, {
+      const response = await fetch(URLS.GetDriverDocumentById, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body,
+        body: JSON.stringify({ driverId: driver.driverId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && data.data) {
+        const docs = getDriverDocuments(data.data);
+        setSelectedDriverDocs(docs);
+        setSelectedDriver(data.data);
+      } else {
+        throw new Error(data.message || "Failed to fetch driver documents");
+      }
+    } catch (err) {
+      console.error("Fetch driver docs error:", err);
+      setSelectedDriverDocs([]);
+      setActionMessage({ type: "danger", text: err.message });
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const closeDocumentsModal = () => {
+    setShowDocumentsModal(false);
+    setSelectedDriver(null);
+    setSelectedDriverDocs([]);
+    setActiveDocIndex(0);
+    setShowRejectInput(false);
+    setRejectReason("");
+    setActionMessage({ type: "", text: "" });
+  };
+
+  /* ===================== KYC APPROVE / REJECT ===================== */
+  const handleApproveKyc = async () => {
+    if (!selectedDriver) return;
+    setActionLoading(true);
+    setActionMessage({ type: "", text: "" });
+
+    try {
+      const response = await fetch(URLS.UpdateDriverKycStatus, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          userId: selectedDriver.driverId,
+          kycStatus: "verified",
+        }),
       });
 
       if (!response.ok) {
@@ -160,55 +173,101 @@ export default function Driverdocument() {
 
       const data = await response.json();
       if (data.success) {
-        let rows = [];
-        if (driverId) {
-          const driver = data.data;
-          documentTypes.forEach((doc) => {
-            const imageUrl = driver[doc.field];
-            if (imageUrl && imageUrl.trim() !== "") {
-              // 🔧 FIX: Prepend BASE_URL if the path is relative
-              const fullImageUrl = imageUrl.startsWith("http")
-                ? imageUrl
-                : BASE_URL + imageUrl;
+        setActionMessage({
+          type: "success",
+          text: `KYC for ${selectedDriver.driverName} has been approved successfully!`,
+        });
+        // Refresh the table data
+        fetchDocuments();
+        // Close modal
+        closeDocumentsModal();
+      } else {
+        throw new Error(data.message || "Failed to approve KYC");
+      }
+    } catch (err) {
+      console.error("Approve KYC error:", err);
+      setActionMessage({ type: "danger", text: err.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-              console.log("Image URL:", fullImageUrl); 
+  const handleRejectKyc = async () => {
+    if (!selectedDriver) return;
+    if (!rejectReason.trim()) {
+      setActionMessage({
+        type: "warning",
+        text: "Please provide a reason for rejection.",
+      });
+      return;
+    }
 
-              rows.push({
-                id: `${driver.driverId}_${doc.field}`,
-                document: doc.label,
-                driver: driver.driverName,
-                documentImage: fullImageUrl,
-                Status: "Pending",
-                date: driver.logCreatedDate,
-              });
-            }
-          });
-        } else {
-          if (Array.isArray(data.data)) {
-            data.data.forEach((driver) => {
-              documentTypes.forEach((doc) => {
-                const imageUrl = driver[doc.field];
-                if (imageUrl && imageUrl.trim() !== "") {
-                  const fullImageUrl = imageUrl.startsWith("http")
-                    ? imageUrl
-                    : BASE_URL + imageUrl;
+    setActionLoading(true);
+    setActionMessage({ type: "", text: "" });
 
-                  console.log("Image URL:", fullImageUrl); 
+    try {
+      const response = await fetch(URLS.UpdateDriverKycStatus, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          userId: selectedDriver.driverId,
+          kycStatus: "rejected",
+          kycRejectedReason: rejectReason.trim(),
+        }),
+      });
 
-                  rows.push({
-                    id: `${driver.driverId}_${doc.field}`,
-                    document: doc.label,
-                    driver: driver.driverName,
-                    documentImage: fullImageUrl,
-                    Status: "Pending",
-                    date: driver.logCreatedDate,
-                  });
-                }
-              });
-            });
-          }
-        }
-        setTableData(rows);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setActionMessage({
+          type: "success",
+          text: `KYC for ${selectedDriver.driverName} has been rejected.`,
+        });
+        setShowRejectInput(false);
+        setRejectReason("");
+        // Refresh the table data
+        fetchDocuments();
+        // Close modal
+        closeDocumentsModal();
+      } else {
+        throw new Error(data.message || "Failed to reject KYC");
+      }
+    } catch (err) {
+      console.error("Reject KYC error:", err);
+      setActionMessage({ type: "danger", text: err.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  /* ===================== FETCH DATA ===================== */
+  const fetchDocuments = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(URLS.GetDriverDocument, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: "{}",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && Array.isArray(data.data)) {
+        setTableData(data.data);
       } else {
         throw new Error(data.message || "Failed to fetch documents");
       }
@@ -222,108 +281,76 @@ export default function Driverdocument() {
 
   useEffect(() => {
     fetchDocuments();
-  }, [driverId]);
+  }, []);
+
+  /* ===================== MODAL DOCS ===================== */
+  const activeDoc = selectedDriverDocs[activeDocIndex] || null;
+  const isLastDoc = activeDocIndex === selectedDriverDocs.length - 1;
 
   /* ===================== COLUMNS ===================== */
   const columns = useMemo(
     () => [
       {
-        header: (
-          <input
-            type="checkbox"
-            style={{ accentColor: "#0d6efd" }}
-            checked={allVisibleSelected}
-            onChange={(e) => handleSelectAll(e.target.checked)}
-          />
-        ),
-        body: (row) => (
-          <input
-            type="checkbox"
-            style={{ accentColor: "#0d6efd" }}
-            checked={selectedRows.includes(row.id)}
-            onChange={() => handleRowSelect(row.id)}
-          />
-        ),
-      },
-      {
         header: "Sl.No",
         body: (_row, options) => options.rowIndex + 1 + (page - 1) * rows,
       },
       {
-        header: "Document",
-        field: "document",
+        header: "Driver Name",
+        body: (row) => (
+          <div className="d-flex align-items-center gap-2">
+            {row.driverImage && (
+              <img
+                src={buildImageUrl(row.driverImage)}
+                alt={row.driverName}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src =
+                    "https://via.placeholder.com/36?text=No";
+                }}
+              />
+            )}
+            <span className="fw-semibold">{row.driverName}</span>
+          </div>
+        ),
       },
       {
-        header: "Driver",
-        field: "driver",
-      },
-      {
-        header: "Expired At",
-        body: () => "--",
-      },
-      {
-        header: "Status",
+        header: "Total Documents",
         body: (row) => {
-          let badgeClass = "bg-warning text-dark";
-          if (row.Status === "Approved") badgeClass = "bg-success";
-          if (row.Status === "Rejected") badgeClass = "bg-danger";
-          if (row.Status === "Trash") badgeClass = "bg-secondary";
-          return <span className={`badge ${badgeClass}`}>{row.Status}</span>;
+          const count = getDriverDocuments(row).length;
+          return <span className="badge bg-info">{count}</span>;
         },
       },
       {
         header: "Created Date",
         body: (row) =>
-          row?.date
-            ? new Date(row.date).toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
+          row?.logCreatedDate
+            ? new Date(row.logCreatedDate).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })
             : "--",
       },
       {
         header: "Actions",
         body: (row) => (
-          <div className="edit-delete-action d-flex align-items-center">
-            {!driverId && (
-              <button
-                className="btn p-2"
-                title="View All Documents"
-                onClick={() => {
-                  const driverIdFromRow = row.id.split("_")[0];
-                  const driverDocs = tableData.filter((item) =>
-                    item.id.startsWith(driverIdFromRow)
-                  );
-                  setSelectedDriverDocuments(driverDocs);
-                  setSelectedDriverName(row.driver);
-                  setShowDriverDocumentsModal(true);
-                }}
-              >
-                <i className="ti ti-eye text-primary" />
-              </button>
-            )}
-            <button
-              className="btn p-2 text-success"
-              title="Approve"
-              onClick={() => approveDocument(row.id)}
-              disabled={row.Status === "Approved"}
-            >
-              <i className="ti ti-check" />
-            </button>
-            <button
-              className="btn p-2 text-danger"
-              title="Reject"
-              onClick={() => rejectDocument(row.id)}
-              disabled={row.Status === "Rejected"}
-            >
-              <i className="ti ti-x" />
-            </button>
-          </div>
+          <button
+            className="btn btn-sm btn-primary d-flex align-items-center gap-1"
+            onClick={() => openDocumentsModal(row)}
+          >
+            <i className="ti ti-eye" />
+            View Documents
+          </button>
         ),
       },
     ],
-    [selectedRows, filteredData, allVisibleSelected, page, rows, driverId, tableData]
+    [page, rows]
   );
 
   /* ===================== JSX ===================== */
@@ -331,13 +358,12 @@ export default function Driverdocument() {
     <div className="page-wrapper">
       <div className="content">
         <div className="page-header d-flex justify-content-between align-items-center">
-          <h4>{driverName ? `Documents of ${driverName}` : "Drivers Documents"}</h4>
+          <h4>Drivers Documents</h4>
         </div>
 
         <div className="card table-list-card">
           <div className="card-header d-flex justify-content-between flex-wrap gap-2">
             <div className="d-flex gap-2 flex-wrap">
-              {/* rows dropdown */}
               <div className="dropdown">
                 <button
                   className="btn btn-white dropdown-toggle"
@@ -351,7 +377,10 @@ export default function Driverdocument() {
                     <li key={num}>
                       <button
                         className="dropdown-item"
-                        onClick={() => setRows(num)}
+                        onClick={() => {
+                          setRows(num);
+                          setPage(1);
+                        }}
                       >
                         {num}
                       </button>
@@ -359,37 +388,12 @@ export default function Driverdocument() {
                   ))}
                 </ul>
               </div>
-
-              {/* bulk actions dropdown */}
-              <div className="dropdown">
-                <button
-                  className="btn btn-white dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                >
-                  Bulk Actions
-                </button>
-                <ul className="dropdown-menu">
-                  <li>
-                    <button className="dropdown-item" onClick={handleBulkApprove}>
-                      Approve
-                    </button>
-                  </li>
-                  <li>
-                    <button className="dropdown-item" onClick={handleBulkReject}>
-                      Reject
-                    </button>
-                  </li>
-                  <li>
-                    <button className="dropdown-item" onClick={handleBulkTrash}>
-                      Move to Trash
-                    </button>
-                  </li>
-                </ul>
-              </div>
-              <button className="btn btn-outline-success">Apply</button>
             </div>
-            <SearchFromApi callback={handleSearch} rows={rows} setRows={setRows} />
+            <SearchFromApi
+              callback={handleSearch}
+              rows={rows}
+              setRows={setRows}
+            />
           </div>
 
           <div className="card-body">
@@ -404,7 +408,6 @@ export default function Driverdocument() {
             {!loading && !error && (
               <div className="table-responsive">
                 <PrimeDataTable
-                  key={selectionVersion}
                   column={columns}
                   data={paginatedData}
                   totalRecords={filteredData.length}
@@ -417,51 +420,275 @@ export default function Driverdocument() {
         </div>
       </div>
 
-      {/* Multi‑image Modal */}
-      {showDriverDocumentsModal && (
+      {/* ============ DOCUMENTS MODAL ============ */}
+      {showDocumentsModal && selectedDriver && (
         <div
           className="modal show d-block"
           tabIndex="-1"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeDocumentsModal();
+          }}
         >
-          <div className="modal-dialog modal-lg">
+          <div
+            className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+            style={{ maxWidth: "750px" }}
+          >
             <div className="modal-content">
+              {/* Header */}
               <div className="modal-header">
-                <h5 className="modal-title">Documents of {selectedDriverName}</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowDriverDocumentsModal(false)}
-                ></button>
+                <h5 className="modal-title">
+                  <i className="ti ti-file-text me-2" />
+                  Documents of {selectedDriver.driverName}
+                </h5>
+
               </div>
-              <div className="modal-body">
-                <div className="row">
-                  {selectedDriverDocuments.map((doc) => (
-                    <div key={doc.id} className="col-md-4 mb-3">
-                      <div className="card">
-                        <img
-                          src={doc.documentImage}
-                          alt={doc.document}
-                          className="card-img-top"
-                          style={{ height: "150px", objectFit: "cover" }}
-                          onError={(e) => {
-                            // Fallback if image fails to load
-                            e.target.onerror = null;
-                            e.target.src = "https://via.placeholder.com/150?text=No+Image";
-                          }}
-                        />
-                        <div className="card-body p-2">
-                          <p className="card-text text-center">{doc.document}</p>
-                        </div>
-                      </div>
+
+              {/* Body */}
+              <div className="modal-body p-0">
+                {/* Loading */}
+                {modalLoading && (
+                  <div className="text-center py-5">
+                    <div
+                      className="spinner-border text-primary"
+                      role="status"
+                    >
+                      <span className="visually-hidden">Loading...</span>
                     </div>
-                  ))}
-                </div>
+                    <p className="mt-2 text-muted">Loading documents...</p>
+                  </div>
+                )}
+
+                {/* No docs */}
+                {!modalLoading && selectedDriverDocs.length === 0 && (
+                  <div className="text-center py-5 text-muted">
+                    <i
+                      className="ti ti-file-off"
+                      style={{ fontSize: "3rem" }}
+                    />
+                    <p className="mt-2">No documents found</p>
+                  </div>
+                )}
+
+                {/* Documents viewer */}
+                {!modalLoading && selectedDriverDocs.length > 0 && (
+                  <>
+                    {/* Stepper Tabs */}
+                    <div
+                      className="d-flex flex-wrap gap-1 p-3 border-bottom"
+                      style={{ backgroundColor: "#f8f9fa" }}
+                    >
+                      {selectedDriverDocs.map((doc, idx) => {
+                        let btnClass = "btn-outline-secondary";
+                        if (idx === activeDocIndex) btnClass = "btn-primary";
+                        else if (idx < activeDocIndex)
+                          btnClass = "btn-outline-primary";
+
+                        return (
+                          <button
+                            key={doc.key}
+                            className={`btn btn-sm ${btnClass}`}
+                            onClick={() => setActiveDocIndex(idx)}
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            {idx < activeDocIndex && (
+                              <i className="ti ti-check me-1" />
+                            )}
+                            {doc.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Active Document Display */}
+                    {activeDoc && (
+                      <div className="p-4">
+                        <div className="text-center mb-3">
+                          <h6 className="text-muted mb-1">
+                            Document {activeDocIndex + 1} of{" "}
+                            {selectedDriverDocs.length}
+                          </h6>
+                          <h5>{activeDoc.label}</h5>
+                        </div>
+
+                        {/* Image */}
+                        <div
+                          className="text-center mb-3"
+                          style={{
+                            border: "1px solid #dee2e6",
+                            borderRadius: "8px",
+                            overflow: "hidden",
+                            backgroundColor: "#fafafa",
+                          }}
+                        >
+                          <img
+                            src={activeDoc.url}
+                            alt={activeDoc.label}
+                            style={{
+                              maxWidth: "100%",
+                              maxHeight: "400px",
+                              objectFit: "contain",
+                            }}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src =
+                                "https://via.placeholder.com/400x300?text=Image+Not+Found";
+                            }}
+                          />
+                        </div>
+
+                        {/* Prev / Next Navigation */}
+                        <div className="d-flex justify-content-between mt-4">
+                          <button
+                            className="btn btn-outline-primary"
+                            disabled={activeDocIndex === 0}
+                            onClick={() =>
+                              setActiveDocIndex((prev) => prev - 1)
+                            }
+                          >
+                            <i className="ti ti-chevron-left me-1" />
+                            Previous
+                          </button>
+                          {!isLastDoc && (
+                            <button
+                              className="btn btn-outline-primary"
+                              onClick={() =>
+                                setActiveDocIndex((prev) => prev + 1)
+                              }
+                            >
+                              Next
+                              <i className="ti ti-chevron-right ms-1" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* ===== APPROVE / REJECT SECTION (only on last doc) ===== */}
+                        {isLastDoc && (
+                          <div className="mt-4 pt-4 border-top">
+                            <div className="text-center mb-3">
+                              <h6 className="fw-bold">
+                                You have reviewed all {selectedDriverDocs.length}{" "}
+                                document(s).
+                              </h6>
+                              <p className="text-muted mb-0">
+                                Please approve or reject the KYC for{" "}
+                                <strong>{selectedDriver.driverName}</strong>.
+                              </p>
+                            </div>
+
+                            {/* Action message */}
+                            {actionMessage.text && (
+                              <div
+                                className={`alert alert-${actionMessage.type} text-center`}
+                                role="alert"
+                              >
+                                {actionMessage.text}
+                              </div>
+                            )}
+
+                            {/* Reject reason input */}
+                            {showRejectInput && (
+                              <div className="mb-3">
+                                <label className="form-label fw-semibold">
+                                  Rejection Reason{" "}
+                                  <span className="text-danger">*</span>
+                                </label>
+                                <textarea
+                                  className="form-control"
+                                  rows="3"
+                                  placeholder="Enter the reason for rejecting the KYC..."
+                                  value={rejectReason}
+                                  onChange={(e) =>
+                                    setRejectReason(e.target.value)
+                                  }
+                                />
+                              </div>
+                            )}
+
+                            {/* Buttons */}
+                            <div className="d-flex justify-content-center gap-3">
+                              {!showRejectInput ? (
+                                <>
+                                  <button
+                                    className="btn btn-success d-flex align-items-center gap-1 px-4"
+                                    onClick={handleApproveKyc}
+                                    disabled={actionLoading}
+                                  >
+                                    {actionLoading ? (
+                                      <span
+                                        className="spinner-border spinner-border-sm"
+                                        role="status"
+                                      />
+                                    ) : (
+                                      <i className="ti ti-check" />
+                                    )}
+                                    Approve KYC
+                                  </button>
+                                  <button
+                                    className="btn btn-danger d-flex align-items-center gap-1 px-4"
+                                    onClick={() => {
+                                      setShowRejectInput(true);
+                                      setActionMessage({
+                                        type: "",
+                                        text: "",
+                                      });
+                                    }}
+                                    disabled={actionLoading}
+                                  >
+                                    <i className="ti ti-x" />
+                                    Reject KYC
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    className="btn btn-danger d-flex align-items-center gap-1 px-4"
+                                    onClick={handleRejectKyc}
+                                    disabled={
+                                      actionLoading ||
+                                      !rejectReason.trim()
+                                    }
+                                  >
+                                    {actionLoading ? (
+                                      <span
+                                        className="spinner-border spinner-border-sm"
+                                        role="status"
+                                      />
+                                    ) : (
+                                      <i className="ti ti-x" />
+                                    )}
+                                    Confirm Reject
+                                  </button>
+                                  <button
+                                    className="btn btn-outline-secondary d-flex align-items-center gap-1 px-4"
+                                    onClick={() => {
+                                      setShowRejectInput(false);
+                                      setRejectReason("");
+                                      setActionMessage({
+                                        type: "",
+                                        text: "",
+                                      });
+                                    }}
+                                    disabled={actionLoading}
+                                  >
+                                    Cancel
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
+
+              {/* Footer */}
               <div className="modal-footer">
                 <button
                   className="btn btn-secondary"
-                  onClick={() => setShowDriverDocumentsModal(false)}
+                  onClick={closeDocumentsModal}
                 >
                   Close
                 </button>

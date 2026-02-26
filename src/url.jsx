@@ -42,11 +42,11 @@ export const URLS = {
 
     // Service Categories
 
-    GetAllServiceCategories : base_url + "v1/gkcabs/admin/servicetype/getallservicetypes",
-    EditServiceCategory : base_url + "v1/gkcabs/admin/servicetype/editservicetype",
-    UpdateServiceStatus : base_url + "v1/gkcabs/admin/servicetype/updateservicestatus",
-    SearchServiceCategories : base_url + "v1/gkcabs/admin/servicetype/getallservicetypes?searchQuery=",
-    GetServiceCategoryById : base_url + "v1/gkcabs/admin/fairplan/getservice-categorys",
+    GetAllServiceCategories: base_url + "v1/gkcabs/admin/servicetype/getallservicetypes",
+    EditServiceCategory: base_url + "v1/gkcabs/admin/servicetype/editservicetype",
+    UpdateServiceStatus: base_url + "v1/gkcabs/admin/servicetype/updateservicestatus",
+    SearchServiceCategories: base_url + "v1/gkcabs/admin/servicetype/getallservicetypes?searchQuery=",
+    GetServiceCategoryById: base_url + "v1/gkcabs/admin/fairplan/getservice-categorys",
 
     // Vehicle Groups
 
@@ -66,34 +66,33 @@ export const URLS = {
 
     // Fair Plans
 
-    GetAllFairPlans : base_url + "v1/gkcabs/admin/fairplan/getallfairplans",
-    AddFaiPlan : base_url + "v1/gkcabs/admin/fairplan/addfairplan",
-    EditFarePlan : base_url + "v1/gkcabs/admin/fairplan/editfairplan",
-    UpdateFairPlanStatus : base_url + "v1/gkcabs/admin/fairplan/updatestatus",
-    GetServiceCategoryById : base_url + "v1/gkcabs/admin/fairplan/getservice-categorys",
+    GetAllFairPlans: base_url + "v1/gkcabs/admin/fairplan/getallfairplans",
+    AddFaiPlan: base_url + "v1/gkcabs/admin/fairplan/addfairplan",
+    EditFarePlan: base_url + "v1/gkcabs/admin/fairplan/editfairplan",
+    UpdateFairPlanStatus: base_url + "v1/gkcabs/admin/fairplan/updatestatus",
 
     // Riders
 
-    GetAllRiders : base_url + "v1/gkcabs/admin/docs/getusers",
-    GetRiderById : base_url + "v1/gkcabs/admin/docs/getuserbyid",
-    UpdateRiderStatus : base_url + "v1/gkcabs/admin/docs/updateuserstatus",
-    GetRiderWallet : base_url + "v1/gkcabs/admin/wallets/getuserwallet",
-    UpdateRiderWallet : base_url + "v1/gkcabs/admin/wallets/update-user-wallet",
+    GetAllRiders: base_url + "v1/gkcabs/admin/docs/getusers",
+    GetRiderById: base_url + "v1/gkcabs/admin/docs/getuserbyid",
+    UpdateRiderStatus: base_url + "v1/gkcabs/admin/docs/updateuserstatus",
+    GetRiderWallet: base_url + "v1/gkcabs/admin/wallets/getuserwallet",
+    UpdateRiderWallet: base_url + "v1/gkcabs/admin/wallets/update-user-wallet",
 
     // Drivers
 
-    GetAllDrivers : base_url + "v1/gkcabs/admin/docs/getdriversbykycstatus",
-    GetDriverDocument : base_url + "v1/gkcabs/admin/docs/get-driver-documents",
-    GetDriverDocumentById : base_url + "v1/gkcabs/admin/docs/get-driver-documents-byid",
-    GetDriverById : base_url + "v1/gkcabs/admin/docs/get-driver-byid",
-    UpdateDriverKycStatus : base_url + "v1/gkcabs/admin/docs/update-driver-kycstatus",
-    UpdateDriverStatus : base_url + "v1/gkcabs/admin/docs/update-driver-status",
+    GetAllDrivers: base_url + "v1/gkcabs/admin/docs/getdriversbykycstatus",
+    GetDriverDocument: base_url + "v1/gkcabs/admin/docs/get-driver-documents",
+    GetDriverDocumentById: base_url + "v1/gkcabs/admin/docs/get-driver-documents-byid",
+    GetDriverById: base_url + "v1/gkcabs/admin/docs/get-driver-byid",
+    UpdateDriverKycStatus: base_url + "v1/gkcabs/admin/docs/update-driver-kycstatus",
+    UpdateDriverStatus: base_url + "v1/gkcabs/admin/docs/update-driver-status",
 
     // Driver Rules
 
-    GetAllDriverRules : base_url + "v1/gkcabs/admin/driver-rules/getall",
-    AddDriverRule : base_url + "v1/gkcabs/admin/driver-rules/add",
-    EditDriverRule : base_url + "v1/gkcabs/admin/driver-rules/edit",
+    GetAllDriverRules: base_url + "v1/gkcabs/admin/driver-rules/getall",
+    AddDriverRule: base_url + "v1/gkcabs/admin/driver-rules/add",
+    EditDriverRule: base_url + "v1/gkcabs/admin/driver-rules/edit",
 
     // Tax Settings
     GetAllTax: base_url + "v1/gkcabs/admin/tax/getalltaxs",
