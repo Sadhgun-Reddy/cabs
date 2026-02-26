@@ -85,7 +85,9 @@ export const URLS = {
     GetAllDrivers : base_url + "v1/gkcabs/admin/docs/getdriversbykycstatus",
     GetDriverDocument : base_url + "v1/gkcabs/admin/docs/get-driver-documents",
     GetDriverDocumentById : base_url + "v1/gkcabs/admin/docs/get-driver-documents-byid",
+    GetDriverById : base_url + "v1/gkcabs/admin/docs/get-driver-byid",
     UpdateDriverKycStatus : base_url + "v1/gkcabs/admin/docs/update-driver-kycstatus",
+    UpdateDriverStatus : base_url + "v1/gkcabs/admin/docs/update-driver-status",
 
     // Driver Rules
 

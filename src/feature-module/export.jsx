@@ -1,17 +1,23 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Export() {
+
+  const navigate = useNavigate();
+
+  const handleCancel = () => {
+    navigate("/verifiedDrivers");
+  };
+
   return (
     <div className="page-wrapper">
       <div className="content">
         <div className="card export-card position-relative">
-
-          {/* Close Button (Top Right) */}
           <button
             type="button"
             className="btn-close position-absolute top-0 end-0 m-3"
-            data-bs-dismiss="modal"
-            aria-label="Close"
+            onClick={handleCancel}
           ></button>
 
           {/* Header */}
@@ -24,7 +30,6 @@ export default function Export() {
           {/* Body */}
           <div className="card-body">
             <form className="form-export">
-
               <div className="text-center mb-4">
                 <img
                   src="/src/assets/img/export.svg"
@@ -50,11 +55,7 @@ export default function Export() {
 
               {/* Footer Actions */}
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <Link
-                  to="#"
-                  className="btn btn-light"
-                  data-bs-dismiss="modal"
-                >
+                <Link to="#" className="btn btn-light" onClick={handleCancel}>
                   Cancel
                 </Link>
 
@@ -63,7 +64,6 @@ export default function Export() {
                   Export
                 </button>
               </div>
-
             </form>
           </div>
         </div>

@@ -215,7 +215,7 @@ export default function Riders() {
       header: "Actions",
       body: (row) => (
         <div className="edit-delete-action">
-          <Link className="me-2 p-2" to="/viewrider" title="View Details">
+          <Link className="me-2 p-2" to={`/viewrider/${row.id}`} title="View Details">
             <i className="ti ti-eye text-primary" />
           </Link>
 

@@ -19,7 +19,7 @@ export const all_routes = {
   Allriders: "/Riders",
   riderwallet: "/riderWallet",
   editriderprofile: "/EditRiderProfile",
-  viewriderdetails: "/viewrider",
+  viewriderdetails: "/viewrider/:id",
   viewridedetails: "/rideDetails",
   viewdriverdetails: "/viewdriverDetails",
   editdriver: "/editdriver",

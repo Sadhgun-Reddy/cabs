@@ -16,7 +16,11 @@ export default function UnverifiedDriver() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [popupMessage, setPopupMessage] = useState({ show: false, text: '', type: 'success' });
+  const [popupMessage, setPopupMessage] = useState({
+    show: false,
+    text: "",
+    type: "success",
+  });
 
   // Reject modal state
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -67,7 +71,7 @@ export default function UnverifiedDriver() {
     navigate("/driverDocument", { state: { driverId, driverName } });
   };
 
-    // Show popup message and auto-hide after 3 seconds
+  // Show popup message and auto-hide after 3 seconds
   const showPopup = (message, type = "success") => {
     setPopup({ show: true, message, type });
     setTimeout(() => {
@@ -181,11 +185,8 @@ export default function UnverifiedDriver() {
         },
       });
 
-      console.log("Update success:", response.data);
-      await fetchDrivers(); 
+      await fetchDrivers();
     } catch (err) {
-      console.error("Status update error:", err);
-
       if (err.response) {
         setError(
           `Update failed: ${err.response.status} - ${err.response.data?.message || err.response.statusText}`,
@@ -245,9 +246,14 @@ export default function UnverifiedDriver() {
       header: "Actions",
       body: (row) => (
         <div className="edit-delete-action">
-          <Link className="me-2 p-2" to="/viewdriverDetails" title="View">
-            <i className="ti ti-eye text-primary" />
-          </Link>
+          <Link
+              className="me-2 p-2"
+              to="/viewdriverDetails"
+              state={{ driverId: row.id }}
+              title="Driver Details"
+            >
+              <i className="ti ti-eye text-primary" />
+            </Link>
           <button
             className="btn p-2"
             title="Verify Driver"
