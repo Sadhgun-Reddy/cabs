@@ -100,6 +100,7 @@ export const all_routes = {
   viewwithdrawrequestdetails: "/View-Withdraw-Request-Details",
   rejecteddrivers: "/Rejected-Drivers",
   adddriverrule: "/Add-Driver-Rules",
+  gstsettings: "/gst-settings",
 
 
 
