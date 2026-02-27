@@ -78,6 +78,7 @@ export const URLS = {
     UpdateRiderStatus: base_url + "v1/gkcabs/admin/docs/updateuserstatus",
     GetRiderWallet: base_url + "v1/gkcabs/admin/wallets/getuserwallet",
     UpdateRiderWallet: base_url + "v1/gkcabs/admin/wallets/update-user-wallet",
+    RiderCreditDebit : base_url + "v1/gkcabs/admin/wallets/credit-debit-user",
 
     // Drivers
 

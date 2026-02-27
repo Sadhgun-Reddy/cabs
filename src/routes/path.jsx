@@ -131,6 +131,7 @@ import ZoneMap from "../feature-module/Zones/Google-Map";
 import Zones from "../feature-module/Zones/Zones";
 import RejectedDriver from "../feature-module/Driver/Rejected-Drivers";
 import AddDriverRules from "../feature-module/Driver/Add-Driver-Rules";
+import RiderWithdrawRequest from "../feature-module/Rider/Withdraw-Requests";
 
 const ProductList = lazy(
   () => import("../feature-module/inventory/productlist"),
@@ -666,6 +667,13 @@ const Timeline = lazy(
 const routes = all_routes;
 
 export const authRoutes = [
+  {
+    id: 1,
+    path: routes.riderwithdrawrequest,
+    name: "Rider",
+    element: <RiderWithdrawRequest />,
+    route: Route,
+  },
   {
     id: 1,
     path: routes.adddriverrule,

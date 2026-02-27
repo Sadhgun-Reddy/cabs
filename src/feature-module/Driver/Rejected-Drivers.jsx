@@ -227,13 +227,13 @@ export default function RejectedDriver() {
           >
             <i className="ti ti-check text-success" />
           </button>
-          <button
+          {/* <button
             className="btn p-2"
             title="Files"
             onClick={() => goToDriverDocuments(row.id, row.Name)}
           >
             <i className="ti ti-file" />
-          </button>
+          </button> */}
         </div>
       ),
     },

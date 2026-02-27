@@ -1,41 +1,263 @@
 import { useState, useEffect, useMemo } from "react";
-import axios from "axios"; //
+import axios from "axios";
 import CommonFooter from "../../components/footer/commonFooter";
 import PrimeDataTable from "../../components/data-table";
 import { URLS } from "../../url";
 
 export default function Riderwallet() {
+  // ==================== STATE ====================
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [rows, setRows] = useState(10);
 
-  // Handler for search input
-  const handleSearch = (value) => {
-    setSearchQuery(value);
+  // Rider search / selection
+  const [riders, setRiders] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedRider, setSelectedRider] = useState(null);
+
+  // Credit/Debit form
+
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [processing, setProcessing] = useState(false);
+
+  // Popup message
+
+  const [popupMessage, setPopupMessage] = useState({
+    show: false,
+    text: "",
+    type: "success",
+  });
+
+  //  HELPERS
+
+  const showPopup = (message, type = "success") => {
+    setPopupMessage({ show: true, text: message, type });
+    setTimeout(() => {
+      setPopupMessage({ show: false, text: "", type: "success" });
+    }, 3000);
   };
 
-  // Filter data based on search query
-  const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return tableData;
-    const query = searchQuery.toLowerCase();
-    return tableData.filter((item) => {
-      const nameMatch = item.username?.toLowerCase().includes(query);
-      const userPhoneMatch = item.phonenumber?.toLowerCase().includes(query);
-      return nameMatch || userPhoneMatch;
-    });
-  }, [tableData, searchQuery]);
+  // Fetch all riders matching search term
+  const fetchRiders = async (query) => {
+    if (!query.trim() || query.trim().length < 2) {
+      setRiders([]);
+      return;
+    }
 
-  // Define table columns
+    setSearchLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        URLS.GetAllRiders,
+        { search: query },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      // Try to locate the array of riders
+      let ridersArray = [];
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+        ridersArray = data;
+      } else if (data?.riders && Array.isArray(data.riders)) {
+        ridersArray = data.riders;
+      } else if (data?.data && Array.isArray(data.data)) {
+        ridersArray = data.data;
+      } else if (data?.users && Array.isArray(data.users)) {
+        ridersArray = data.users;
+      } else if (data?.results && Array.isArray(data.results)) {
+        ridersArray = data.results;
+      } else {
+        const possibleArray = Object.values(data).find((val) =>
+          Array.isArray(val),
+        );
+        if (possibleArray) ridersArray = possibleArray;
+      }
+
+      const mappedRiders = ridersArray.map((rider) => {
+        return {
+          _id: rider._id || rider.id || rider.userId || rider.driverId,
+          name:
+            rider.name || rider.userName || rider.fullName || rider.displayName,
+          phone:
+            rider.phone ||
+            rider.mobile ||
+            rider.phoneNumber ||
+            rider.mobileNumber,
+          walletAmount:
+            rider.walletAmount ?? rider.balance ?? rider.amount ?? 0,
+        };
+      });
+
+      setRiders(mappedRiders);
+    } catch (err) {
+      setRiders([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Fetch wallet transactions (optionally filter by userId)
+  const fetchWalletTransactions = async (userId = null) => {
+    setLoading(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      // If your API supports filtering by userId, include it; otherwise fetch all.
+      const payload = userId ? { userId } : {};
+      const response = await axios.post(URLS.GetRiderWallet, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const wallets = response.data?.wallets || [];
+      const formattedData = wallets.map((wallet) => ({
+        id: wallet._id,
+        ridername: wallet.userName || "",
+        Amount: wallet.amount,
+        phonenumber: wallet.userPhone || "",
+        Status: wallet.type || wallet.status,
+        date: wallet.logCreatedDate || wallet.date,
+        userId: wallet.userId,
+      }));
+
+      setTableData(formattedData);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message || "Failed to fetch wallet data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Credit/Debit operation
+  const handleTransaction = async (type) => {
+    if (!selectedRider) {
+      showPopup("Please select a rider first.", "warning");
+      return;
+    }
+    if (!amount || parseFloat(amount) <= 0) {
+      showPopup("Please enter a valid amount.", "warning");
+      return;
+    }
+    if (!note.trim()) {
+      showPopup("Please enter a note.", "warning");
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        URLS.RiderCreditDebit,
+        {
+          userId: selectedRider._id,
+          note: note.trim(),
+          type: type,
+          amount: parseFloat(amount),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (response.data.success) {
+        showPopup(
+          `Amount ${type === "credit" ? "credited" : "debited"} successfully!`,
+          "success",
+        );
+
+        // Update selected rider's balance if returned in response
+        if (response.data.data?.newBalance !== undefined) {
+          setSelectedRider((prev) => ({
+            ...prev,
+            walletAmount: response.data.data.newBalance,
+          }));
+        } else {
+          // Optionally refetch rider details or just rely on transaction refresh
+        }
+
+        // Refresh transactions for this rider
+        await fetchWalletTransactions(selectedRider._id);
+
+        // Clear form
+        setAmount("");
+        setNote("");
+      } else {
+        throw new Error(response.data.message || "Transaction failed");
+      }
+    } catch (err) {
+      console.error("Transaction error:", err);
+      showPopup(
+        err.message || "Transaction failed. Please try again.",
+        "danger",
+      );
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // ==================== EFFECTS ====================
+  useEffect(() => {
+    fetchWalletTransactions();
+  }, []);
+
+  // ==================== HANDLERS ====================
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setShowDropdown(true);
+    // Debounce API calls to avoid too many requests
+    const handler = setTimeout(() => {
+      fetchRiders(value);
+    }, 300);
+    return () => clearTimeout(handler);
+  };
+
+  const selectRider = (rider) => {
+    setSelectedRider({
+      _id: rider._id,
+      name: rider.name,
+      phone: rider.phone,
+      walletAmount: rider.walletAmount,
+    });
+    setSearchTerm(rider.name);
+    setShowDropdown(false);
+    fetchWalletTransactions(rider._id);
+  };
+
+  // Filter transactions for the selected rider
+  const filteredTransactions = useMemo(() => {
+    if (!selectedRider) return tableData;
+    return tableData.filter((tx) => tx.userId === selectedRider._id);
+  }, [tableData, selectedRider]);
+
+  // ==================== COLUMNS ====================
   const columns = [
     {
       header: "Sl.No",
       body: (_row, options) => options.rowIndex + 1,
     },
     {
-      header: "User Name",
-      field: "username",
+      header: "Rider Name",
+      field: "ridername",
+    },
+    {
+      header: "Phone Number",
+      field: "phonenumber",
     },
     {
       header: "Amount",
@@ -44,10 +266,6 @@ export default function Riderwallet() {
     {
       header: "Type",
       field: "Status",
-    },
-    {
-      header: "Phone Number",
-      field: "phonenumber",
     },
     {
       header: "Created Date",
@@ -62,60 +280,83 @@ export default function Riderwallet() {
     },
   ];
 
-  // Fetch wallet data
-  const fetchRiderWallet = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await axios.post(
-        URLS.GetRiderWallet,
-        { status: "withdraw" },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      const wallets = response.data?.wallets || [];
-      const formattedData = wallets.map((wallet) => ({
-        id: wallet._id,
-        username: wallet.userName || "",
-        Amount: wallet.amount,
-        phonenumber: wallet.userPhone || "",
-        Status: wallet.type || wallet.status,
-        date: wallet.logCreatedDate || wallet.date,
-      }));
-
-      setTableData(formattedData);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError(err.message || "Failed to fetch wallet data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRiderWallet();
-  }, []);
-
+  // ==================== JSX ====================
   return (
     <div className="page-wrapper">
       <div className="content container-fluid">
-        {/* Top Cards (unchanged) */}
+        {/* Popup Message */}
+        {popupMessage.show && (
+          <div
+            className={`alert alert-${popupMessage.type} alert-dismissible fade show position-fixed top-0 end-0 m-3`}
+            style={{ zIndex: 9999, minWidth: "250px" }}
+            role="alert"
+          >
+            {popupMessage.text}
+            <button
+              type="button"
+              className="btn-close"
+              onClick={() =>
+                setPopupMessage({ show: false, text: "", type: "success" })
+              }
+            />
+          </div>
+        )}
+
+        {/* Top Cards */}
         <div className="row g-4 mb-4">
           <div className="col-lg-4">
             <div className="card h-100">
               <div className="card-body">
                 <h4 className="mb-3">Search Rider</h4>
-                <input
-                  className="form-control mb-2"
-                  placeholder="Search by Rider Mobile number or Name"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
+                <div className="position-relative">
+                  <input
+                    className="form-control"
+                    placeholder="Search by name or mobile"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    onFocus={() =>
+                      searchTerm.trim().length >= 2 && setShowDropdown(true)
+                    }
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                  />
+                  {showDropdown && (
+                    <div
+                      className="position-absolute w-100 mt-1"
+                      style={{ zIndex: 1000 }}
+                    >
+                      {searchLoading && (
+                        <div className="p-2 bg-white border rounded text-center">
+                          <span className="spinner-border spinner-border-sm me-2" />
+                          Searching...
+                        </div>
+                      )}
+                      {!searchLoading && riders.length > 0 && (
+                        <ul
+                          className="list-group"
+                          style={{ maxHeight: "200px", overflowY: "auto" }}
+                        >
+                          {riders.map((rider) => (
+                            <li
+                              key={rider._id}
+                              className="list-group-item list-group-item-action"
+                              onMouseDown={() => selectRider(rider)}
+                            >
+                              <strong>{rider.name}</strong> <br />
+                              <small>{rider.phone}</small>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {!searchLoading &&
+                        riders.length === 0 &&
+                        searchTerm.trim().length >= 2 && (
+                          <div className="p-2 bg-white border rounded">
+                            No riders found
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -123,26 +364,52 @@ export default function Riderwallet() {
           <div className="col-lg-8">
             <div className="card h-100">
               <div className="card-body">
-                <h4 className="mb-3">Wallet Balance</h4>
+                <h4 className="mb-3">
+                  Wallet Balance
+                  {selectedRider && (
+                    <span
+                      className="ms-2 text-muted"
+                      style={{ fontSize: "1rem" }}
+                    >
+                      ({selectedRider.name})
+                    </span>
+                  )}
+                </h4>
                 <div className="d-flex align-items-center gap-3 flex-wrap">
-                  <div className="fw-bold fs-4 text-success">₹ 0.00</div>
+                  <div className="fw-bold fs-4 text-success">
+                    ₹ {selectedRider?.walletAmount?.toFixed(2) || "0.00"}
+                  </div>
                   <input
-                    type="text"
+                    type="number"
                     className="form-control"
                     placeholder="Credit/debit amount"
                     style={{ maxWidth: "200px" }}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    disabled={!selectedRider || processing}
                   />
                   <input
                     type="text"
                     className="form-control"
                     placeholder="Enter note to user"
                     style={{ maxWidth: "260px" }}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    disabled={!selectedRider || processing}
                   />
-                  <button className="btn btn-primary">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleTransaction("credit")}
+                    disabled={!selectedRider || processing}
+                  >
                     <i className="ti ti-download me-1" />
                     Credit
                   </button>
-                  <button className="btn btn-danger">
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => handleTransaction("debit")}
+                    disabled={!selectedRider || processing}
+                  >
                     <i className="ti ti-upload me-1" />
                     Debit
                   </button>
@@ -156,7 +423,11 @@ export default function Riderwallet() {
         <div className="card">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h4 className="mb-0">Transactions</h4>
+              <h4 className="mb-0">
+                {selectedRider
+                  ? `Transactions - ${selectedRider.name}`
+                  : "All Transactions"}
+              </h4>
             </div>
 
             {loading && (
@@ -175,9 +446,9 @@ export default function Riderwallet() {
               <div className="table-responsive">
                 <PrimeDataTable
                   column={columns}
-                  data={filteredData}
-                  totalRecords={filteredData.length}
-                  rows={rows}
+                  data={filteredTransactions}
+                  totalRecords={filteredTransactions.length}
+                  rows={10}
                 />
               </div>
             )}

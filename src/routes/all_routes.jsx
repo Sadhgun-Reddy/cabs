@@ -101,6 +101,7 @@ export const all_routes = {
   rejecteddrivers: "/Rejected-Drivers",
   adddriverrule: "/Add-Driver-Rules",
   gstsettings: "/gst-settings",
+  riderwithdrawrequest: "/Withdraw-Requests",
 
 
 

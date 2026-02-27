@@ -6,7 +6,7 @@ import CommonFooter from "../../components/footer/commonFooter";
 import PrimeDataTable from "../../components/data-table";
 import { URLS } from "../../url";
 
-export default function WithdrawRequest() {
+export default function RiderWithdrawRequest() {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -15,8 +15,8 @@ export default function WithdrawRequest() {
 
   // Reject modal state
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState(null);
-  const [rejectedReason, setRejectedReason] = useState("");
+  const [selectedRider, setSelectedRider] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   // Action loading state (for approve/reject)
   const [actionLoading, setActionLoading] = useState(false);
@@ -78,17 +78,17 @@ export default function WithdrawRequest() {
   // Open reject modal
   const openRejectModal = (rider) => {
     setSelectedRider(rider);
-    setRejectedReason("");
+    setRejectReason("");
     setShowRejectModal(true);
   };
 
   // Confirm reject
   const handleRejectConfirm = async () => {
-    if (!rejectedReason.trim()) {
+    if (!rejectReason.trim()) {
       message.warning("Please provide a reason for rejection");
       return;
     }
-    await updateWalletStatus(selectedDriver.id, "rejected", rejectedReason);
+    await updateWalletStatus(selectedRider.id, "rejected", rejectReason);
     setShowRejectModal(false);
     setSelectedRider(null);
     setRejectReason("");
@@ -253,7 +253,7 @@ export default function WithdrawRequest() {
                 </div>
                 <div className="modal-body">
                   <p>
-                    <strong>Driver:</strong> {selectedDriver?.name}
+                    <strong>Rider:</strong> {selectedRider?.name}
                   </p>
                   <div className="mb-3">
                     <label htmlFor="rejectReason" className="form-label">
@@ -264,7 +264,7 @@ export default function WithdrawRequest() {
                       id="rejectReason"
                       className="form-control"
                       rows="3"
-                      value={rejectedReason}
+                      value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
                       required
                     />

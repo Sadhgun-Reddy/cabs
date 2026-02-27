@@ -98,6 +98,12 @@ export default function UnverifiedDriver() {
 
   // Confirm rejection
   const handleRejectConfirm = async () => {
+    // Validate reason
+    if (!rejectReason.trim()) {
+      showPopup("Reason is required to reject a driver.", "danger");
+      return;
+    }
+
     if (!selectedDriver) return;
     try {
       await updateDriverKycStatus(selectedDriver.id, "rejected", rejectReason);
@@ -247,13 +253,13 @@ export default function UnverifiedDriver() {
       body: (row) => (
         <div className="edit-delete-action">
           <Link
-              className="me-2 p-2"
-              to="/viewdriverDetails"
-              state={{ driverId: row.id }}
-              title="Driver Details"
-            >
-              <i className="ti ti-eye text-primary" />
-            </Link>
+            className="me-2 p-2"
+            to="/viewdriverDetails"
+            state={{ driverId: row.id }}
+            title="Driver Details"
+          >
+            <i className="ti ti-eye text-primary" />
+          </Link>
           <button
             className="btn p-2"
             title="Verify Driver"
@@ -274,13 +280,13 @@ export default function UnverifiedDriver() {
               <i className="ti ti-ban text-danger" />
             </Link>
           )}
-          <button
+          {/* <button
             className="btn p-2"
             title="View Documents"
             onClick={() => goToDriverDocuments(row.id, row.Name)}
           >
             <i className="ti ti-file" />
-          </button>
+          </button> */}
         </div>
       ),
     },
@@ -362,6 +368,11 @@ export default function UnverifiedDriver() {
                       onChange={(e) => setRejectReason(e.target.value)}
                       required
                     />
+                    {!rejectReason.trim() && (
+                      <div className="invalid-feedback">
+                        Reason is required.
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="modal-footer">

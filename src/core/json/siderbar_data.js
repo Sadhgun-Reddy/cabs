@@ -58,6 +58,7 @@ export const SidebarData = [
         submenuItems: [
           { label: "All Riders", link: "/riders"},
           { label: "Rider Wallet", link: "/riderWallet"},
+          { label: "Withdraw Requests", link: "/Withdraw-Requests"},
         ]
       },
       {
