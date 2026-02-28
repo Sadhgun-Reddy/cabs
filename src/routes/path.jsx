@@ -99,6 +99,7 @@ import EditDriver from "../feature-module/Driver/editdriver";
 import EditDriverRules from "../feature-module/Driver/editdriverRules";
 import VehicleSurgePrice from "../feature-module/Service/vehiclesurgeprice";
 import FarePlans from "../feature-module/Fare Manages/fareplans";
+import FarePrices from "../feature-module/Fare Manages/FarePrices";
 import AddFarePlan from "../feature-module/Fare Manages/addfareplan";
 import EditFarePlan from "../feature-module/Fare Manages/editfareplan";
 import EditPeakZones from "../feature-module/Peak Zones/Edit-Peak-Zones";
@@ -826,6 +827,13 @@ export const authRoutes = [
     path: routes.fareplans,
     name: "Fare Manages",
     element: <FarePlans />,
+    route: Route,
+  },
+  {
+    id: 1,
+    path: routes.fareprices,
+    name: "Fare Manages",
+    element: <FarePrices />,
     route: Route,
   },
   {

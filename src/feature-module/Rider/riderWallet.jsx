@@ -18,13 +18,11 @@ export default function Riderwallet() {
   const [selectedRider, setSelectedRider] = useState(null);
 
   // Credit/Debit form
-
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [processing, setProcessing] = useState(false);
 
   // Popup message
-
   const [popupMessage, setPopupMessage] = useState({
     show: false,
     text: "",
@@ -32,7 +30,6 @@ export default function Riderwallet() {
   });
 
   //  HELPERS
-
   const showPopup = (message, type = "success") => {
     setPopupMessage({ show: true, text: message, type });
     setTimeout(() => {
@@ -40,7 +37,7 @@ export default function Riderwallet() {
     }, 3000);
   };
 
-  // Fetch all riders matching search term
+  // Fetch all riders matching search term (using query params)
   const fetchRiders = async (query) => {
     if (!query.trim() || query.trim().length < 2) {
       setRiders([]);
@@ -50,15 +47,14 @@ export default function Riderwallet() {
     setSearchLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        URLS.GetAllRiders,
-        { search: query },
+      // Send search as query parameter
+      const response = await axios.post(`${URLS.GetAllRiders}?searchQuery=${query}`, {},
         {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-          },
-        },
+          }
+        }
       );
 
       // Try to locate the array of riders
@@ -73,6 +69,8 @@ export default function Riderwallet() {
         ridersArray = data.data;
       } else if (data?.users && Array.isArray(data.users)) {
         ridersArray = data.users;
+      } else if (data?.user && Array.isArray(data.user)) {
+        ridersArray = data.user;
       } else if (data?.results && Array.isArray(data.results)) {
         ridersArray = data.results;
       } else {
@@ -93,12 +91,13 @@ export default function Riderwallet() {
             rider.phoneNumber ||
             rider.mobileNumber,
           walletAmount:
-            rider.walletAmount ?? rider.balance ?? rider.amount ?? 0,
+            rider.walletAmount ?? rider.balance ?? rider.amount ?? rider.wallet ?? 0,
         };
       });
 
       setRiders(mappedRiders);
     } catch (err) {
+      console.error("Error fetching riders:", err);
       setRiders([]);
     } finally {
       setSearchLoading(false);
@@ -163,7 +162,7 @@ export default function Riderwallet() {
         {
           userId: selectedRider._id,
           note: note.trim(),
-          type: type,
+          type: type === "added" ? "added" : "debit",
           amount: parseFloat(amount),
         },
         {
@@ -174,20 +173,23 @@ export default function Riderwallet() {
         },
       );
 
-      if (response.data.success) {
+      if (response.data.success === true) {
         showPopup(
-          `Amount ${type === "credit" ? "credited" : "debited"} successfully!`,
+          response.data.message || `Amount ${type === "credit" ? "credited" : "debited"} successfully!`,
           "success",
         );
 
         // Update selected rider's balance if returned in response
-        if (response.data.data?.newBalance !== undefined) {
+        if (response.data.currentWalletBalance !== undefined) {
+          setSelectedRider((prev) => ({
+            ...prev,
+            walletAmount: response.data.currentWalletBalance,
+          }));
+        } else if (response.data.data?.newBalance !== undefined) {
           setSelectedRider((prev) => ({
             ...prev,
             walletAmount: response.data.data.newBalance,
           }));
-        } else {
-          // Optionally refetch rider details or just rely on transaction refresh
         }
 
         // Refresh transactions for this rider
@@ -197,14 +199,14 @@ export default function Riderwallet() {
         setAmount("");
         setNote("");
       } else {
-        throw new Error(response.data.message || "Transaction failed");
+        // Handle explicit failure with message
+        showPopup(response.data.message || "Transaction failed", "danger");
       }
     } catch (err) {
       console.error("Transaction error:", err);
-      showPopup(
-        err.message || "Transaction failed. Please try again.",
-        "danger",
-      );
+      const errorMessage =
+        err.response?.data?.message || err.message || "Transaction failed. Please try again.";
+      showPopup(errorMessage, "danger");
     } finally {
       setProcessing(false);
     }
@@ -272,10 +274,10 @@ export default function Riderwallet() {
       body: (row) =>
         row?.date
           ? new Date(row.date).toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
           : "--",
     },
   ];
@@ -377,7 +379,7 @@ export default function Riderwallet() {
                 </h4>
                 <div className="d-flex align-items-center gap-3 flex-wrap">
                   <div className="fw-bold fs-4 text-success">
-                    ₹ {selectedRider?.walletAmount?.toFixed(2) || "0.00"}
+                    ₹ {selectedRider?.walletAmount || "0.00"}
                   </div>
                   <input
                     type="number"
@@ -399,7 +401,7 @@ export default function Riderwallet() {
                   />
                   <button
                     className="btn btn-primary"
-                    onClick={() => handleTransaction("credit")}
+                    onClick={() => handleTransaction("added")}
                     disabled={!selectedRider || processing}
                   >
                     <i className="ti ti-download me-1" />

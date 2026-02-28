@@ -228,7 +228,7 @@ export default function VehicleGroups() {
             <i className="ti ti-trending-up" />
           </Link>
           <Link
-            to="/vehicleZone"
+            to="/fareprices"
             state={{ groupName: row.name, groupId: row.id }}
             className="me-2 p-2 text-muted"
             title="Vehicle Zone"

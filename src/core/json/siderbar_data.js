@@ -112,6 +112,7 @@ export const SidebarData = [
         showSubRoute: false,
         submenuItems:[
           { label: "Fare Plans", link: "/fareplans"},
+          { label: "Fare Prices", link: "/fareprices"},
           // { label: "Vehicle Model", link: "/vehicleModel"},
         ]
       },

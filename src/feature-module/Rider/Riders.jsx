@@ -122,7 +122,7 @@ export default function Riders() {
   const handleActivate = async (id) => {
     try {
       await updateRiderStatus(id, "active");
-    } catch (err) {}
+    } catch (err) { }
   };
 
   // Block rider (with modal)
@@ -133,7 +133,7 @@ export default function Riders() {
       setShowBlockModal(false);
       setSelectedRider(null);
       setBlockReason("");
-    } catch (err) {}
+    } catch (err) { }
   };
 
   // Local toggle
@@ -185,30 +185,16 @@ export default function Riders() {
       header: "Email",
       field: "Email",
     },
-    {
-      header: "Status",
-      body: (row) => (
-        <div className="form-check form-switch">
-          <input
-            className={`form-check-input ${
-              row.Status ? "bg-success" : "bg-danger"
-            }`}
-            type="checkbox"
-            checked={row.Status}
-            onChange={() => toggleStatus(row.id)}
-          />
-        </div>
-      ),
-    },
+
     {
       header: "Created Date",
       body: (row) =>
         row?.date
           ? new Date(row.date).toLocaleString("en-IN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
           : "--",
     },
     {

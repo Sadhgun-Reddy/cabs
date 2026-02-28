@@ -39,7 +39,7 @@ export const all_routes = {
   vehiclegroups: "/Vehicle-Group",
   vehiclesurgeprice: "/vehiclesurgeprice",
   vehicletypezone: "/vehicleZone",
-  setworldprice: "/setworldPrice",
+  setworldprice: "/setworldPrice/",
   addincentive: "/addIncentive",
   pushnotification: "/pushNotification",
   sendpushnotification: "/sendpushNotification",
@@ -102,6 +102,7 @@ export const all_routes = {
   adddriverrule: "/Add-Driver-Rules",
   gstsettings: "/gst-settings",
   riderwithdrawrequest: "/Withdraw-Requests",
+  fareprices: "/fareprices",
 
 
 

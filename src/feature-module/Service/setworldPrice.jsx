@@ -1,30 +1,40 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import Select from "react-select";
 import { URLS } from "../../url";
 import CommonFooter from "../../components/footer/commonFooter";
 
 const SetWorldPrice = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const cityfair = location.state?.cityfair || {};
-  const zoneId = location.state?.zoneId;
-  const vehicleGroupId = location.state?.vehicleGroupId;
+  const cityfair = location.state?.farePrice || {};
+  const isEditing = !!cityfair._id;
 
-  const [categories, setCategories] = useState([]);
+  const [zones, setZones] = useState([]);
+  const [vehicleGroups, setVehicleGroups] = useState([]);
+  const [fairPlans, setFairPlans] = useState([]);
   const [taxes, setTaxes] = useState([]);
   const [driverRules, setDriverRules] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  const [loadingZones, setLoadingZones] = useState(false);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+  const [loadingPlans, setLoadingPlans] = useState(false);
   const [loadingTaxes, setLoadingTaxes] = useState(false);
   const [loadingRules, setLoadingRules] = useState(false);
+
   const [submitLoading, setSubmitLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState({
-    farePlan: cityfair.serviceCategoryId || "",
+    zoneId: cityfair.zoneId || "",
+    vehicleGroupId: cityfair.vehicleGroupId || "",
+    fairPlanId: cityfair.fairPlanId || "",
+    fairPlanName: cityfair.fairPlanName || "",
     baseFare: cityfair.baseFareCharge || "",
     baseDistance: cityfair.baseDistance || "",
     perDistance: cityfair.perDistanceCharge || "",
-    minimumHrs: cityfair.minimumHrs || "", // Assuming this field exists or handles rental time
+    minimumHrs: cityfair.minimumHrs || "",
     perMinute: cityfair.perMinuteCharge || "",
     waitingCharge: cityfair.waitingCharge || "",
     freeWaitTime: cityfair.freeWaitTime || "",
@@ -43,11 +53,9 @@ const SetWorldPrice = () => {
 
   const getInitialPreferences = () => {
     if (cityfair.preferences && cityfair.preferences.length > 0) {
-      // Map existing array of strings back to objects
       return cityfair.preferences.map((prefName, idx) => ({
         id: Date.now() + idx,
         name: prefName,
-        // Since API gives one rate or maybe comma separated, just put it on the first one or leave empty
         price: idx === 0 ? (cityfair.preferenceRate || "") : "0"
       }));
     }
@@ -60,37 +68,76 @@ const SetWorldPrice = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
-    // Clear error for the field being changed
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const fetchCategories = async () => {
-    setLoadingCategories(true);
+  const handleSelectChange = (selectedOption, { name }) => {
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    // Special logic for fair plan to store both ID and Name
+    if (name === "fairPlanId") {
+      setFormData((prev) => ({
+        ...prev,
+        fairPlanId: selectedOption ? selectedOption.value : "",
+        fairPlanName: selectedOption ? selectedOption.label : "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: selectedOption ? selectedOption.value : "",
+      }));
+    }
+  };
+
+  /* ===================== FETCH DROP DOWNS ===================== */
+
+  const fetchZones = async () => {
+    setLoadingZones(true);
     try {
-      const response = await axios.post(
-        URLS.GetAllServiceCategories,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (response.data?.serviceTypes) {
-        setCategories(response.data.serviceTypes);
-      }
+      const response = await axios.post(URLS.GetActiveNormalZones, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (response.data?.zones) setZones(response.data.zones);
     } catch (err) {
-      console.error("Error fetching categories:", err);
+      console.error("Error fetching zones", err);
     } finally {
-      setLoadingCategories(false);
+      setLoadingZones(false);
+    }
+  };
+
+  const fetchVehicleGroups = async () => {
+    setLoadingGroups(true);
+    try {
+      const response = await axios.post(URLS.GetActiveVehicleGroups, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (response.data?.groups) setVehicleGroups(response.data.groups);
+    } catch (err) {
+      console.error("Error fetching vehicle groups", err);
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
+  const fetchFairPlans = async () => {
+    setLoadingPlans(true);
+    try {
+      const response = await axios.post(URLS.GetActiveFairPlans, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (response.data?.fairPlans) setFairPlans(response.data.fairPlans);
+    } catch (err) {
+      console.error("Error fetching fair plans", err);
+    } finally {
+      setLoadingPlans(false);
     }
   };
 
@@ -98,15 +145,11 @@ const SetWorldPrice = () => {
     setLoadingTaxes(true);
     try {
       const response = await axios.post(URLS.GetAllTax, {}, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      if (response.data?.taxes) {
-        setTaxes(response.data.taxes);
-      }
+      if (response.data?.taxes) setTaxes(response.data.taxes);
     } catch (err) {
-      console.error("Error fetching taxes:", err);
+      console.error("Error fetching taxes", err);
     } finally {
       setLoadingTaxes(false);
     }
@@ -115,30 +158,37 @@ const SetWorldPrice = () => {
   const fetchDriverRules = async () => {
     setLoadingRules(true);
     try {
-      const response = await axios.post(
-        URLS.GetAllDriverRules,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (response.data?.data) {
-        setDriverRules(response.data.data);
-      }
+      const response = await axios.post(URLS.GetAllDriverRules, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (response.data?.data) setDriverRules(response.data.data);
     } catch (err) {
-      console.error("Error fetching driver rules:", err);
+      console.error("Error fetching driver rules", err);
     } finally {
       setLoadingRules(false);
     }
   };
 
   useEffect(() => {
-    fetchCategories();
+    fetchZones();
+    fetchVehicleGroups();
+    fetchFairPlans();
     fetchTaxes();
     fetchDriverRules();
   }, []);
+
+  /* ===================== FIX: Ensure fairPlanName is set after fairPlans load ===================== */
+  useEffect(() => {
+    // If we have a fairPlanId but fairPlanName is empty, try to find it from fairPlans
+    if (formData.fairPlanId && !formData.fairPlanName && fairPlans.length > 0) {
+      const found = fairPlans.find(fp => fp._id === formData.fairPlanId);
+      if (found) {
+        setFormData(prev => ({ ...prev, fairPlanName: found.planName }));
+      }
+    }
+  }, [formData.fairPlanId, fairPlans]);
+
+  /* ===================== PREFERENCES ===================== */
 
   const updatePreferencePrice = (id, value) => {
     setPreferences((prev) =>
@@ -152,71 +202,54 @@ const SetWorldPrice = () => {
 
   const addPreference = () => {
     if (!newPreference || !newPreferencePrice) return;
-
     setPreferences((prev) => [
       ...prev,
-      {
-        id: Date.now(),
-        name: newPreference,
-        price: newPreferencePrice,
-      },
+      { id: Date.now(), name: newPreference, price: newPreferencePrice },
     ]);
-
     setNewPreference("");
     setNewPreferencePrice("");
   };
 
+  /* ===================== VALIDATION & SUBMIT ===================== */
+
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.farePlan) newErrors.farePlan = "Category is required";
+    if (!formData.zoneId) newErrors.zoneId = "Zone is required";
+    if (!formData.vehicleGroupId) newErrors.vehicleGroupId = "Vehicle Group is required";
+    if (!formData.fairPlanId) newErrors.fairPlanId = "Fare Plan is required";
 
     if (!formData.baseFare || isNaN(formData.baseFare) || Number(formData.baseFare) <= 0) {
       newErrors.baseFare = "Valid Base Fare is required";
     }
-
     if (!formData.baseDistance || isNaN(formData.baseDistance) || Number(formData.baseDistance) <= 0) {
       newErrors.baseDistance = "Valid Base Distance is required";
     }
-
-    if (formData.farePlan === "rental" && (!formData.minimumHrs || isNaN(formData.minimumHrs) || Number(formData.minimumHrs) <= 0)) {
-      newErrors.minimumHrs = "Valid Minimum Hours is required for rental";
-    }
-
     if (!formData.perDistance || isNaN(formData.perDistance) || Number(formData.perDistance) < 0) {
       newErrors.perDistance = "Valid Per Distance Charge is required";
     }
-
     if (!formData.perMinute || isNaN(formData.perMinute) || Number(formData.perMinute) < 0) {
       newErrors.perMinute = "Valid Per Minute Charge is required";
     }
-
     if (!formData.commissionType || formData.commissionType === "select") {
       newErrors.commissionType = "Commission Type is required";
     }
-
     if (!formData.commissionRate || isNaN(formData.commissionRate) || Number(formData.commissionRate) < 0) {
       newErrors.commissionRate = "Valid Commission Rate is required";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!zoneId || !vehicleGroupId) {
-      alert("Missing Zone ID or Vehicle Group ID. Please try again from Vehicle Zones.");
-      return;
-    }
-
     if (validateForm()) {
       setSubmitLoading(true);
       try {
         const payload = {
-          zoneId: zoneId,
-          vehicleGroupId: vehicleGroupId,
-          serviceCategoryId: formData.farePlan,
+          zoneId: formData.zoneId,
+          vehicleGroupId: formData.vehicleGroupId,
+          fairPlanId: formData.fairPlanId,
+          fairPlanName: formData.fairPlanName,
           baseFareCharge: formData.baseFare.toString(),
           baseDistance: formData.baseDistance.toString(),
           perDistanceCharge: formData.perDistance.toString(),
@@ -238,8 +271,18 @@ const SetWorldPrice = () => {
           preferenceRate: formData.allowPreference && preferences.length > 0 ? preferences[0].price : "",
           preferences: formData.allowPreference ? preferences.map(p => p.name) : []
         };
+        const endpoint = isEditing ? URLS.EditCityFair : URLS.AddCityFair;
+        const method = isEditing ? "put" : "post";
 
-        const response = await axios.put(URLS.EditCityFair, payload, {
+        // Add the id to the payload if we are editing
+        if (isEditing) {
+          payload.id = cityfair._id;
+        }
+
+        const response = await axios({
+          method: method,
+          url: endpoint,
+          data: payload,
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -247,10 +290,10 @@ const SetWorldPrice = () => {
         });
 
         if (response.data?.success) {
-          alert(response.data.message || "Updated successfully");
-          navigate(-1); // Go back to vehicle zones table
+          alert(response.data.message || (isEditing ? "Updated successfully" : "Added successfully"));
+          navigate(-1);
         } else {
-          alert(response.data?.message || "Failed to update fare plan");
+          alert(response.data?.message || "Failed to save fare plan price");
         }
       } catch (error) {
         console.error("Submission error:", error);
@@ -266,38 +309,56 @@ const SetWorldPrice = () => {
       <div className="content">
         <div className="card">
           <div className="card-header">
-            <h4>Set Fare Plan Price</h4>
+            <h4>{isEditing ? "Edit Fare Plan Price" : "Add Fare Plan Price"}</h4>
           </div>
 
           <form onSubmit={handleSubmit}>
             <div className="card-body">
               <div className="row g-4">
-                {/* ================= BASIC PRICING ================= */}
+                {/* ================= NEW DROPDOWNS ================= */}
+                <div className="col-md-4">
+                  <label className="form-label">Zone *</label>
+                  <Select
+                    classNamePrefix="react-select"
+                    name="zoneId"
+                    options={zones.map((z) => ({ value: z._id, label: z.name }))}
+                    value={zones.map((z) => ({ value: z._id, label: z.name })).find(o => o.value === formData.zoneId) || null}
+                    onChange={handleSelectChange}
+                    isLoading={loadingZones}
+                    placeholder="Select Zone"
+                  />
+                  {errors.zoneId && <div className="text-danger small mt-1">{errors.zoneId}</div>}
+                </div>
 
                 <div className="col-md-4">
-                  <label className="form-label">Categories *</label>
-                  <div className="input-group">
-                    <select
-                      type="select"
-                      className={`form-select ${errors.farePlan ? "is-invalid" : ""}`}
-                      name="farePlan"
-                      value={formData.farePlan}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Plan</option>
-                      {loadingCategories ? (
-                        <option value="" disabled>Loading...</option>
-                      ) : (
-                        categories.map((cat) => (
-                          <option key={cat._id} value={cat._id}>
-                            {cat.name}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                    {errors.farePlan && <div className="invalid-feedback">{errors.farePlan}</div>}
-                  </div>
+                  <label className="form-label">Fair Plan *</label>
+                  <Select
+                    classNamePrefix="react-select"
+                    name="fairPlanId"
+                    options={fairPlans.map((fp) => ({ value: fp._id, label: fp.planName }))}
+                    value={fairPlans.map((fp) => ({ value: fp._id, label: fp.planName })).find(o => o.value === formData.fairPlanId) || null}
+                    onChange={handleSelectChange}
+                    isLoading={loadingPlans}
+                    placeholder="Select Fair Plan"
+                  />
+                  {errors.fairPlanId && <div className="text-danger small mt-1">{errors.fairPlanId}</div>}
                 </div>
+
+                <div className="col-md-4">
+                  <label className="form-label">Vehicle Group *</label>
+                  <Select
+                    classNamePrefix="react-select"
+                    name="vehicleGroupId"
+                    options={vehicleGroups.map((vg) => ({ value: vg._id, label: vg.name }))}
+                    value={vehicleGroups.map((vg) => ({ value: vg._id, label: vg.name })).find(o => o.value === formData.vehicleGroupId) || null}
+                    onChange={handleSelectChange}
+                    isLoading={loadingGroups}
+                    placeholder="Select Vehicle Group"
+                  />
+                  {errors.vehicleGroupId && <div className="text-danger small mt-1">{errors.vehicleGroupId}</div>}
+                </div>
+
+                {/* ================= BASIC PRICING ================= */}
 
                 <div className="col-md-4">
                   <label className="form-label">Base Fare Charge *</label>
@@ -324,21 +385,6 @@ const SetWorldPrice = () => {
                     onChange={handleChange}
                   />
                   {errors.baseDistance && <div className="invalid-feedback d-block">{errors.baseDistance}</div>}
-                </div>
-
-                {/* Show only for Rental Hourly Package, assuming you map the ID or name for rental. 
-                    For now, showing always if rental was selected, but since IDs are dynamic, you might need to check name instead if you have a specific rental category */}
-                <div className="col-md-4">
-                  <label className="form-label">Minimum Hours (For Rental)</label>
-                  <input
-                    type="number"
-                    className={`form-control ${errors.minimumHrs ? "is-invalid" : ""}`}
-                    name="minimumHrs"
-                    value={formData.minimumHrs}
-                    onChange={handleChange}
-                    placeholder="Enter Minimum Hours"
-                  />
-                  {errors.minimumHrs && <div className="invalid-feedback d-block">{errors.minimumHrs}</div>}
                 </div>
 
                 <div className="col-md-4">
@@ -374,13 +420,14 @@ const SetWorldPrice = () => {
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label">Waiting Charge</label>
+                  <label className="form-label">Waiting Charge &nbsp; <small className="text-muted">(after free wait time)</small></label>
                   <div className="input-group">
                     <span className="input-group-text">₹</span>
                     <input
                       type="number"
                       className="form-control"
                       name="waitingCharge"
+                      value={formData.waitingCharge}
                       onChange={handleChange}
                     />
                   </div>
@@ -392,6 +439,7 @@ const SetWorldPrice = () => {
                     type="number"
                     className="form-control"
                     name="freeWaitTime"
+                    value={formData.freeWaitTime}
                     onChange={handleChange}
                   />
                 </div>
@@ -404,6 +452,7 @@ const SetWorldPrice = () => {
                     type="number"
                     className="form-control"
                     name="freeWaitAfterStart"
+                    value={formData.freeWaitAfterStart}
                     onChange={handleChange}
                   />
                 </div>
@@ -419,6 +468,7 @@ const SetWorldPrice = () => {
                       type="number"
                       className="form-control"
                       name="cancelRider"
+                      value={formData.cancelRider}
                       onChange={handleChange}
                     />
                   </div>
@@ -434,6 +484,7 @@ const SetWorldPrice = () => {
                       type="number"
                       className="form-control"
                       name="cancelDriver"
+                      value={formData.cancelDriver}
                       onChange={handleChange}
                     />
                   </div>
@@ -477,6 +528,7 @@ const SetWorldPrice = () => {
                   <select
                     className="form-select"
                     name="chargeGoesTo"
+                    value={formData.chargeGoesTo}
                     onChange={handleChange}
                   >
                     <option value="select">Select</option>
@@ -666,7 +718,7 @@ const SetWorldPrice = () => {
                 Cancel
               </button>
               <button type="submit" className="btn btn-primary" disabled={submitLoading}>
-                {submitLoading ? "Saving..." : "Save Prices"}
+                {submitLoading ? "Saving..." : (isEditing ? "Update Prices" : "Save Prices")}
               </button>
             </div>
           </form>

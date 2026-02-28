@@ -15,6 +15,13 @@ export const URLS = {
     GetProfile: base_url + "v1/gkcabs/admin/auth/getprofile",
     UpdateProfile: base_url + "v1/gkcabs/admin/auth/updateAdminProfile",
 
+    // Wallet Comments
+    AddWalletComment: base_url + "v1/gkcabs/admin/wallet-comment/addwalletcomment",
+    GetAllWalletComments: base_url + "v1/gkcabs/admin/wallet-comment/getallwalletcomments",
+    EditWalletComment: base_url + "v1/gkcabs/admin/wallet-comment/editwalletcomment/",
+    DeleteWalletComment: base_url + "v1/gkcabs/admin/wallet-comment/deletewalletcomment/",
+    UpdateBulkWalletCommentStatus: base_url + "v1/gkcabs/admin/wallet-comment/update-bulk-status",
+
     // Zones 
 
     GetAllZones: base_url + "v1/gkcabs/admin/zone/getallzones",
@@ -78,7 +85,7 @@ export const URLS = {
     UpdateRiderStatus: base_url + "v1/gkcabs/admin/docs/updateuserstatus",
     GetRiderWallet: base_url + "v1/gkcabs/admin/wallets/getuserwallet",
     UpdateRiderWallet: base_url + "v1/gkcabs/admin/wallets/update-user-wallet",
-    RiderCreditDebit : base_url + "v1/gkcabs/admin/wallets/credit-debit-user",
+    RiderCreditDebit: base_url + "v1/gkcabs/admin/wallets/credit-debit-user",
 
     // Drivers
 
@@ -88,6 +95,9 @@ export const URLS = {
     GetDriverById: base_url + "v1/gkcabs/admin/docs/get-driver-byid",
     UpdateDriverKycStatus: base_url + "v1/gkcabs/admin/docs/update-driver-kycstatus",
     UpdateDriverStatus: base_url + "v1/gkcabs/admin/docs/update-driver-status",
+    SearchDrivers: base_url + "v1/gkcabs/admin/docs/getdrivers",
+    GetDriverWallet: base_url + "v1/gkcabs/admin/wallets/getdriverwallet",
+    DriverCreditDebit: base_url + "v1/gkcabs/admin/wallets/credit-debit-driver",
 
     // Driver Rules
 
@@ -103,7 +113,13 @@ export const URLS = {
     UpdateTaxStatus: base_url + "v1/gkcabs/admin/tax/updatetaxstatus",
 
     // City Fair
+    GetAllCityFairs: base_url + "v1/gkcabs/admin/cityfair/getallcityfairs",
     ViewCityFair: base_url + "v1/gkcabs/admin/cityfair/viewcityfair",
     EditCityFair: base_url + "v1/gkcabs/admin/cityfair/editcityfair",
+    AddCityFair: base_url + "v1/gkcabs/admin/cityfair/addcityfair",
+    DeleteCityFair: base_url + "v1/gkcabs/admin/cityfair/deletecityfair",
+    GetActiveNormalZones: base_url + "v1/gkcabs/admin/cityfair/getactive-noramal-zones",
+    GetActiveFairPlans: base_url + "v1/gkcabs/admin/fairplan/getallactivefairplans",
+    GetActiveVehicleGroups: base_url + "v1/gkcabs/admin/vechilegroup/getallactivevechilegroups",
 
 }
