@@ -47,6 +47,13 @@ export const URLS = {
     GetPeakZoneById: base_url + "v1/gkcabs/admin/zone/getzonebyid/",
     UpdatePeakZoneStatus: base_url + "v1/gkcabs/admin/zone/updatezonestatus",
 
+    // Surge Prices
+    GetActivePeakZones: base_url + "v1/gkcabs/admin/surge-price/getactivepeakzones",
+    GetAllSurgePrices: base_url + "v1/gkcabs/admin/surge-price/getall",
+    AddSurgePrice: base_url + "v1/gkcabs/admin/surge-price/add",
+    EditSurgePrice: base_url + "v1/gkcabs/admin/surge-price/edit/",
+    DeleteSurgePrice: base_url + "v1/gkcabs/admin/surge-price/delete/",
+
     // Service Categories
 
     GetAllServiceCategories: base_url + "v1/gkcabs/admin/servicetype/getallservicetypes",

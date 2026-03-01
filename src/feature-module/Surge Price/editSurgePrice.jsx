@@ -114,31 +114,121 @@
 // export default EditSurgePrice;
 
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { URLS } from "../../url";
 
 const EditSurgePrice = () => {
+  const [peakZones, setPeakZones] = useState([]);
+  const [fairPlans, setFairPlans] = useState([]);
+  const [vehicleGroups, setVehicleGroups] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const surgeData = location.state?.surgeData;
+
   const [formData, setFormData] = useState({
+    zoneId: "",
+    fairPlanId: "",
+    vehicleGroupId: "",
+    percentage: "",
     startTime: "",
     endTime: "",
     day: "",
-    status: "Active",
+    status: "active",
   });
+
+  useEffect(() => {
+    if (surgeData) {
+      setFormData({
+        zoneId: surgeData.zoneId || "",
+        fairPlanId: surgeData.fairPlanId || "",
+        vehicleGroupId: surgeData.vehicleGroupId || "",
+        percentage: surgeData.percentage || "",
+        startTime: surgeData.startTime || "",
+        endTime: surgeData.endTime || "",
+        day: surgeData.day || "",
+        status: surgeData.status ? surgeData.status.toLowerCase() : "active",
+      });
+    } else {
+      toast.error("No surge price data found to edit.");
+      navigate("/surgePrices");
+    }
+  }, [surgeData, navigate]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const [zonesRes, plansRes, groupsRes] = await Promise.all([
+          axios.post(URLS.GetActivePeakZones, {}, { headers }),
+          axios.post(URLS.GetActiveFairPlans, {}, { headers }),
+          axios.post(URLS.GetActiveVehicleGroups, {}, { headers }),
+        ]);
+
+        if (zonesRes.data?.zones) setPeakZones(zonesRes.data.zones);
+        if (plansRes.data?.fairPlans) setFairPlans(plansRes.data.fairPlans);
+        if (groupsRes.data?.groups) setVehicleGroups(groupsRes.data.groups);
+      } catch (err) {
+        console.error("Error fetching dropdowns:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    if (!surgeData?._id) {
+      toast.error("Invalid surge price ID.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+
+      const payload = {
+        ...formData,
+        percentage: Number(formData.percentage),
+      };
+
+      const res = await axios.put(`${URLS.EditSurgePrice}${surgeData._id}`, payload, { headers });
+
+      if (res.data.success) {
+        toast.success(res.data.message || "Surge price updated successfully!");
+        navigate("/surgePrices");
+      } else {
+        toast.error(res.data.message || "Failed to update surge price.");
+      }
+    } catch (error) {
+      console.error("Error updating surge price:", error);
+      toast.error(
+        error.response?.data?.message || "An error occurred while updating.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="page-wrapper">
       <div className="content">
-        
+
         {/* Page Header */}
         <div className="page-header d-flex justify-content-between align-items-center">
           <div>
@@ -154,7 +244,86 @@ const EditSurgePrice = () => {
         <div className="card">
           <div className="card-body">
             <form onSubmit={handleSubmit}>
-              
+
+              {/* Peak Zones & Fair Plans */}
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label fw-semibold">
+                    Peak Zone <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    name="zoneId"
+                    className="form-select"
+                    value={formData.zoneId}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Peak Zone</option>
+                    {peakZones.map((zone) => (
+                      <option key={zone._id} value={zone._id}>
+                        {zone.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label fw-semibold">
+                    Fair Plan <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    name="fairPlanId"
+                    className="form-select"
+                    value={formData.fairPlanId}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Fair Plan</option>
+                    {fairPlans.map((plan) => (
+                      <option key={plan._id} value={plan._id}>
+                        {plan.planName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Vehicle Group & Percentage */}
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label fw-semibold">
+                    Vehicle Group <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    name="vehicleGroupId"
+                    className="form-select"
+                    value={formData.vehicleGroupId}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Vehicle Group</option>
+                    {vehicleGroups.map((vg) => (
+                      <option key={vg._id} value={vg._id}>
+                        {vg.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label fw-semibold">
+                    Percentage (%) <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="percentage"
+                    className="form-control"
+                    value={formData.percentage}
+                    onChange={handleChange}
+                    placeholder="e.g., 20"
+                    required
+                  />
+                </div>
+              </div>
+
               {/* Start Time & End Time - Same Row */}
               <div className="row">
                 <div className="col-md-6 mb-3">
@@ -221,8 +390,8 @@ const EditSurgePrice = () => {
                     value={formData.status}
                     onChange={handleChange}
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
                   </select>
                 </div>
               </div>
@@ -235,8 +404,20 @@ const EditSurgePrice = () => {
                 >
                   Cancel
                 </Link>
-                <button type="submit" className="btn btn-primary">
-                  <i className="ti ti-device-floppy me-1" />
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span
+                      className="spinner-border spinner-border-sm me-1"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  ) : (
+                    <i className="ti ti-device-floppy me-1" />
+                  )}
                   Update Price
                 </button>
               </div>

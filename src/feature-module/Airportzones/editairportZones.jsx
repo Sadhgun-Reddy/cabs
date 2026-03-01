@@ -14,22 +14,22 @@ const EditAirportZones = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-    const { isLoaded } = useJsApiLoader({
-      googleMapsApiKey: URLS.GoogleMapsKey,
-      libraries: LIBRARIES,
-    });
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: URLS.GoogleMapsKey,
+    libraries: LIBRARIES,
+  });
 
   const [status, setStatus] = useState(true);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState("");
   const [polygonCoordinates, setPolygonCoordinates] = useState([]);
-  const [mapCenter, setMapCenter] = useState({ lat: 17.385044, lng: 78.486671 }); 
+  const [mapCenter, setMapCenter] = useState({ lat: 17.385044, lng: 78.486671 });
   const [formData, setFormData] = useState({
     name: "",
-    place: "",          
+    place: "",
     priority: "",
-    zoneType: "airpot",  
+    zoneType: "airpot",
   });
 
 
@@ -69,11 +69,23 @@ const EditAirportZones = () => {
 
       setStatus(zone.status === "active");
 
-      // Convert locations to map coordinates
-      const coords = (zone.locations || []).map((loc) => ({
-        lat: loc.latitude,
-        lng: loc.longitude,
-      }));
+      setStatus(zone.status === "active");
+
+      // Convert locations to map format
+      let coords = [];
+      if (zone.location && zone.location.type === "Polygon" && zone.location.coordinates.length > 0) {
+        // GeoJSON format: [lng, lat]
+        coords = zone.location.coordinates[0].map((coord) => ({
+          lat: coord[1],
+          lng: coord[0],
+        }));
+      } else if (zone.locations && zone.locations.length > 0) {
+        // Legacy format
+        coords = zone.locations.map((loc) => ({
+          lat: loc.latitude,
+          lng: loc.longitude,
+        }));
+      }
       setPolygonCoordinates(coords);
 
       // Optionally set map center to first coordinate or use place geocoding later
@@ -94,7 +106,7 @@ const EditAirportZones = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-    // Handle place selection from Autocomplete
+  // Handle place selection from Autocomplete
   const onPlaceChanged = () => {
     if (autocompleteRef.current) {
       const place = autocompleteRef.current.getPlace();
@@ -125,18 +137,27 @@ const EditAirportZones = () => {
     try {
       setLoading(true);
 
-      const locations = polygonCoordinates.map((point) => ({
-        latitude: point.lat,
-        longitude: point.lng,
-      }));
+      // GeoJSON Polygon coordinates were requested in [longitude, latitude] order.
+      // GeoJSON Polygons must be closed (the first and last point must be identical).
+      const geoJsonCoordinates = polygonCoordinates.map((point) => [
+        point.lng,
+        point.lat,
+      ]);
+
+      if (geoJsonCoordinates.length > 0) {
+        geoJsonCoordinates.push(geoJsonCoordinates[0]);
+      }
 
       const payload = {
         name: formData.name,
-        place: formData.searchLocation,      
+        place: formData.searchLocation,
         priority: formData.priority,
-        zoneType: formData.zoneType, 
-        locations,
+        zoneType: formData.zoneType,
         status: status ? "active" : "inactive",
+        location: {
+          type: "Polygon",
+          coordinates: [geoJsonCoordinates],
+        },
       };
 
       await axios.put(`${URLS.EditZone}/${id}`, payload, {
@@ -222,7 +243,7 @@ const EditAirportZones = () => {
                     />
                   </div>
 
-                  
+
                   {/* Priority */}
                   <div className="mb-3">
                     <label className="form-label">Priority</label>
@@ -276,14 +297,14 @@ const EditAirportZones = () => {
                   {/* Map */}
                   <div className="mb-4">
                     <label className="form-label">Zone Area (draw / edit)</label>
-                    
+
                     <ZoneMap
                       isLoaded={isLoaded}
                       center={mapCenter}
                       onPolygonComplete={handlePolygonComplete}
                       initialCoordinates={polygonCoordinates}
                     />
-                    
+
                   </div>
 
                   {/* Status Toggle */}

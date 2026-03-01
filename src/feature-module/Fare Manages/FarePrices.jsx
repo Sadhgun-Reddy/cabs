@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import Select from "react-select";
 import PrimeDataTable from "../../components/data-table";
 import CommonFooter from "../../components/footer/commonFooter";
 import SearchFromApi from "../../components/data-table/search";
@@ -20,6 +21,14 @@ export default function FarePrices() {
         type: "success",
     });
 
+    const [zones, setZones] = useState([]);
+    const [fairPlans, setFairPlans] = useState([]);
+    const [vehicleGroups, setVehicleGroups] = useState([]);
+
+    const [selectedZone, setSelectedZone] = useState(null);
+    const [selectedFairPlan, setSelectedFairPlan] = useState(null);
+    const [selectedVehicleGroup, setSelectedVehicleGroup] = useState(null);
+
     const showPopup = (message, type = "success") => {
         setPopupMessage({ show: true, text: message, type });
         setTimeout(() => {
@@ -27,14 +36,42 @@ export default function FarePrices() {
         }, 3000);
     };
 
+    useEffect(() => {
+        const fetchFilters = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const headers = { Authorization: `Bearer ${token}` };
+
+                const [zonesRes, plansRes, groupsRes] = await Promise.all([
+                    axios.post(URLS.GetActiveNormalZones, {}, { headers }),
+                    axios.post(URLS.GetActiveFairPlans, {}, { headers }),
+                    axios.post(URLS.GetActiveVehicleGroups, {}, { headers }),
+                ]);
+
+                if (zonesRes.data?.zones) setZones(zonesRes.data.zones);
+                if (plansRes.data?.fairPlans) setFairPlans(plansRes.data.fairPlans);
+                if (groupsRes.data?.groups) setVehicleGroups(groupsRes.data.groups);
+            } catch (err) {
+                console.error("Error fetching filters", err);
+            }
+        };
+        fetchFilters();
+    }, []);
+
     /* ===================== FETCH ALL CITY FAIRS ===================== */
     const fetchCityFairs = async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
+
+            const payload = {};
+            if (selectedZone) payload.zoneId = selectedZone.value;
+            if (selectedVehicleGroup) payload.vehicleGroupId = selectedVehicleGroup.value;
+            if (selectedFairPlan) payload.fairPlanId = selectedFairPlan.value;
+
             const res = await axios.post(
                 URLS.GetAllCityFairs,
-                {},
+                payload,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -50,7 +87,9 @@ export default function FarePrices() {
                 vechilegroupName: fair.vechilegroupName || "--",
                 fairPlanName: fair.fairPlanName || "--",
                 taxName: fair.taxName || "--",
-                baseFare: fair.baseFareCharge || "--",
+                baseFareCharge: fair.baseFareCharge || "--",
+                baseDistance: fair.baseDistance || "--",
+                perDistanceCharge: fair.perDistanceCharge || "--",
                 raw: fair,
             }));
 
@@ -65,7 +104,7 @@ export default function FarePrices() {
 
     useEffect(() => {
         fetchCityFairs();
-    }, []);
+    }, [selectedZone, selectedFairPlan, selectedVehicleGroup]);
 
     /* ===================== DELETE ===================== */
     const handleDelete = async (id) => {
@@ -122,53 +161,73 @@ export default function FarePrices() {
 
     /* ===================== COLUMNS ===================== */
     const columns = [
+        // {
+        //     header: (
+        //         <div className="form-check check-tables text-center">
+        //             <input
+        //                 className="form-check-input"
+        //                 type="checkbox"
+        //                 checked={
+        //                     visibleData.length > 0 && selectedRows.length === visibleData.length
+        //                 }
+        //                 onChange={(e) => handleSelectAll(e.target.checked)}
+        //             />
+        //         </div>
+        //     ),
+        //     body: (row) => (
+        //         <div className="form-check check-tables text-center">
+        //             <input
+        //                 className="form-check-input"
+        //                 type="checkbox"
+        //                 checked={row._selected || false}
+        //                 onChange={() => handleRowSelect(row.id)}
+        //             />
+        //         </div>
+        //     ),
+        //     className: "text-center",
+        // },
         {
-            header: (
-                <div className="form-check check-tables">
-                    <input
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={
-                            visibleData.length > 0 && selectedRows.length === visibleData.length
-                        }
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                    />
-                </div>
-            ),
-            body: (row) => (
-                <div className="form-check check-tables">
-                    <input
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={row._selected || false}
-                        onChange={() => handleRowSelect(row.id)}
-                    />
-                </div>
-            ),
+            header: <div className="text-center">Sl.No</div>,
+            body: (_row, options) => <div className="text-center">{options.rowIndex + 1}</div>,
+            className: "text-center",
         },
         {
-            header: "Sl.No",
-            body: (_row, options) => options.rowIndex + 1,
-        },
-        {
-            header: "Zone Name",
+            header: <div className="text-center">Zone Name</div>,
             field: "zoneName",
+            className: "text-center",
         },
         {
-            header: "Fair Plan",
+            header: <div className="text-center">Fair Plan</div>,
             field: "fairPlanName",
+            className: "text-center",
         },
         {
-            header: "Vehicle Group Name",
+            header: <div className="text-center">Vehicle Group Name</div>,
             field: "vechilegroupName",
+            className: "text-center",
         },
         {
-            header: "Actions",
+            header: <div className="text-center">Base Fare Charge</div>,
+            field: "baseFareCharge",
+            className: "text-center",
+        },
+        {
+            header: <div className="text-center">Base Distance (Km)</div>,
+            field: "baseDistance",
+            className: "text-center",
+        },
+        {
+            header: <div className="text-center">Per Distance Charge</div>,
+            field: "perDistanceCharge",
+            className: "text-center",
+        },
+        {
+            header: <div className="text-center">Actions</div>,
             body: (row) => (
-                <div className="edit-delete-action d-flex align-items-center">
+                <div className="edit-delete-action d-flex align-items-center justify-content-center">
                     <Link
                         className="me-2 p-2"
-                        to={`/setworldPrice`} // Adjust to your actual edit route if different
+                        to={`/setworldPrice`}
                         state={{ farePrice: row.raw }}
                         title="Edit"
                     >
@@ -214,7 +273,7 @@ export default function FarePrices() {
                 )}
 
                 <div className="page-header d-flex justify-content-between align-items-center">
-                    <h4>Fare Prices (City Fairs)</h4>
+                    <h4>Fare Prices</h4>
                     <Link to="/setworldPrice" className="btn btn-outline-success">
                         <i className="ti ti-circle-plus me-1" />
                         Add Fare Price
@@ -222,7 +281,44 @@ export default function FarePrices() {
                 </div>
 
                 <div className="card table-list-card">
-                    <div className="card-header d-flex justify-content-between flex-wrap gap-2">
+                    <div className="card-body pb-0 mt-3 mx-3">
+                        <div className="row g-3">
+                            <div className="col-md-4">
+                                <label className="form-label">Zone</label>
+                                <Select
+                                    classNamePrefix="react-select"
+                                    options={zones.map((z) => ({ value: z._id, label: z.name }))}
+                                    value={selectedZone}
+                                    onChange={setSelectedZone}
+                                    isClearable
+                                    placeholder="Filter by Zone"
+                                />
+                            </div>
+                            <div className="col-md-4">
+                                <label className="form-label">Vehicle Group</label>
+                                <Select
+                                    classNamePrefix="react-select"
+                                    options={vehicleGroups.map((vg) => ({ value: vg._id, label: vg.name }))}
+                                    value={selectedVehicleGroup}
+                                    onChange={setSelectedVehicleGroup}
+                                    isClearable
+                                    placeholder="Filter by Vehicle Group"
+                                />
+                            </div>
+                            <div className="col-md-4">
+                                <label className="form-label">Fare Plan</label>
+                                <Select
+                                    classNamePrefix="react-select"
+                                    options={fairPlans.map((fp) => ({ value: fp._id, label: fp.planName }))}
+                                    value={selectedFairPlan}
+                                    onChange={setSelectedFairPlan}
+                                    isClearable
+                                    placeholder="Filter by Fare Plan"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="card-header d-flex justify-content-between flex-wrap gap-2 border-top-0">
                         <div className="d-flex gap-2 flex-wrap align-items-center">
                             {/* Rows */}
                             <div className="dropdown">

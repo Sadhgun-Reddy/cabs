@@ -1,48 +1,86 @@
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 import PrimeDataTable from "../../components/data-table";
-import { CouponData } from "../../core/json/Coupons";
-import EditZones from "../../core/modals/coupons/editcoupons";
+import { URLS } from "../../url";
 import CommonFooter from "../../components/footer/commonFooter";
-import DeleteModal from "../../components/delete-modal";
 import SearchFromApi from "../../components/data-table/search";
 
-export default function SurgePrices() {
+const SurgePrices = () => {
   /* ===================== STATE ===================== */
   const [rows, setRows] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectionVersion, setSelectionVersion] = useState(0);
 
-  const [tableData, setTableData] = useState(
-    CouponData.map((item) => ({
-      ...item,
-      Status: item.Status ?? true, // default Active
-    })),
-  );
-
-  /* ===================== HANDLERS ===================== */
-
-  const handleSearch = (value) => setSearchQuery(value);
-
-  const toggleStatus = (id) => {
-    setTableData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, Status: !item.Status } : item,
-      ),
-    );
+  /* ===================== FETCH DATA ===================== */
+  const fetchSurgePrices = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.post(URLS.GetAllSurgePrices, {}, { headers });
+      
+      if (res.data.success && res.data.surges) {
+        setTableData(res.data.surges.map(item => ({...item, id: item._id})));
+      } else {
+        toast.error(res.data.message || "Failed to fetch surge prices");
+      }
+    } catch (error) {
+      console.error("Error fetching surge prices:", error);
+      toast.error("An error occurred while fetching surge prices");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  /* ===================== ROW SELECTION ===================== */
+  useEffect(() => {
+    fetchSurgePrices();
+  }, []);
+
+  /* ===================== HANDLERS ===================== */
+  const handleSearch = (value) => setSearchQuery(value);
+
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return tableData;
+    const query = searchQuery.toLowerCase();
+    return tableData.filter(
+      (item) =>
+        item.zoneName?.toLowerCase().includes(query) ||
+        item.fairPlanName?.toLowerCase().includes(query) ||
+        item.vechilegroupName?.toLowerCase().includes(query) ||
+        item.day?.toLowerCase().includes(query)
+    );
+  }, [tableData, searchQuery]);
+
+  const allVisibleSelected = useMemo(() => {
+    return (
+      filteredData.length > 0 &&
+      filteredData.every((row) => selectedRows.includes(row.id))
+    );
+  }, [filteredData, selectedRows]);
 
   const handleRowSelect = (id) => {
     setSelectedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
+    setSelectionVersion((v) => v + 1);
   };
 
   const handleSelectAll = (checked) => {
-    setSelectedRows(checked ? tableData.map((row) => row.id) : []);
+    setSelectedRows((prev) => {
+      const visibleIds = filteredData.map((row) => row.id);
+      if (checked) {
+        return [...new Set([...prev, ...visibleIds])];
+      } else {
+        return prev.filter((id) => !filteredData.some((row) => row.id === id));
+      }
+    });
+    setSelectionVersion((v) => v + 1);
   };
 
   /* ===================== BULK ACTIONS ===================== */
@@ -50,9 +88,10 @@ export default function SurgePrices() {
   const handleBulkStatus = (status) => {
     if (!selectedRows.length) return;
 
+    const newStatus = status ? "active" : "inactive";
     setTableData((prev) =>
       prev.map((item) =>
-        selectedRows.includes(item.id) ? { ...item, Status: status } : item,
+        selectedRows.includes(item.id) ? { ...item, status: newStatus } : item,
       ),
     );
     setSelectedRows([]);
@@ -60,92 +99,161 @@ export default function SurgePrices() {
 
   /* ===================== COLUMNS ===================== */
 
-  const columns = [
-    {
-      header: (
-        <input
-          type="checkbox"
-          checked={
-            tableData.length > 0 && selectedRows.length === tableData.length
-          }
-          onChange={(e) => handleSelectAll(e.target.checked)}
-        />
-      ),
-      body: (row) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.id)}
-          onChange={() => handleRowSelect(row.id)}
-        />
-      ),
-    },
-    {
-      header: "Sl.No",
-      body: (_row, options) => options.rowIndex + 1,
-    },
-    {
-      header: "Day",
-      field: "day",
-    },
-    {
-      header: "Start Time",
-      field: "starttime",
-    },
-    {
-      header: "End Time",
-      field: "endtime",
-    },
-    {
-      header: "Status",
-      body: (row) => (
-        <div className="form-check form-switch">
-          <input
-            type="checkbox"
-            className={`form-check-input ${
-              row.Status ? "bg-success" : "bg-danger"
-            }`}
-            checked={row.Status}
-            onChange={() => toggleStatus(row.id)}
-          />
-        </div>
-      ),
-    },
-    {
-      header: "Created Date",
-      body: (row) =>
-        row?.date
-          ? new Date(row.date).toLocaleString("en-IN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              // hour: "2-digit",
-            })
-          : "--",
-    },
-    {
-      header: "Actions",
-      body: () => (
-        <div className="edit-delete-action">
-          <Link
-            className="me-2 p-2"
-            to="/editSurgePrice"
-            title="Day Details"
+  const columns = useMemo(
+    () => [
+      {
+        header: (
+          <div className="form-check check-tables text-center">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="select-all"
+              checked={allVisibleSelected}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+            />
+            <label className="form-check-label" htmlFor="select-all"></label>
+          </div>
+        ),
+        body: (row) => (
+          <div className="form-check check-tables text-center">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id={`select-${row.id}`}
+              checked={selectedRows.includes(row.id)}
+              onChange={() => handleRowSelect(row.id)}
+            />
+            <label
+              className="form-check-label"
+              htmlFor={`select-${row.id}`}
+            ></label>
+          </div>
+        ),
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Sl.No</div>,
+        body: (_row, options) => (
+          <div className="text-center">{options.rowIndex + 1}</div>
+        ),
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Peak Zone</div>,
+        field: "zoneName",
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Fair Plan</div>,
+        field: "fairPlanName",
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Vehicle Group</div>,
+        field: "vechilegroupName",
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Percentage (%)</div>,
+        field: "percentage",
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Day</div>,
+        field: "day",
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Start Time</div>,
+        field: "startTime",
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">End Time</div>,
+        field: "endTime",
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Status</div>,
+        body: (row) => (
+          <div className="text-center">
+            <span
+              className={`badge ${
+                row.status === "active" ? "bg-success" : "bg-danger"
+              }`}
+            >
+              {row.status === "active" ? "Active" : "Inactive"}
+            </span>
+          </div>
+        ),
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Created Date</div>,
+        body: (row) => (
+          <div className="text-center">
+            {row?.logCreatedDate
+              ? new Date(row.logCreatedDate).toLocaleString("en-IN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+              : "--"}
+          </div>
+        ),
+        className: "text-center",
+      },
+      {
+        header: <div className="text-center">Actions</div>,
+        body: (row) => (
+          <div className="edit-delete-action d-flex justify-content-center">
+            <Link
+              className="me-2 p-2"
+              to="/editSurgePrice"
+              state={{ surgeData: row }}
+              title="Edit Details"
+            >
+              <i className="ti ti-edit text-primary" />
+            </Link>
+            <Link
+              to="#"
+              className="p-2"
+              title="Delete"
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete(row.id);
+              }}
+            >
+              <i className="ti ti-trash text-danger" />
+            </Link>
+          </div>
+        ),
+        className: "text-center",
+      },
+    ],
+    [selectedRows, tableData, filteredData, allVisibleSelected],
+  );
 
-          >
-            <i className="ti ti-edit text-primary" />
-          </Link>
-          <Link
-            to="#"
-            className="p-2"
-            title="Delete"
+  /* ===================== DELETE LOGIC ===================== */
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this surge price?")) return;
 
-          >
-            <i className="ti ti-trash text-danger" />
-          </Link>
-        </div>
-      ),
-    },
-  ];
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.delete(`${URLS.DeleteSurgePrice}${id}`, { headers });
+
+      if (res.data.success) {
+        toast.success(res.data.message || "Surge price deleted successfully");
+        fetchSurgePrices(); // Refresh data
+      } else {
+        toast.error(res.data.message || "Failed to delete surge price");
+      }
+    } catch (error) {
+      console.error("Error deleting surge price:", error);
+      toast.error("An error occurred while deleting");
+    }
+  };
 
   /* ===================== JSX ===================== */
 
@@ -237,9 +345,10 @@ export default function SurgePrices() {
 
           <div className="card-body">
             <PrimeDataTable
+              key={selectionVersion}
               column={columns}
-              data={tableData}
-              totalRecords={tableData.length}
+              data={filteredData}
+              totalRecords={filteredData.length}
               rows={rows}
             />
           </div>
@@ -247,13 +356,11 @@ export default function SurgePrices() {
       </div>
 
       <CommonFooter />
-      <EditZones />
-      <DeleteModal />
     </div>
   );
 }
 
-
+export default SurgePrices;
 
 // import { useState } from "react";
 // import { Link } from "react-router-dom";

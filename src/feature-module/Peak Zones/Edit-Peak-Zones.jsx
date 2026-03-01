@@ -69,10 +69,20 @@ const EditPeakZones = () => {
       setStatus(zone.status === "active");
 
       // Convert locations to map format
-      const coords = zone.locations.map((loc) => ({
-        lat: loc.latitude,
-        lng: loc.longitude,
-      }));
+      let coords = [];
+      if (zone.location && zone.location.type === "Polygon" && zone.location.coordinates.length > 0) {
+        // GeoJSON format: [lng, lat]
+        coords = zone.location.coordinates[0].map((coord) => ({
+          lat: coord[1],
+          lng: coord[0],
+        }));
+      } else if (zone.locations && zone.locations.length > 0) {
+        // Legacy format
+        coords = zone.locations.map((loc) => ({
+          lat: loc.latitude,
+          lng: loc.longitude,
+        }));
+      }
       setPolygonCoordinates(coords);
     } catch (err) {
       console.error(err);
@@ -118,18 +128,27 @@ const EditPeakZones = () => {
     try {
       setLoading(true);
 
-      const locations = polygonCoordinates.map((point) => ({
-        latitude: point.lat,
-        longitude: point.lng,
-      }));
+      // GeoJSON Polygon coordinates were requested in [longitude, latitude] order.
+      // GeoJSON Polygons must be closed (the first and last point must be identical).
+      const geoJsonCoordinates = polygonCoordinates.map((point) => [
+        point.lng,
+        point.lat,
+      ]);
+
+      if (geoJsonCoordinates.length > 0) {
+        geoJsonCoordinates.push(geoJsonCoordinates[0]);
+      }
 
       const payload = {
         name: formData.name,
         place: formData.searchLocation,
         priority: formData.priority,
         zoneType: formData.zoneType,
-        locations,
         status: status ? "active" : "inactive",
+        location: {
+          type: "Polygon",
+          coordinates: [geoJsonCoordinates],
+        },
       };
 
       await axios.put(`${URLS.EditPeakZone}/${id}`, payload, {

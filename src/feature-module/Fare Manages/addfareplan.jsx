@@ -21,6 +21,7 @@ const AddFarePlan = () => {
     serviceCategoryId: "",
     planName: "",
     priority: "",
+    broadCastTime: "",
   });
 
   // Fetch service categories on mount
@@ -31,8 +32,8 @@ const AddFarePlan = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.post(
-          URLS.GetServiceCategoryById,  
-          {},                            
+          URLS.GetServiceCategoryById,
+          {},
           {
             headers: {
               "Content-Type": "application/json",
@@ -40,7 +41,7 @@ const AddFarePlan = () => {
             },
           }
         );
-        
+
         const categories = res.data?.serviceTypes || [];
         setServiceCategories(categories);
       } catch (err) {
@@ -68,6 +69,7 @@ const AddFarePlan = () => {
       serviceCategoryId: formData.serviceCategoryId,
       planName: formData.planName,
       priority: formData.priority,
+      broadCastTime: formData.broadCastTime,
       status: status ? "active" : "inactive",
     };
 
@@ -159,6 +161,20 @@ const AddFarePlan = () => {
                   value={formData.priority}
                   onChange={handleChange}
                   placeholder="Enter Priority"
+                  required
+                />
+              </div>
+
+              {/* Broadcast Time */}
+              <div className="mb-3">
+                <label className="form-label">Broadcast Time</label>
+                <input
+                  type="text"
+                  name="broadCastTime"
+                  className="form-control"
+                  value={formData.broadCastTime}
+                  onChange={handleChange}
+                  placeholder="Enter Broadcast Time (e.g., 60)"
                   required
                 />
               </div>
